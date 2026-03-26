@@ -6,8 +6,22 @@ export async function POST() {
   try {
     const cookieStore = await cookies();
     
-    cookieStore.delete('admin_session');
-    cookieStore.delete('admin_user');
+    // 删除 cookie 需要设置相同的 path
+    cookieStore.set('admin_session', '', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0, // 立即过期
+    });
+
+    cookieStore.set('admin_user', '', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

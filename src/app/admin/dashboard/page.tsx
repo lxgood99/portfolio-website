@@ -25,12 +25,18 @@ export default function DashboardPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify', {
-        credentials: 'include', // 确保发送 cookie
-      });
+      const res = await fetch('/api/auth/verify');
       const data = await res.json();
       if (!data.success || !data.data.authenticated) {
-        router.push('/admin');
+        // 延迟后再检查一次，确保 cookie 同步
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const retryRes = await fetch('/api/auth/verify');
+        const retryData = await retryRes.json();
+        if (!retryData.success || !retryData.data.authenticated) {
+          router.push('/admin');
+          return;
+        }
+        setUsername(retryData.data.username);
       } else {
         setUsername(data.data.username);
       }

@@ -21,9 +21,7 @@ export default function AdminPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify', {
-        credentials: 'include',
-      });
+      const res = await fetch('/api/auth/verify');
       const data = await res.json();
       if (data.success && data.data.authenticated) {
         router.push('/admin/dashboard');
@@ -52,17 +50,14 @@ export default function AdminPage() {
     try {
       const data = await performLogin(username, password);
       if (data.success) {
-        // 刷新路由确保 cookie 生效，然后再跳转
-        router.refresh();
-        // 短暂延迟确保 cookie 已保存
-        await new Promise(resolve => setTimeout(resolve, 100));
-        router.push('/admin/dashboard');
+        // 使用 window.location 进行完整页面刷新，确保 cookie 生效
+        window.location.href = '/admin/dashboard';
       } else {
         setError(data.error || '登录失败');
+        setIsLoading(false);
       }
     } catch (error) {
       setError('登录失败，请重试');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -84,19 +79,19 @@ export default function AdminPage() {
         // 初始化成功后自动登录
         const loginData = await performLogin(username, password);
         if (loginData.success) {
-          router.refresh();
-          await new Promise(resolve => setTimeout(resolve, 100));
-          router.push('/admin/dashboard');
+          // 使用完整页面刷新确保 cookie 生效
+          window.location.href = '/admin/dashboard';
         } else {
           setError('初始化成功，但登录失败，请手动登录');
           setIsLogin(true);
+          setIsLoading(false);
         }
       } else {
         setError(data.error || '初始化失败');
+        setIsLoading(false);
       }
     } catch (error) {
       setError('初始化失败，请重试');
-    } finally {
       setIsLoading(false);
     }
   };

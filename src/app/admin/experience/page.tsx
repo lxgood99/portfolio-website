@@ -128,9 +128,7 @@ export default function ExperiencePage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify', {
-        credentials: 'include',
-      });
+      const res = await fetch('/api/auth/verify');
       const data = await res.json();
       if (!data.success || !data.data.authenticated) {
         router.push('/admin');

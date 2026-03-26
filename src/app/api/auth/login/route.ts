@@ -49,24 +49,31 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const sessionToken = crypto.randomBytes(32).toString('hex');
     
+    // 设置 session cookie
     cookieStore.set('admin_session', sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // 沙箱环境使用 HTTP，必须设为 false
       sameSite: 'lax',
+      path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 天
     });
 
+    // 设置用户名 cookie
     cookieStore.set('admin_user', username, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
+      path: '/',
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    return NextResponse.json({
+    // 创建响应并返回
+    const response = NextResponse.json({
       success: true,
       data: { username: admin.username },
     });
+    
+    return response;
   } catch (error) {
     console.error('登录错误:', error);
     return NextResponse.json(
