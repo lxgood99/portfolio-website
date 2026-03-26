@@ -127,7 +127,9 @@ export default function EducationPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify');
+      const res = await fetch('/api/auth/verify', {
+        credentials: 'include',
+      });
       const data = await res.json();
       if (!data.success || !data.data.authenticated) {
         router.push('/admin');

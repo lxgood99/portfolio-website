@@ -25,7 +25,9 @@ export default function DashboardPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify');
+      const res = await fetch('/api/auth/verify', {
+        credentials: 'include', // 确保发送 cookie
+      });
       const data = await res.json();
       if (!data.success || !data.data.authenticated) {
         router.push('/admin');

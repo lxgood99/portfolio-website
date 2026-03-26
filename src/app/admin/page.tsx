@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 
 export default function AdminPage() {
   const router = useRouter();
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true); // 默认显示登录页面
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,9 @@ export default function AdminPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify');
+      const res = await fetch('/api/auth/verify', {
+        credentials: 'include',
+      });
       const data = await res.json();
       if (data.success && data.data.authenticated) {
         router.push('/admin/dashboard');
@@ -33,20 +35,27 @@ export default function AdminPage() {
     }
   };
 
+  const performLogin = async (user: string, pass: string) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    return res.json();
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
+      const data = await performLogin(username, password);
       if (data.success) {
+        // 刷新路由确保 cookie 生效，然后再跳转
+        router.refresh();
+        // 短暂延迟确保 cookie 已保存
+        await new Promise(resolve => setTimeout(resolve, 100));
         router.push('/admin/dashboard');
       } else {
         setError(data.error || '登录失败');
@@ -73,7 +82,15 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         // 初始化成功后自动登录
-        await handleLogin(e);
+        const loginData = await performLogin(username, password);
+        if (loginData.success) {
+          router.refresh();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          router.push('/admin/dashboard');
+        } else {
+          setError('初始化成功，但登录失败，请手动登录');
+          setIsLogin(true);
+        }
       } else {
         setError(data.error || '初始化失败');
       }
