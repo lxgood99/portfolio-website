@@ -188,12 +188,10 @@ export default function ProfilePage() {
                   className="hidden"
                   id="avatar-upload"
                 />
-                <Button asChild>
-                  <label htmlFor="avatar-upload" className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
-                    上传头像
-                  </label>
-                </Button>
+                <label htmlFor="avatar-upload" className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2">
+                  <Upload className="h-4 w-4" />
+                  上传头像
+                </label>
                 <p className="text-sm text-muted-foreground mt-2">
                   支持 JPG、PNG 格式，建议 400x400 像素
                 </p>
@@ -360,9 +358,9 @@ export default function ProfilePage() {
 
           {/* 保存按钮 */}
           <div className="flex justify-end gap-4">
-            <Button variant="outline" asChild>
-              <Link href="/admin/dashboard">取消</Link>
-            </Button>
+            <Link href="/admin/dashboard" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+              取消
+            </Link>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? '保存中...' : '保存'}
             </Button>

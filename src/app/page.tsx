@@ -186,6 +186,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      {/* 管理后台入口 */}
+      <div className="fixed top-4 right-4 z-50">
+        <Link
+          href="/admin"
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 shadow-lg"
+        >
+          管理后台
+        </Link>
+      </div>
+
       {/* Header Section */}
       <header className="pt-16 pb-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
