@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface Profile {
   id?: number;
@@ -31,7 +31,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
+  const { isLoading: authLoading, isAuthenticated } = useAdminAuth();
   const [profile, setProfile] = useState<Profile>({
     name: '',
     title: '',
@@ -48,21 +48,10 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-    loadProfile();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/verify');
-      const data = await res.json();
-      if (!data.success || !data.data.authenticated) {
-        router.push('/admin');
-      }
-    } catch (error) {
-      router.push('/admin');
+    if (!authLoading && isAuthenticated) {
+      loadProfile();
     }
-  };
+  }, [authLoading, isAuthenticated]);
 
   const loadProfile = async () => {
     try {
@@ -141,12 +130,16 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

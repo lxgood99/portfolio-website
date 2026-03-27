@@ -21,10 +21,22 @@ export default function AdminPage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/verify');
-      const data = await res.json();
-      if (data.success && data.data.authenticated) {
-        router.push('/admin/dashboard');
+      // 先检查 localStorage
+      const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
+      const storedUsername = typeof window !== 'undefined' ? localStorage.getItem('admin_user') : null;
+      
+      if (sessionToken && storedUsername) {
+        // 验证 session 是否有效
+        const res = await fetch('/api/auth/verify', {
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+            'X-Admin-User': storedUsername,
+          },
+        });
+        const data = await res.json();
+        if (data.success && data.data.authenticated) {
+          router.push('/admin/dashboard');
+        }
       }
     } catch (error) {
       console.error('验证登录状态失败:', error);
@@ -49,8 +61,11 @@ export default function AdminPage() {
 
     try {
       const data = await performLogin(username, password);
-      if (data.success) {
-        // 使用 window.location 进行完整页面刷新，确保 cookie 生效
+      if (data.success && data.data.sessionToken) {
+        // 将 session 信息存储到 localStorage
+        localStorage.setItem('admin_session', data.data.sessionToken);
+        localStorage.setItem('admin_user', data.data.username);
+        // 使用完整页面刷新确保 cookie 生效
         window.location.href = '/admin/dashboard';
       } else {
         setError(data.error || '登录失败');
@@ -78,7 +93,10 @@ export default function AdminPage() {
       if (data.success) {
         // 初始化成功后自动登录
         const loginData = await performLogin(username, password);
-        if (loginData.success) {
+        if (loginData.success && loginData.data.sessionToken) {
+          // 将 session 信息存储到 localStorage
+          localStorage.setItem('admin_session', loginData.data.sessionToken);
+          localStorage.setItem('admin_user', loginData.data.username);
           // 使用完整页面刷新确保 cookie 生效
           window.location.href = '/admin/dashboard';
         } else {

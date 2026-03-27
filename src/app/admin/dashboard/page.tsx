@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { 
   User, 
   Briefcase, 
@@ -16,43 +15,19 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [username, setUsername] = useState('');
+  const { username, isLoading, isAuthenticated, logout } = useAdminAuth();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/verify');
-      const data = await res.json();
-      if (!data.success || !data.data.authenticated) {
-        // 延迟后再检查一次，确保 cookie 同步
-        await new Promise(resolve => setTimeout(resolve, 200));
-        const retryRes = await fetch('/api/auth/verify');
-        const retryData = await retryRes.json();
-        if (!retryData.success || !retryData.data.authenticated) {
-          router.push('/admin');
-          return;
-        }
-        setUsername(retryData.data.username);
-      } else {
-        setUsername(data.data.username);
-      }
-    } catch (error) {
-      router.push('/admin');
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/admin');
-    } catch (error) {
-      console.error('登出失败:', error);
-    }
-  };
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const menuItems = [
     {
@@ -108,7 +83,7 @@ export default function DashboardPage() {
                 预览网站
               </Link>
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button variant="outline" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               登出
             </Button>

@@ -45,20 +45,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 设置登录态（使用 cookie）
-    const cookieStore = await cookies();
+    // 生成 session token
     const sessionToken = crypto.randomBytes(32).toString('hex');
+
+    // 设置 cookie
+    const cookieStore = await cookies();
     
-    // 设置 session cookie
     cookieStore.set('admin_session', sessionToken, {
       httpOnly: true,
-      secure: false, // 沙箱环境使用 HTTP，必须设为 false
+      secure: false,
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 天
+      maxAge: 60 * 60 * 24 * 7,
     });
 
-    // 设置用户名 cookie
     cookieStore.set('admin_user', username, {
       httpOnly: true,
       secure: false,
@@ -67,13 +67,14 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    // 创建响应并返回
-    const response = NextResponse.json({
+    // 返回 session token 给客户端存储
+    return NextResponse.json({
       success: true,
-      data: { username: admin.username },
+      data: { 
+        username: admin.username,
+        sessionToken: sessionToken, // 返回给客户端
+      },
     });
-    
-    return response;
   } catch (error) {
     console.error('登录错误:', error);
     return NextResponse.json(

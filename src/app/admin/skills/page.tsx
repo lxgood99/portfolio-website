@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,7 @@ function SortableItem({ skill, onEdit, onDelete }: SortableItemProps) {
 }
 
 export default function SkillsPage() {
-  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -115,21 +115,10 @@ export default function SkillsPage() {
   );
 
   useEffect(() => {
-    checkAuth();
-    loadSkills();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/verify');
-      const data = await res.json();
-      if (!data.success || !data.data.authenticated) {
-        router.push('/admin');
-      }
-    } catch (error) {
-      router.push('/admin');
+    if (isAuthenticated) {
+      loadSkills();
     }
-  };
+  }, [isAuthenticated]);
 
   const loadSkills = async () => {
     try {
@@ -233,12 +222,16 @@ export default function SkillsPage() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
