@@ -112,6 +112,8 @@ export const works = pgTable(
     description: text("description"),
     category: varchar("category", { length: 100 }),
     tags: jsonb("tags").$type<string[]>(),
+    display_mode: varchar("display_mode", { length: 20 }).default("single"), // 'single', 'carousel', 'combined'
+    cover_image_key: varchar("cover_image_key", { length: 255 }),
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -136,6 +138,7 @@ export const workItems = pgTable(
     title: varchar("title", { length: 200 }),
     file_key: varchar("file_key", { length: 255 }).notNull(),
     description: text("description"),
+    is_carousel_item: integer("is_carousel_item").default(0), // 轮播图片标记 (0/1)
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()

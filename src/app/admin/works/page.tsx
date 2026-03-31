@@ -15,7 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, FileText, Image, Video } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, FileText, Image, Video, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
   DndContext,
@@ -36,11 +43,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 interface WorkItem {
-  id: number;
+  id?: number;
   type: string;
   title: string;
   file_key: string;
-  description: string;
+  description?: string;
+  is_carousel_item?: boolean;
   order: number;
 }
 
@@ -50,6 +58,8 @@ interface Work {
   description: string;
   category: string;
   tags: string[];
+  display_mode?: string;
+  cover_image_key?: string;
   order: number;
   work_items?: WorkItem[];
 }
@@ -89,6 +99,19 @@ function SortableItem({ work, onEdit, onDelete }: SortableItemProps) {
     }
   };
 
+  const getDisplayModeLabel = (mode?: string) => {
+    switch (mode) {
+      case 'carousel':
+        return '多图轮播';
+      case 'combined':
+        return '组合展示';
+      default:
+        return '单文件';
+    }
+  };
+
+  const carouselCount = work.work_items?.filter(item => item.is_carousel_item).length || 0;
+
   return (
     <div ref={setNodeRef} style={style} className="flex items-start gap-3 bg-white dark:bg-slate-800 p-4 rounded-lg border shadow-sm">
       <button {...attributes} {...listeners} className="mt-1 cursor-grab hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
@@ -96,8 +119,11 @@ function SortableItem({ work, onEdit, onDelete }: SortableItemProps) {
       </button>
       <div className="flex-1">
         <div className="flex items-start justify-between">
-          <div>
-            <h3 className="font-semibold">{work.title}</h3>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold">{work.title}</h3>
+              <Badge variant="outline" className="text-xs">{getDisplayModeLabel(work.display_mode)}</Badge>
+            </div>
             <p className="text-sm text-muted-foreground">{work.category}</p>
             {work.tags && work.tags.length > 0 && (
               <div className="flex gap-1 mt-2 flex-wrap">
@@ -106,10 +132,15 @@ function SortableItem({ work, onEdit, onDelete }: SortableItemProps) {
                 ))}
               </div>
             )}
-            {work.work_items && work.work_items.length > 0 && (
+            {work.display_mode === 'carousel' && carouselCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                轮播图片：{carouselCount} 张
+              </p>
+            )}
+            {work.work_items && work.work_items.length > 0 && work.display_mode !== 'carousel' && (
               <div className="flex gap-2 mt-2">
-                {work.work_items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-1 text-xs text-muted-foreground">
+                {work.work_items.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground">
                     {getFileIcon(item.type)}
                     <span>{item.type}</span>
                   </div>
@@ -145,15 +176,24 @@ export default function WorksPage() {
     description: '',
     category: '',
     tags: '',
+    display_mode: 'single',
   });
+  const [coverImageKey, setCoverImageKey] = useState<string>('');
+  const [coverImageUrl, setCoverImageUrl] = useState<string>('');
+  const [carouselItems, setCarouselItems] = useState<Array<{
+    id?: number;
+    file_key: string;
+    title: string;
+    url?: string;
+  }>>([]);
   const [workItems, setWorkItems] = useState<Array<{
     id?: number;
     type: string;
     title: string;
     file_key: string;
-    file?: File;
   }>>([]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingType, setUploadingType] = useState<'cover' | 'carousel' | 'file' | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -208,7 +248,7 @@ export default function WorksPage() {
     }
   };
 
-  const handleOpenDialog = (work?: Work) => {
+  const handleOpenDialog = async (work?: Work) => {
     if (work) {
       setEditingWork(work);
       setFormData({
@@ -216,13 +256,49 @@ export default function WorksPage() {
         description: work.description ?? '',
         category: work.category ?? '',
         tags: work.tags?.join(', ') ?? '',
+        display_mode: work.display_mode ?? 'single',
       });
-      setWorkItems(work.work_items?.map(item => ({
-        id: item.id,
-        type: item.type ?? '',
-        title: item.title ?? '',
-        file_key: item.file_key ?? '',
-      })) ?? []);
+      setCoverImageKey(work.cover_image_key ?? '');
+      
+      // 加载封面图URL
+      if (work.cover_image_key) {
+        const url = await loadFileUrl(work.cover_image_key);
+        setCoverImageUrl(url);
+      } else {
+        setCoverImageUrl('');
+      }
+
+      // 分离轮播图片和普通文件
+      const carousels: typeof carouselItems = [];
+      const files: typeof workItems = [];
+      
+      work.work_items?.forEach(item => {
+        if (item.is_carousel_item) {
+          carousels.push({
+            id: item.id,
+            file_key: item.file_key,
+            title: item.title ?? '',
+          });
+        } else {
+          files.push({
+            id: item.id,
+            type: item.type ?? '',
+            title: item.title ?? '',
+            file_key: item.file_key,
+          });
+        }
+      });
+
+      // 加载轮播图片URL
+      const carouselWithUrls = await Promise.all(
+        carousels.map(async (item) => ({
+          ...item,
+          url: await loadFileUrl(item.file_key),
+        }))
+      );
+      
+      setCarouselItems(carouselWithUrls);
+      setWorkItems(files);
     } else {
       setEditingWork(null);
       setFormData({
@@ -230,10 +306,95 @@ export default function WorksPage() {
         description: '',
         category: '',
         tags: '',
+        display_mode: 'single',
       });
+      setCoverImageKey('');
+      setCoverImageUrl('');
+      setCarouselItems([]);
       setWorkItems([]);
     }
     setDialogOpen(true);
+  };
+
+  const loadFileUrl = async (key: string): Promise<string> => {
+    try {
+      const res = await fetch('/api/file-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key }),
+      });
+      const data = await res.json();
+      return data.success ? data.data.url : '';
+    } catch {
+      return '';
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingType('cover');
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    uploadFormData.append('type', 'work');
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCoverImageKey(data.data.key);
+        setCoverImageUrl(data.data.url);
+      } else {
+        alert('上传失败：' + data.error);
+      }
+    } catch (error) {
+      alert('上传失败，请重试');
+    } finally {
+      setUploadingType(null);
+    }
+  };
+
+  const handleCarouselUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingType('carousel');
+
+    try {
+      const newItems: typeof carouselItems = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('type', 'work');
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          newItems.push({
+            file_key: data.data.key,
+            title: file.name,
+            url: data.data.url,
+          });
+        }
+      }
+
+      setCarouselItems([...carouselItems, ...newItems]);
+    } catch (error) {
+      alert('上传失败，请重试');
+    } finally {
+      setUploadingType(null);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -241,15 +402,16 @@ export default function WorksPage() {
     if (!file) return;
 
     setUploadingIndex(index);
+    setUploadingType('file');
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'work');
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    uploadFormData.append('type', 'work');
 
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
       const data = await res.json();
       if (data.success) {
@@ -274,24 +436,46 @@ export default function WorksPage() {
       alert('上传失败，请重试');
     } finally {
       setUploadingIndex(null);
+      setUploadingType(null);
     }
   };
 
-  const handleAddItem = () => {
+  const handleAddCarouselItem = () => {
+    // 通过文件选择器触发多图上传
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => handleCarouselUpload(e as unknown as React.ChangeEvent<HTMLInputElement>);
+    input.click();
+  };
+
+  const handleRemoveCarouselItem = (index: number) => {
+    const newItems = carouselItems.filter((_, i) => i !== index);
+    setCarouselItems(newItems);
+  };
+
+  const handleAddFileItem = () => {
     setWorkItems([...workItems, { type: 'pdf', title: '', file_key: '' }]);
   };
 
-  const handleRemoveItem = (index: number) => {
+  const handleRemoveFileItem = (index: number) => {
     const newItems = workItems.filter((_, i) => i !== index);
     setWorkItems(newItems);
   };
 
   const handleSave = async () => {
+    if (!formData.title.trim()) {
+      alert('请输入作品标题');
+      return;
+    }
+
     const url = editingWork ? `/api/works/${editingWork.id}` : '/api/works';
     const method = editingWork ? 'PUT' : 'POST';
 
     const body = {
       ...formData,
+      cover_image_key: coverImageKey || null,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
       order: editingWork ? editingWork.order : works.length,
     };
@@ -307,13 +491,44 @@ export default function WorksPage() {
       if (data.success) {
         const workId = data.data.id;
 
-        // 处理作品项
+        // 处理轮播图片
+        for (let i = 0; i < carouselItems.length; i++) {
+          const item = carouselItems[i];
+          if (!item.file_key) continue;
+
+          if (item.id) {
+            await fetch(`/api/work-items/${item.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'image',
+                title: item.title,
+                file_key: item.file_key,
+                is_carousel_item: true,
+                order: i,
+              }),
+            });
+          } else {
+            await fetch(`/api/works/${workId}/items`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'image',
+                title: item.title,
+                file_key: item.file_key,
+                is_carousel_item: true,
+                order: i,
+              }),
+            });
+          }
+        }
+
+        // 处理普通文件
         for (let i = 0; i < workItems.length; i++) {
           const item = workItems[i];
           if (!item.file_key) continue;
 
           if (item.id) {
-            // 更新已有项
             await fetch(`/api/work-items/${item.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
@@ -321,11 +536,11 @@ export default function WorksPage() {
                 type: item.type,
                 title: item.title,
                 file_key: item.file_key,
+                is_carousel_item: false,
                 order: i,
               }),
             });
           } else {
-            // 创建新项
             await fetch(`/api/works/${workId}/items`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -333,6 +548,7 @@ export default function WorksPage() {
                 type: item.type,
                 title: item.title,
                 file_key: item.file_key,
+                is_carousel_item: false,
                 order: i,
               }),
             });
@@ -435,101 +651,209 @@ export default function WorksPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingWork ? '编辑作品' : '添加作品'}</DialogTitle>
-            <DialogDescription>填写作品信息并上传文件</DialogDescription>
+            <DialogDescription>填写作品信息</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">作品标题</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="作品标题"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">分类</Label>
-              <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="如：网站、APP、设计"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tags">标签（用逗号分隔）</Label>
-              <Input
-                id="tags"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                placeholder="如：React, TypeScript, 前端"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">作品描述</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="描述您的作品..."
-                rows={4}
-              />
+          <div className="space-y-6">
+            {/* 基本信息 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">作品标题 *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="作品标题"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">分类</Label>
+                  <Input
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="如：PPT设计、视频剪辑"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="display_mode">展示模式</Label>
+                  <Select
+                    value={formData.display_mode}
+                    onValueChange={(value) => setFormData({ ...formData, display_mode: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">单文件/单图</SelectItem>
+                      <SelectItem value="carousel">多图轮播</SelectItem>
+                      <SelectItem value="combined">组合展示</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags">标签（用逗号分隔）</Label>
+                <Input
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="如：React, TypeScript, 前端"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">作品描述</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="描述您的作品..."
+                  rows={3}
+                />
+              </div>
             </div>
 
-            {/* 文件上传区域 */}
+            {/* 封面图上传 */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>文件（支持 PDF、图片、视频）</Label>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddItem}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  添加文件
-                </Button>
-              </div>
-              {workItems.map((item, index) => (
-                <div key={index} className="flex items-start gap-2 p-3 border rounded-lg">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{item.type || '未上传'}</Badge>
-                      {item.title && <span className="text-sm text-muted-foreground">{item.title}</span>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        accept=".pdf,image/*,video/*"
-                        onChange={(e) => handleFileUpload(e, index)}
-                        className="hidden"
-                        id={`file-${index}`}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        disabled={uploadingIndex === index}
-                      >
-                        <label htmlFor={`file-${index}`} className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-1" />
-                          {uploadingIndex === index ? '上传中...' : item.file_key ? '重新上传' : '上传文件'}
-                        </label>
-                      </Button>
-                      {item.file_key && (
-                        <span className="text-xs text-green-600">已上传</span>
-                      )}
-                    </div>
+              <Label>封面图（可选，用于PDF/PPT等文件的卡片封面）</Label>
+              <div className="flex items-start gap-4">
+                {coverImageUrl ? (
+                  <div className="relative">
+                    <img
+                      src={coverImageUrl}
+                      alt="封面"
+                      className="w-32 h-24 object-cover rounded-lg border"
+                    />
+                    <button
+                      onClick={() => { setCoverImageKey(''); setCoverImageUrl(''); }}
+                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveItem(index)}
-                  >
-                    <X className="h-4 w-4" />
+                ) : (
+                  <div className="w-32 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                    id="cover-upload"
+                  />
+                  <label htmlFor="cover-upload" className="cursor-pointer">
+                    <Button variant="outline" size="sm" asChild disabled={uploadingType === 'cover'}>
+                      <span>
+                        <Upload className="h-4 w-4 mr-1" />
+                        {uploadingType === 'cover' ? '上传中...' : '上传封面'}
+                      </span>
+                    </Button>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    建议尺寸 16:9，如 800x450 像素
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 轮播图片（仅轮播模式显示） */}
+            {formData.display_mode === 'carousel' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>轮播图片</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddCarouselItem} disabled={uploadingType === 'carousel'}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    {uploadingType === 'carousel' ? '上传中...' : '添加图片'}
                   </Button>
                 </div>
-              ))}
-            </div>
+                {carouselItems.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg">
+                    点击"添加图片"上传轮播图片（支持多选）
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-3">
+                    {carouselItems.map((item, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={item.url}
+                          alt={item.title}
+                          className="w-full h-24 object-cover rounded-lg border"
+                        />
+                        <button
+                          onClick={() => handleRemoveCarouselItem(index)}
+                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="flex justify-end gap-2">
+            {/* 文件上传（非轮播模式显示） */}
+            {formData.display_mode !== 'carousel' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>文件（支持 PDF、图片、视频）</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddFileItem}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    添加文件
+                  </Button>
+                </div>
+                {workItems.map((item, index) => (
+                  <div key={index} className="flex items-start gap-2 p-3 border rounded-lg">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{item.type || '未上传'}</Badge>
+                        {item.title && <span className="text-sm text-muted-foreground">{item.title}</span>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          accept=".pdf,image/*,video/*"
+                          onChange={(e) => handleFileUpload(e, index)}
+                          className="hidden"
+                          id={`file-${index}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          disabled={uploadingIndex === index && uploadingType === 'file'}
+                        >
+                          <label htmlFor={`file-${index}`} className="cursor-pointer">
+                            <Upload className="h-4 w-4 mr-1" />
+                            {uploadingIndex === index && uploadingType === 'file' ? '上传中...' : item.file_key ? '重新上传' : '上传文件'}
+                          </label>
+                        </Button>
+                        {item.file_key && (
+                          <span className="text-xs text-green-600">已上传</span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveFileItem(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
               <Button onClick={handleSave}>保存</Button>
             </div>

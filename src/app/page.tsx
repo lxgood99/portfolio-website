@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,7 +21,9 @@ import {
   Image as ImageIcon,
   Video,
   X,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -75,7 +77,8 @@ interface WorkItem {
   type: string;
   title: string;
   file_key: string;
-  url?: string; // 文件访问URL
+  url?: string;
+  is_carousel_item?: boolean;
 }
 
 interface Work {
@@ -84,8 +87,106 @@ interface Work {
   description: string;
   category: string;
   tags: string[];
+  display_mode?: string;
+  cover_image_key?: string;
+  coverImageUrl?: string;
   work_items: WorkItem[];
-  thumbnailUrl?: string; // 第一个图片/视频的URL作为封面
+  carouselItems?: WorkItem[];
+}
+
+// 图片轮播组件
+function ImageCarousel({ images, onImageClick }: { images: WorkItem[]; onImageClick: (item: WorkItem) => void }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+  };
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div 
+      className="relative h-48 bg-slate-100 dark:bg-slate-800 overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div 
+        className="flex transition-transform duration-300 ease-out h-full"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {images.map((item, index) => (
+          <div 
+            key={index} 
+            className="flex-shrink-0 w-full h-full cursor-pointer"
+            onClick={() => onImageClick(item)}
+          >
+            <img
+              src={item.url}
+              alt={item.title || `图片 ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* 左右切换按钮 */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+
+          {/* 进度指示器 */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(index); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  index === currentIndex ? 'bg-white w-4' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function HomePage() {
@@ -99,6 +200,10 @@ export default function HomePage() {
   
   // 预览模态框状态
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
+  
+  // 分类过滤
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     loadData();
@@ -106,7 +211,6 @@ export default function HomePage() {
 
   const loadData = async () => {
     try {
-      // 并行加载所有数据
       const [profileRes, expRes, eduRes, skillsRes, worksRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/work-experiences'),
@@ -132,10 +236,16 @@ export default function HomePage() {
       if (eduData.success) setEducations(eduData.data);
       if (skillsData.success) setSkills(skillsData.data);
       
-      // 加载作品并获取文件URL
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
         setWorks(worksWithUrls);
+        
+        // 提取分类
+        const cats = new Set<string>();
+        worksWithUrls.forEach(w => {
+          if (w.category) cats.add(w.category);
+        });
+        setCategories(['all', ...Array.from(cats)]);
       }
     } catch (error) {
       console.error('加载数据失败:', error);
@@ -144,12 +254,27 @@ export default function HomePage() {
     }
   };
 
-  // 为作品的每个文件项获取访问URL
   const loadWorkItemsUrls = async (worksList: Work[]): Promise<Work[]> => {
     const updatedWorks = await Promise.all(
       worksList.map(async (work) => {
+        // 加载封面图URL
+        let coverImageUrl = '';
+        if (work.cover_image_key) {
+          try {
+            const res = await fetch('/api/file-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: work.cover_image_key }),
+            });
+            const data = await res.json();
+            if (data.success) coverImageUrl = data.data.url;
+          } catch (error) {
+            console.error('加载封面图失败:', error);
+          }
+        }
+
         if (!work.work_items || work.work_items.length === 0) {
-          return work;
+          return { ...work, coverImageUrl };
         }
 
         const itemsWithUrls = await Promise.all(
@@ -172,15 +297,23 @@ export default function HomePage() {
           })
         );
 
-        // 获取第一个图片或视频作为封面
-        const firstMediaItem = itemsWithUrls.find(
-          (item) => (item.type === 'image' || item.type === 'video') && item.url
-        );
+        // 分离轮播图片
+        const carouselItems = itemsWithUrls.filter(item => item.is_carousel_item);
+        const regularItems = itemsWithUrls.filter(item => !item.is_carousel_item);
+
+        // 如果没有封面图，使用第一个图片或视频
+        if (!coverImageUrl) {
+          const firstMediaItem = itemsWithUrls.find(
+            (item) => (item.type === 'image' || item.type === 'video') && item.url && !item.is_carousel_item
+          );
+          coverImageUrl = firstMediaItem?.url || '';
+        }
 
         return {
           ...work,
-          work_items: itemsWithUrls,
-          thumbnailUrl: firstMediaItem?.url,
+          work_items: regularItems,
+          carouselItems,
+          coverImageUrl,
         };
       })
     );
@@ -206,13 +339,13 @@ export default function HomePage() {
   const getFileIcon = (type: string) => {
     switch (type) {
       case 'pdf':
-        return <FileText className="h-5 w-5" />;
+        return <FileText className="h-4 w-4" />;
       case 'image':
-        return <ImageIcon className="h-5 w-5" />;
+        return <ImageIcon className="h-4 w-4" />;
       case 'video':
-        return <Video className="h-5 w-5" />;
+        return <Video className="h-4 w-4" />;
       default:
-        return <FileText className="h-5 w-5" />;
+        return <FileText className="h-4 w-4" />;
     }
   };
 
@@ -230,6 +363,11 @@ export default function HomePage() {
         return null;
     }
   };
+
+  // 过滤作品
+  const filteredWorks = selectedCategory === 'all' 
+    ? works 
+    : works.filter(w => w.category === selectedCategory);
 
   if (isLoading) {
     return (
@@ -266,7 +404,6 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6">{profile.bio}</p>
           )}
 
-          {/* Contact Info */}
           <div className="flex flex-wrap justify-center gap-4 mb-6">
             {profile?.email && (
               <a href={`mailto:${profile.email}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -294,7 +431,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Social Links */}
           {profile?.social_links && Object.keys(profile.social_links).length > 0 && (
             <div className="flex justify-center gap-3">
               {Object.entries(profile.social_links).map(([name, url]) => {
@@ -327,7 +463,7 @@ export default function HomePage() {
             </h2>
             <div className="space-y-4">
               {workExperiences.map((exp) => (
-                <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
                       <div>
@@ -359,7 +495,7 @@ export default function HomePage() {
             </h2>
             <div className="space-y-4">
               {educations.map((edu) => (
-                <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
                       <div>
@@ -387,7 +523,7 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold mb-6">技能特长</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {skills.map((skill) => (
-                <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">{skill.name}</h3>
@@ -410,11 +546,39 @@ export default function HomePage() {
         {works.length > 0 && (
           <section>
             <h2 className="text-2xl font-bold mb-6">作品集</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {works.map((work) => (
-                <Card key={work.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
-                  {/* 封面图片/视频 */}
-                  {work.thumbnailUrl && (
+            
+            {/* 分类过滤 */}
+            {categories.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                      selectedCategory === cat
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {cat === 'all' ? '全部' : cat}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredWorks.map((work) => (
+                <Card 
+                  key={work.id} 
+                  className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
+                >
+                  {/* 封面区域 */}
+                  {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                    <ImageCarousel 
+                      images={work.carouselItems} 
+                      onImageClick={(item) => setPreviewItem(item)}
+                    />
+                  ) : work.coverImageUrl ? (
                     <div 
                       className="relative h-48 bg-slate-100 dark:bg-slate-800 cursor-pointer"
                       onClick={() => {
@@ -424,46 +588,53 @@ export default function HomePage() {
                     >
                       {work.work_items?.find(item => item.type === 'video' && item.url) ? (
                         <video 
-                          src={work.thumbnailUrl} 
+                          src={work.coverImageUrl} 
                           className="w-full h-full object-cover"
                           muted
                           playsInline
                         />
                       ) : (
                         <img 
-                          src={work.thumbnailUrl} 
+                          src={work.coverImageUrl} 
                           alt={work.title}
                           className="w-full h-full object-cover"
                         />
                       )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium">
-                          点击预览
-                        </span>
-                      </div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  ) : (
+                    <div className="h-48 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <FileText className="h-12 w-12 text-muted-foreground/30" />
                     </div>
                   )}
-                  <CardContent className="p-6">
+
+                  <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-semibold">{work.title}</h3>
+                      <h3 className="font-semibold text-lg">{work.title}</h3>
                       {work.category && (
-                        <Badge variant="outline">{work.category}</Badge>
+                        <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>
                       )}
                     </div>
+                    
                     {work.description && (
-                      <p className="text-sm text-muted-foreground mb-3">{work.description}</p>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{work.description}</p>
                     )}
+                    
                     {work.tags && work.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap mb-3">
-                        {work.tags.map((tag, i) => (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {work.tags.slice(0, 4).map((tag, i) => (
                           <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
                         ))}
+                        {work.tags.length > 4 && (
+                          <Badge variant="secondary" className="text-xs">+{work.tags.length - 4}</Badge>
+                        )}
                       </div>
                     )}
-                    {/* 文件列表 - 可点击预览 */}
-                    {work.work_items && work.work_items.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-2 border-t">
-                        {work.work_items.map((item) => (
+                    
+                    {/* 文件列表 - 非轮播模式 */}
+                    {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-3 border-t">
+                        {work.work_items.slice(0, 4).map((item) => (
                           <button
                             key={item.id}
                             onClick={() => setPreviewItem(item)}
@@ -471,9 +642,14 @@ export default function HomePage() {
                             title={`点击预览 ${item.title || item.type}`}
                           >
                             {getFileIcon(item.type)}
-                            <span>{item.title || item.type}</span>
+                            <span className="truncate max-w-[80px]">{item.title || item.type}</span>
                           </button>
                         ))}
+                        {work.work_items.length > 4 && (
+                          <span className="flex items-center text-xs text-muted-foreground">
+                            +{work.work_items.length - 4}
+                          </span>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -509,7 +685,6 @@ export default function HomePage() {
             className="relative max-w-5xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* 关闭按钮 */}
             <button
               onClick={() => setPreviewItem(null)}
               className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
@@ -517,7 +692,6 @@ export default function HomePage() {
               <X className="h-5 w-5" />
             </button>
             
-            {/* 预览内容 */}
             <div className="flex flex-col items-center justify-center min-h-[300px]">
               {previewItem.type === 'image' && previewItem.url && (
                 <img 
