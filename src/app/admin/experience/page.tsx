@@ -172,12 +172,12 @@ export default function ExperiencePage() {
     if (experience) {
       setEditingExperience(experience);
       setFormData({
-        company: experience.company,
-        position: experience.position,
-        description: experience.description || '',
-        start_date: experience.start_date,
-        end_date: experience.end_date || '',
-        location: experience.location || '',
+        company: experience.company ?? '',
+        position: experience.position ?? '',
+        description: experience.description ?? '',
+        start_date: experience.start_date ?? '',
+        end_date: experience.end_date ?? '',
+        location: experience.location ?? '',
       });
     } else {
       setEditingExperience(null);

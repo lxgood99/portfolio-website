@@ -164,9 +164,9 @@ export default function SkillsPage() {
     if (skill) {
       setEditingSkill(skill);
       setFormData({
-        name: skill.name,
-        level: skill.level || 80,
-        category: skill.category || '',
+        name: skill.name ?? '',
+        level: skill.level ?? 80,
+        category: skill.category ?? '',
       });
     } else {
       setEditingSkill(null);

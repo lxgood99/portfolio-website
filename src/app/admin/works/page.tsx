@@ -212,17 +212,17 @@ export default function WorksPage() {
     if (work) {
       setEditingWork(work);
       setFormData({
-        title: work.title,
-        description: work.description || '',
-        category: work.category || '',
-        tags: work.tags?.join(', ') || '',
+        title: work.title ?? '',
+        description: work.description ?? '',
+        category: work.category ?? '',
+        tags: work.tags?.join(', ') ?? '',
       });
       setWorkItems(work.work_items?.map(item => ({
         id: item.id,
-        type: item.type,
-        title: item.title || '',
-        file_key: item.file_key,
-      })) || []);
+        type: item.type ?? '',
+        title: item.title ?? '',
+        file_key: item.file_key ?? '',
+      })) ?? []);
     } else {
       setEditingWork(null);
       setFormData({

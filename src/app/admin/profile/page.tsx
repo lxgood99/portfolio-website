@@ -58,9 +58,22 @@ export default function ProfilePage() {
       const res = await fetch('/api/profile');
       const data = await res.json();
       if (data.success && data.data) {
-        setProfile(data.data);
-        if (data.data.avatar_key) {
-          loadAvatarUrl(data.data.avatar_key);
+        // 将 null 值转换为空字符串，避免 React 警告
+        const profileData = {
+          ...data.data,
+          name: data.data.name ?? '',
+          title: data.data.title ?? '',
+          bio: data.data.bio ?? '',
+          email: data.data.email ?? '',
+          phone: data.data.phone ?? '',
+          location: data.data.location ?? '',
+          website: data.data.website ?? '',
+          avatar_key: data.data.avatar_key ?? '',
+          social_links: data.data.social_links ?? {},
+        };
+        setProfile(profileData);
+        if (profileData.avatar_key) {
+          loadAvatarUrl(profileData.avatar_key);
         }
       }
     } catch (error) {

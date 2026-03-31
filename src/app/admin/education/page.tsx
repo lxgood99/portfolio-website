@@ -170,12 +170,12 @@ export default function EducationPage() {
     if (education) {
       setEditingEducation(education);
       setFormData({
-        school: education.school,
-        degree: education.degree,
-        field: education.field || '',
-        description: education.description || '',
-        start_date: education.start_date,
-        end_date: education.end_date || '',
+        school: education.school ?? '',
+        degree: education.degree ?? '',
+        field: education.field ?? '',
+        description: education.description ?? '',
+        start_date: education.start_date ?? '',
+        end_date: education.end_date ?? '',
       });
     } else {
       setEditingEducation(null);
