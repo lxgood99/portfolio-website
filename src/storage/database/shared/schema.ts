@@ -8,6 +8,7 @@ import {
   integer,
   jsonb,
   index,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 // 系统表 - 必须保留
@@ -54,6 +55,7 @@ export const workExperiences = pgTable(
     start_date: varchar("start_date", { length: 20 }).notNull(),
     end_date: varchar("end_date", { length: 20 }),
     location: varchar("location", { length: 200 }),
+    image_display_mode: varchar("image_display_mode", { length: 20 }).default("none"), // 'none', 'grid', 'carousel'
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -167,6 +169,55 @@ export const adminUsers = pgTable(
   (table) => [index("admin_users_username_idx").on(table.username)]
 );
 
+// 自我评价表
+export const selfIntroduction = pgTable("self_introduction", {
+  id: serial().primaryKey(),
+  content: text("content").notNull(),
+  is_visible: boolean("is_visible").default(true),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 工作经历图片表
+export const workExperienceImages = pgTable(
+  "work_experience_images",
+  {
+    id: serial().primaryKey(),
+    work_experience_id: integer("work_experience_id")
+      .notNull()
+      .references(() => workExperiences.id, { onDelete: "cascade" }),
+    file_key: varchar("file_key", { length: 255 }).notNull(),
+    title: varchar("title", { length: 200 }),
+    order: integer("order").notNull().default(0),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("work_experience_images_work_id_idx").on(table.work_experience_id),
+    index("work_experience_images_order_idx").on(table.order),
+  ]
+);
+
+// 模块排序表
+export const moduleOrders = pgTable(
+  "module_orders",
+  {
+    id: serial().primaryKey(),
+    module_name: varchar("module_name", { length: 50 }).notNull().unique(),
+    order: integer("order").notNull().default(0),
+    is_visible: boolean("is_visible").default(true),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [index("module_orders_name_idx").on(table.module_name)]
+);
+
 // 类型导出
 export type Profile = typeof profiles.$inferSelect;
 export type WorkExperience = typeof workExperiences.$inferSelect;
@@ -175,3 +226,6 @@ export type Skill = typeof skills.$inferSelect;
 export type Work = typeof works.$inferSelect;
 export type WorkItem = typeof workItems.$inferSelect;
 export type AdminUser = typeof adminUsers.$inferSelect;
+export type SelfIntroduction = typeof selfIntroduction.$inferSelect;
+export type WorkExperienceImage = typeof workExperienceImages.$inferSelect;
+export type ModuleOrder = typeof moduleOrders.$inferSelect;

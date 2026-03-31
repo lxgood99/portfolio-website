@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 import type { WorkExperience } from '@/storage/database/shared/schema';
 
-// GET - 获取所有工作经历
+// GET - 获取所有工作经历（包含图片）
 export async function GET() {
   try {
     const client = getSupabaseClient();
     const { data, error } = await client
       .from('work_experiences')
-      .select('*')
+      .select('*, work_experience_images(*)')
       .order('order', { ascending: true });
 
     if (error) {
       throw new Error(`获取工作经历失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as WorkExperience[] });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('获取工作经历错误:', error);
     return NextResponse.json(

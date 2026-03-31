@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
 import {
   Dialog,
   DialogContent,
@@ -14,8 +13,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Plus, GripVertical, Edit2, Trash2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import {
   DndContext,
   closestCenter,
@@ -34,6 +41,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+interface WorkExperienceImage {
+  id?: number;
+  file_key: string;
+  title: string;
+  url?: string;
+  order: number;
+}
+
 interface WorkExperience {
   id: number;
   company: string;
@@ -42,7 +57,9 @@ interface WorkExperience {
   start_date: string;
   end_date: string;
   location: string;
+  image_display_mode?: string;
   order: number;
+  work_experience_images?: WorkExperienceImage[];
 }
 
 interface SortableItemProps {
@@ -67,6 +84,8 @@ function SortableItem({ experience, onEdit, onDelete }: SortableItemProps) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const imageCount = experience.work_experience_images?.length || 0;
+
   return (
     <div ref={setNodeRef} style={style} className="flex items-start gap-3 bg-white dark:bg-slate-800 p-4 rounded-lg border shadow-sm">
       <button {...attributes} {...listeners} className="mt-1 cursor-grab hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
@@ -81,6 +100,11 @@ function SortableItem({ experience, onEdit, onDelete }: SortableItemProps) {
               {experience.start_date} - {experience.end_date || '至今'}
               {experience.location && ` · ${experience.location}`}
             </p>
+            {imageCount > 0 && (
+              <p className="text-xs text-blue-500 mt-1">
+                {imageCount} 张图片 · {experience.image_display_mode === 'carousel' ? '轮播展示' : '横排展示'}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => onEdit(experience)}>
@@ -112,7 +136,10 @@ export default function ExperiencePage() {
     start_date: '',
     end_date: '',
     location: '',
+    image_display_mode: 'none',
   });
+  const [images, setImages] = useState<WorkExperienceImage[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -132,7 +159,31 @@ export default function ExperiencePage() {
       const res = await fetch('/api/work-experiences');
       const data = await res.json();
       if (data.success) {
-        setExperiences(data.data);
+        // 加载图片URL
+        const experiencesWithUrls = await Promise.all(
+          data.data.map(async (exp: WorkExperience) => {
+            if (exp.work_experience_images && exp.work_experience_images.length > 0) {
+              const imagesWithUrls = await Promise.all(
+                exp.work_experience_images.map(async (img) => {
+                  try {
+                    const res = await fetch('/api/file-url', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ key: img.file_key }),
+                    });
+                    const urlData = await res.json();
+                    return { ...img, url: urlData.success ? urlData.data.url : '' };
+                  } catch {
+                    return img;
+                  }
+                })
+              );
+              return { ...exp, work_experience_images: imagesWithUrls };
+            }
+            return exp;
+          })
+        );
+        setExperiences(experiencesWithUrls);
       }
     } catch (error) {
       console.error('加载工作经历失败:', error);
@@ -150,7 +201,6 @@ export default function ExperiencePage() {
       const newExperiences = arrayMove(experiences, oldIndex, newIndex);
       setExperiences(newExperiences);
 
-      // 保存排序
       const items = newExperiences.map((exp, index) => ({
         id: exp.id,
         order: index,
@@ -168,7 +218,7 @@ export default function ExperiencePage() {
     }
   };
 
-  const handleOpenDialog = (experience?: WorkExperience) => {
+  const handleOpenDialog = async (experience?: WorkExperience) => {
     if (experience) {
       setEditingExperience(experience);
       setFormData({
@@ -178,7 +228,33 @@ export default function ExperiencePage() {
         start_date: experience.start_date ?? '',
         end_date: experience.end_date ?? '',
         location: experience.location ?? '',
+        image_display_mode: experience.image_display_mode ?? 'none',
       });
+      
+      // 加载图片
+      if (experience.work_experience_images && experience.work_experience_images.length > 0) {
+        const imagesWithUrls = await Promise.all(
+          experience.work_experience_images.map(async (img) => {
+            if (!img.url && img.file_key) {
+              try {
+                const res = await fetch('/api/file-url', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ key: img.file_key }),
+                });
+                const data = await res.json();
+                return { ...img, url: data.success ? data.data.url : '' };
+              } catch {
+                return img;
+              }
+            }
+            return img;
+          })
+        );
+        setImages(imagesWithUrls);
+      } else {
+        setImages([]);
+      }
     } else {
       setEditingExperience(null);
       setFormData({
@@ -188,9 +264,75 @@ export default function ExperiencePage() {
         start_date: '',
         end_date: '',
         location: '',
+        image_display_mode: 'none',
       });
+      setImages([]);
     }
     setDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+
+    try {
+      const newImages: WorkExperienceImage[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('type', 'work');
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          newImages.push({
+            file_key: data.data.key,
+            title: file.name,
+            url: data.data.url,
+            order: images.length + newImages.length,
+          });
+        }
+      }
+
+      setImages([...images, ...newImages]);
+      
+      // 自动切换到横排模式
+      if (formData.image_display_mode === 'none' && newImages.length > 0) {
+        setFormData({ ...formData, image_display_mode: 'grid' });
+      }
+    } catch (error) {
+      alert('上传失败，请重试');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async (imageId: number | undefined, index: number) => {
+    if (imageId && editingExperience) {
+      // 从数据库删除
+      try {
+        await fetch(`/api/work-experiences/${editingExperience.id}/images?imageId=${imageId}`, {
+          method: 'DELETE',
+        });
+      } catch (error) {
+        console.error('删除图片失败:', error);
+      }
+    }
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+    
+    // 如果没有图片了，切换回无图片模式
+    if (newImages.length === 0) {
+      setFormData({ ...formData, image_display_mode: 'none' });
+    }
   };
 
   const handleSave = async () => {
@@ -212,6 +354,27 @@ export default function ExperiencePage() {
       });
       const data = await res.json();
       if (data.success) {
+        const expId = data.data.id;
+
+        // 保存图片
+        for (let i = 0; i < images.length; i++) {
+          const img = images[i];
+          if (!img.file_key) continue;
+
+          if (!img.id) {
+            // 新图片
+            await fetch(`/api/work-experiences/${expId}/images`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                file_key: img.file_key,
+                title: img.title,
+                order: i,
+              }),
+            });
+          }
+        }
+
         setDialogOpen(false);
         loadExperiences();
       } else {
@@ -252,7 +415,6 @@ export default function ExperiencePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -273,7 +435,6 @@ export default function ExperiencePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         {experiences.length === 0 ? (
           <Card>
@@ -306,14 +467,11 @@ export default function ExperiencePage() {
         )}
       </main>
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingExperience ? '编辑工作经历' : '添加工作经历'}</DialogTitle>
-            <DialogDescription>
-              填写您的工作经历信息
-            </DialogDescription>
+            <DialogDescription>填写您的工作经历信息</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -353,7 +511,7 @@ export default function ExperiencePage() {
                   type="month"
                   value={formData.end_date}
                   onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                  placeholder="留空表示至今"
+                  placeholder="至今"
                 />
               </div>
             </div>
@@ -372,14 +530,78 @@ export default function ExperiencePage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="描述您的主要工作内容和成就..."
+                placeholder="描述您的工作内容和成就..."
                 rows={4}
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                取消
-              </Button>
+
+            {/* 图片上传区域 */}
+            <div className="space-y-3 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label>工作图片（可选）</Label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  disabled={uploading}
+                >
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-1" />
+                    {uploading ? '上传中...' : '上传图片'}
+                  </label>
+                </Button>
+              </div>
+
+              {images.length > 0 && (
+                <>
+                  <div className="space-y-2">
+                    <Label>展示模式</Label>
+                    <Select
+                      value={formData.image_display_mode}
+                      onValueChange={(value) => setFormData({ ...formData, image_display_mode: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grid">横排并列展示</SelectItem>
+                        <SelectItem value="carousel">横向轮播展示</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    {images.map((img, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={img.url}
+                          alt={img.title}
+                          className="w-full h-20 object-cover rounded-lg border"
+                        />
+                        <button
+                          onClick={() => handleRemoveImage(img.id, index)}
+                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
               <Button onClick={handleSave}>保存</Button>
             </div>
           </div>

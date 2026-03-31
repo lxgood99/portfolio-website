@@ -11,7 +11,9 @@ import {
   Wrench, 
   FolderOpen,
   LogOut,
-  ExternalLink 
+  ExternalLink,
+  FileText,
+  Settings
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -38,8 +40,15 @@ export default function DashboardPage() {
       color: 'bg-blue-500',
     },
     {
+      title: '自我评价',
+      description: '编辑自我评价内容',
+      icon: FileText,
+      href: '/admin/self-introduction',
+      color: 'bg-cyan-500',
+    },
+    {
       title: '工作经历',
-      description: '管理工作经历（支持拖拽排序）',
+      description: '管理工作经历（支持图片和拖拽排序）',
       icon: Briefcase,
       href: '/admin/experience',
       color: 'bg-green-500',
@@ -64,6 +73,13 @@ export default function DashboardPage() {
       icon: FolderOpen,
       href: '/admin/works',
       color: 'bg-pink-500',
+    },
+    {
+      title: '模块排序',
+      description: '调整页面模块显示顺序',
+      icon: Settings,
+      href: '/admin/module-orders',
+      color: 'bg-slate-500',
     },
   ];
 
