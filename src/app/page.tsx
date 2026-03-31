@@ -110,6 +110,15 @@ interface ModuleOrder {
   is_visible: boolean;
 }
 
+interface ContactInfo {
+  email: string;
+  phone: string;
+  wechat_qr_key: string;
+  wechat_id: string;
+  is_visible: boolean;
+  wechatQrUrl?: string;
+}
+
 // 图片轮播组件
 function ImageCarousel({ images }: { images: WorkExperienceImage[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -303,11 +312,13 @@ export default function HomePage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [works, setWorks] = useState<Work[]>([]);
   const [moduleOrders, setModuleOrders] = useState<ModuleOrder[]>([]);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -315,7 +326,10 @@ export default function HomePage() {
 
   const loadData = async () => {
     try {
-      const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, worksRes, moduleOrdersRes] = await Promise.all([
+      // 记录访问统计（静默执行，不阻塞页面加载）
+      fetch('/api/visit-stats', { method: 'POST' }).catch(() => {});
+
+      const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/self-introduction'),
         fetch('/api/work-experiences'),
@@ -323,6 +337,7 @@ export default function HomePage() {
         fetch('/api/skills'),
         fetch('/api/works'),
         fetch('/api/module-orders'),
+        fetch('/api/contact-info'),
       ]);
 
       const profileData = await profileRes.json();
@@ -388,6 +403,25 @@ export default function HomePage() {
 
       if (moduleOrdersData.success) {
         setModuleOrders(moduleOrdersData.data);
+      }
+
+      const contactData = await contactRes.json();
+      if (contactData.success && contactData.data) {
+        // 加载微信二维码URL
+        if (contactData.data.wechat_qr_key) {
+          try {
+            const qrRes = await fetch('/api/file-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: contactData.data.wechat_qr_key }),
+            });
+            const qrData = await qrRes.json();
+            if (qrData.success) {
+              contactData.data.wechatQrUrl = qrData.data.url;
+            }
+          } catch {}
+        }
+        setContactInfo(contactData.data);
       }
     } catch (error) {
       console.error('加载数据失败:', error);
@@ -670,6 +704,106 @@ export default function HomePage() {
           </section>
         ) : null;
 
+      case 'contact_info':
+        return contactInfo?.is_visible && (contactInfo.email || contactInfo.phone || contactInfo.wechat_id || contactInfo.wechatQrUrl) ? (
+          <section key={moduleName} className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Mail className="h-6 w-6" />
+              联系方式
+            </h2>
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 邮箱 */}
+                  {contactInfo.email && (
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-muted-foreground">邮箱</p>
+                        <p className="font-medium truncate">{contactInfo.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(contactInfo.email);
+                          setCopiedText('email');
+                          setTimeout(() => setCopiedText(null), 2000);
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        {copiedText === 'email' ? '已复制' : '复制'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 电话 */}
+                  {contactInfo.phone && (
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-muted-foreground">电话</p>
+                        <p className="font-medium truncate">{contactInfo.phone}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(contactInfo.phone);
+                          setCopiedText('phone');
+                          setTimeout(() => setCopiedText(null), 2000);
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        {copiedText === 'phone' ? '已复制' : '复制'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 微信号 */}
+                  {contactInfo.wechat_id && (
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                        <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088-.181-.013-.363-.027-.557-.034zm-2.89 3.015c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.97-.983zm4.844 0c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.969-.983z"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-muted-foreground">微信号</p>
+                        <p className="font-medium truncate">{contactInfo.wechat_id}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(contactInfo.wechat_id);
+                          setCopiedText('wechat');
+                          setTimeout(() => setCopiedText(null), 2000);
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        {copiedText === 'wechat' ? '已复制' : '复制'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 微信二维码 */}
+                  {contactInfo.wechatQrUrl && (
+                    <div className="md:col-span-2 flex justify-center mt-4">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground mb-2">扫码添加微信</p>
+                        <img
+                          src={contactInfo.wechatQrUrl}
+                          alt="微信二维码"
+                          className="w-32 h-32 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        ) : null;
+
       default:
         return null;
     }
@@ -691,6 +825,7 @@ export default function HomePage() {
     { module_name: 'educations', order: 3, is_visible: true },
     { module_name: 'skills', order: 4, is_visible: true },
     { module_name: 'works', order: 5, is_visible: true },
+    { module_name: 'contact_info', order: 6, is_visible: true },
   ];
   
   const sortedModules = moduleOrders.length > 0 
@@ -783,16 +918,48 @@ export default function HomePage() {
             </button>
             <div className="flex flex-col items-center justify-center min-h-[300px]">
               {previewItem.type === 'image' && previewItem.url && (
-                <img src={previewItem.url} alt={previewItem.title || '预览图片'} className="max-w-full max-h-[80vh] object-contain" />
+                <div className="w-full h-full flex items-center justify-center p-4">
+                  <img src={previewItem.url} alt={previewItem.title || '预览图片'} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-lg" />
+                </div>
               )}
               {previewItem.type === 'video' && previewItem.url && (
-                <video src={previewItem.url} controls autoPlay className="max-w-full max-h-[80vh]" />
+                <div className="w-full bg-black flex items-center justify-center">
+                  <video src={previewItem.url} controls autoPlay className="max-w-full max-h-[80vh]" />
+                </div>
               )}
-              {(previewItem.type === 'pdf' || previewItem.type === 'ppt' || previewItem.type === 'other') && previewItem.url && (
+              {previewItem.type === 'pdf' && previewItem.url && (
+                <div className="w-full h-[80vh]">
+                  <iframe 
+                    src={`${previewItem.url}#toolbar=1&navpanes=0`} 
+                    className="w-full h-full border-0"
+                    title={previewItem.title || 'PDF预览'}
+                  />
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <a 
+                      href={previewItem.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      新窗口打开
+                    </a>
+                    <a 
+                      href={previewItem.url} 
+                      download={previewItem.title || 'document.pdf'}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
+                    >
+                      <FileText className="h-4 w-4" />
+                      下载
+                    </a>
+                  </div>
+                </div>
+              )}
+              {(previewItem.type === 'ppt' || previewItem.type === 'other') && previewItem.url && (
                 <div className="flex flex-col items-center justify-center p-12 text-center">
                   {getFileIcon(previewItem.type)}
                   <h3 className="mt-4 text-lg font-semibold">{previewItem.title || '文件预览'}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{previewItem.type === 'pdf' ? 'PDF 文件' : previewItem.type === 'ppt' ? 'PPT 演示文稿' : '文件'}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{previewItem.type === 'ppt' ? 'PPT 演示文稿' : '文件'}</p>
                   <div className="mt-6 flex gap-3">
                     <a href={previewItem.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                       <ExternalLink className="h-4 w-4" />新窗口打开

@@ -36,8 +36,19 @@
 │   │   │   ├── skills/              # 技能
 │   │   │   ├── works/               # 作品集
 │   │   │   ├── module-orders/       # 模块排序
+│   │   │   ├── visit-stats/         # 访问统计
+│   │   │   ├── contact-info/        # 联系方式
 │   │   │   └── upload/              # 文件上传
 │   │   └── admin/         # 管理后台页面
+│   │       ├── profile/             # 个人信息
+│   │       ├── self-introduction/   # 自我评价
+│   │       ├── experience/          # 工作经历
+│   │       ├── education/           # 教育背景
+│   │       ├── skills/              # 技能
+│   │       ├── works/               # 作品集
+│   │       ├── contact/             # 联系方式
+│   │       ├── module-orders/       # 模块排序
+│   │       └── analytics/           # 数据统计
 │   ├── components/ui/      # Shadcn UI 组件库
 │   ├── hooks/              # 自定义 Hooks
 │   │   └── useAdminAuth.ts # 管理员认证 Hook
@@ -58,7 +69,8 @@
 - 工作经历（支持图片展示：横排/轮播模式）
 - 教育背景
 - 技能特长（进度条展示）
-- 作品集（PDF/图片/视频，支持轮播展示）
+- 作品集（PDF/图片/视频，支持轮播展示、PDF内嵌预览、图片放大、视频内嵌播放）
+- 联系方式模块（邮箱、电话、微信二维码、一键复制）
 - 模块动态排序
 
 ### 管理后台
@@ -69,7 +81,9 @@
 - 教育背景管理（拖拽排序）
 - 技能管理
 - 作品集管理（多文件上传、轮播模式）
+- 联系方式管理（邮箱、电话、微信二维码、开关显示）
 - 模块排序设置（全局拖拽排序、显示控制）
+- 数据统计（访问量统计，仅后台可见）
 
 ## 数据库表结构
 
@@ -99,6 +113,12 @@
 
 ### module_orders - 模块排序
 - id, module_name, order, is_visible
+
+### visit_stats - 访问统计
+- id, total_visits, today_visits, last_visit_at, today_date
+
+### contact_info - 联系方式
+- id, email, phone, wechat_qr_key, wechat_id, is_visible
 
 ## 包管理规范
 

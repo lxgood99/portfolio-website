@@ -13,7 +13,9 @@ import {
   LogOut,
   ExternalLink,
   FileText,
-  Settings
+  Settings,
+  BarChart3,
+  Mail
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -75,11 +77,25 @@ export default function DashboardPage() {
       color: 'bg-pink-500',
     },
     {
+      title: '联系方式',
+      description: '编辑页面底部联系方式',
+      icon: Mail,
+      href: '/admin/contact',
+      color: 'bg-teal-500',
+    },
+    {
       title: '模块排序',
       description: '调整页面模块显示顺序',
       icon: Settings,
       href: '/admin/module-orders',
       color: 'bg-slate-500',
+    },
+    {
+      title: '数据统计',
+      description: '查看网站访问数据',
+      icon: BarChart3,
+      href: '/admin/analytics',
+      color: 'bg-indigo-500',
     },
   ];
 

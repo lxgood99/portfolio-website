@@ -218,6 +218,33 @@ export const moduleOrders = pgTable(
   (table) => [index("module_orders_name_idx").on(table.module_name)]
 );
 
+// 访问统计表
+export const visitStats = pgTable("visit_stats", {
+  id: serial().primaryKey(),
+  total_visits: integer("total_visits").default(0),
+  today_visits: integer("today_visits").default(0),
+  last_visit_at: timestamp("last_visit_at", { withTimezone: true }),
+  today_date: varchar("today_date", { length: 20 }), // 格式: YYYY-MM-DD
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 联系方式表
+export const contactInfo = pgTable("contact_info", {
+  id: serial().primaryKey(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  wechat_qr_key: varchar("wechat_qr_key", { length: 255 }),
+  wechat_id: varchar("wechat_id", { length: 100 }),
+  is_visible: boolean("is_visible").default(true),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
 // 类型导出
 export type Profile = typeof profiles.$inferSelect;
 export type WorkExperience = typeof workExperiences.$inferSelect;
@@ -229,3 +256,5 @@ export type AdminUser = typeof adminUsers.$inferSelect;
 export type SelfIntroduction = typeof selfIntroduction.$inferSelect;
 export type WorkExperienceImage = typeof workExperienceImages.$inferSelect;
 export type ModuleOrder = typeof moduleOrders.$inferSelect;
+export type VisitStats = typeof visitStats.$inferSelect;
+export type ContactInfo = typeof contactInfo.$inferSelect;
