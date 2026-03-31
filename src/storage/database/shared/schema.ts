@@ -239,6 +239,9 @@ export const contactInfo = pgTable("contact_info", {
   wechat_qr_key: varchar("wechat_qr_key", { length: 255 }),
   wechat_id: varchar("wechat_id", { length: 100 }),
   is_visible: boolean("is_visible").default(true),
+  show_email: boolean("show_email").default(true),
+  show_phone: boolean("show_phone").default(true),
+  show_wechat: boolean("show_wechat").default(true),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

@@ -116,6 +116,9 @@ interface ContactInfo {
   wechat_qr_key: string;
   wechat_id: string;
   is_visible: boolean;
+  show_email: boolean;
+  show_phone: boolean;
+  show_wechat: boolean;
   wechatQrUrl?: string;
 }
 
@@ -705,7 +708,14 @@ export default function HomePage() {
         ) : null;
 
       case 'contact_info':
-        return contactInfo?.is_visible && (contactInfo.email || contactInfo.phone || contactInfo.wechat_id || contactInfo.wechatQrUrl) ? (
+        // 计算实际需要显示的项目数量
+        const visibleItems = [
+          contactInfo?.show_email && contactInfo?.email,
+          contactInfo?.show_phone && contactInfo?.phone,
+          contactInfo?.show_wechat && (contactInfo?.wechat_id || contactInfo?.wechatQrUrl),
+        ].filter(Boolean).length;
+
+        return contactInfo?.is_visible && visibleItems > 0 ? (
           <section key={moduleName} className="mb-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Mail className="h-6 w-6" />
@@ -713,9 +723,13 @@ export default function HomePage() {
             </h2>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid gap-6 ${
+                  visibleItems === 1 ? 'grid-cols-1 max-w-sm mx-auto' :
+                  visibleItems === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                  'grid-cols-1 md:grid-cols-2'
+                }`}>
                   {/* 邮箱 */}
-                  {contactInfo.email && (
+                  {contactInfo.show_email && contactInfo.email && (
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                         <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -738,7 +752,7 @@ export default function HomePage() {
                   )}
 
                   {/* 电话 */}
-                  {contactInfo.phone && (
+                  {contactInfo.show_phone && contactInfo.phone && (
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                         <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -761,7 +775,7 @@ export default function HomePage() {
                   )}
 
                   {/* 微信号 */}
-                  {contactInfo.wechat_id && (
+                  {contactInfo.show_wechat && contactInfo.wechat_id && (
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                         <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
@@ -786,8 +800,8 @@ export default function HomePage() {
                   )}
 
                   {/* 微信二维码 */}
-                  {contactInfo.wechatQrUrl && (
-                    <div className="md:col-span-2 flex justify-center mt-4">
+                  {contactInfo.show_wechat && contactInfo.wechatQrUrl && (
+                    <div className={`${visibleItems > 1 ? 'md:col-span-2' : ''} flex justify-center mt-2`}>
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground mb-2">扫码添加微信</p>
                         <img

@@ -32,7 +32,16 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, phone, wechat_qr_key, wechat_id, is_visible } = body;
+    const { 
+      email, 
+      phone, 
+      wechat_qr_key, 
+      wechat_id, 
+      is_visible,
+      show_email,
+      show_phone,
+      show_wechat
+    } = body;
     const client = getSupabaseClient();
 
     // 检查是否存在记录
@@ -47,6 +56,9 @@ export async function PUT(request: NextRequest) {
       wechat_qr_key,
       wechat_id,
       is_visible,
+      show_email,
+      show_phone,
+      show_wechat,
       updated_at: new Date().toISOString(),
     };
 

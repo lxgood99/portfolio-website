@@ -118,7 +118,7 @@
 - id, total_visits, today_visits, last_visit_at, today_date
 
 ### contact_info - 联系方式
-- id, email, phone, wechat_qr_key, wechat_id, is_visible
+- id, email, phone, wechat_qr_key, wechat_id, is_visible, show_email, show_phone, show_wechat
 
 ## 包管理规范
 

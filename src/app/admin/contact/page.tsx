@@ -13,6 +13,8 @@ import {
   Mail,
   Phone,
   MessageCircle,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -24,6 +26,9 @@ interface ContactInfo {
   wechat_qr_key: string;
   wechat_id: string;
   is_visible: boolean;
+  show_email: boolean;
+  show_phone: boolean;
+  show_wechat: boolean;
 }
 
 export default function ContactPage() {
@@ -37,6 +42,9 @@ export default function ContactPage() {
     wechat_qr_key: '',
     wechat_id: '',
     is_visible: true,
+    show_email: true,
+    show_phone: true,
+    show_wechat: true,
   });
 
   useEffect(() => {
@@ -56,6 +64,9 @@ export default function ContactPage() {
           wechat_qr_key: data.data.wechat_qr_key || '',
           wechat_id: data.data.wechat_id || '',
           is_visible: data.data.is_visible ?? true,
+          show_email: data.data.show_email ?? true,
+          show_phone: data.data.show_phone ?? true,
+          show_wechat: data.data.show_wechat ?? true,
         });
 
         if (data.data.wechat_qr_key) {
@@ -164,19 +175,19 @@ export default function ContactPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        {/* 整体显示开关 */}
         <Card>
           <CardHeader>
-            <CardTitle>联系方式设置</CardTitle>
-            <CardDescription>设置前端页面底部显示的联系方式</CardDescription>
+            <CardTitle>模块显示设置</CardTitle>
+            <CardDescription>控制联系方式模块在前端的显示</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* 显示开关 */}
+          <CardContent>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>显示联系方式模块</Label>
+                <Label className="text-base">显示联系方式模块</Label>
                 <p className="text-sm text-muted-foreground">
-                  关闭后前端页面将不显示联系方式模块
+                  关闭后前端页面将不显示整个联系方式模块
                 </p>
               </div>
               <Switch
@@ -186,13 +197,38 @@ export default function ContactPage() {
                 }
               />
             </div>
+          </CardContent>
+        </Card>
 
-            {/* 邮箱 */}
+        {/* 邮箱设置 */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-lg">邮箱</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                {formData.show_email ? (
+                  <Eye className="h-4 w-4 text-green-500" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                )}
+                <Switch
+                  checked={formData.show_email}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, show_email: checked })
+                  }
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {formData.show_email ? '邮箱将在前端显示' : '邮箱已隐藏，不会在前端显示'}
+            </p>
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                邮箱
-              </Label>
+              <Label htmlFor="email">邮箱地址</Label>
               <Input
                 id="email"
                 type="email"
@@ -201,13 +237,38 @@ export default function ContactPage() {
                 placeholder="your@email.com"
               />
             </div>
+          </CardContent>
+        </Card>
 
-            {/* 电话 */}
+        {/* 电话设置 */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone className="h-5 w-5 text-green-500" />
+                <CardTitle className="text-lg">电话</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                {formData.show_phone ? (
+                  <Eye className="h-4 w-4 text-green-500" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                )}
+                <Switch
+                  checked={formData.show_phone}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, show_phone: checked })
+                  }
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {formData.show_phone ? '电话将在前端显示' : '电话已隐藏，不会在前端显示'}
+            </p>
             <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                电话（可选）
-              </Label>
+              <Label htmlFor="phone">电话号码</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -216,13 +277,40 @@ export default function ContactPage() {
                 placeholder="13800138000"
               />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* 微信设置 */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-emerald-500" />
+                <CardTitle className="text-lg">微信</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                {formData.show_wechat ? (
+                  <Eye className="h-4 w-4 text-green-500" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                )}
+                <Switch
+                  checked={formData.show_wechat}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, show_wechat: checked })
+                  }
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {formData.show_wechat ? '微信信息将在前端显示' : '微信信息已隐藏，不会在前端显示'}
+            </p>
+            
             {/* 微信号 */}
             <div className="space-y-2">
-              <Label htmlFor="wechat_id" className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                微信号（可选）
-              </Label>
+              <Label htmlFor="wechat_id">微信号</Label>
               <Input
                 id="wechat_id"
                 value={formData.wechat_id}
@@ -236,10 +324,7 @@ export default function ContactPage() {
 
             {/* 微信二维码 */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                微信二维码（可选）
-              </Label>
+              <Label>微信二维码（可选）</Label>
               
               {wechatQrUrl ? (
                 <div className="relative inline-block">
@@ -273,14 +358,15 @@ export default function ContactPage() {
                 </div>
               )}
             </div>
-
-            <div className="flex justify-end pt-4">
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? '保存中...' : '保存'}
-              </Button>
-            </div>
           </CardContent>
         </Card>
+
+        {/* 保存按钮 */}
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={isSaving} size="lg">
+            {isSaving ? '保存中...' : '保存设置'}
+          </Button>
+        </div>
       </main>
     </div>
   );
