@@ -24,7 +24,9 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  User
+  User,
+  Wrench,
+  FolderOpen
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -613,7 +615,10 @@ export default function HomePage() {
       case 'skills':
         return skills.length > 0 ? (
           <section key={moduleName} className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">技能特长</h2>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Wrench className="h-6 w-6" />
+              技能特长
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {skills.map((skill) => (
                 <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
@@ -635,8 +640,11 @@ export default function HomePage() {
 
       case 'works':
         return works.length > 0 ? (
-          <section key={moduleName}>
-            <h2 className="text-2xl font-bold mb-6">作品集</h2>
+          <section key={moduleName} className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <FolderOpen className="h-6 w-6" />
+              作品集
+            </h2>
             {categories.length > 1 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {categories.map((cat) => (
