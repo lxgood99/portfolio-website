@@ -19,7 +19,9 @@ import {
   GraduationCap,
   FileText,
   Image as ImageIcon,
-  Video
+  Video,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -73,6 +75,7 @@ interface WorkItem {
   type: string;
   title: string;
   file_key: string;
+  url?: string; // 文件访问URL
 }
 
 interface Work {
@@ -82,6 +85,7 @@ interface Work {
   category: string;
   tags: string[];
   work_items: WorkItem[];
+  thumbnailUrl?: string; // 第一个图片/视频的URL作为封面
 }
 
 export default function HomePage() {
@@ -92,6 +96,9 @@ export default function HomePage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [works, setWorks] = useState<Work[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 预览模态框状态
+  const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
 
   useEffect(() => {
     loadData();
@@ -124,12 +131,60 @@ export default function HomePage() {
       if (expData.success) setWorkExperiences(expData.data);
       if (eduData.success) setEducations(eduData.data);
       if (skillsData.success) setSkills(skillsData.data);
-      if (worksData.success) setWorks(worksData.data);
+      
+      // 加载作品并获取文件URL
+      if (worksData.success && worksData.data) {
+        const worksWithUrls = await loadWorkItemsUrls(worksData.data);
+        setWorks(worksWithUrls);
+      }
     } catch (error) {
       console.error('加载数据失败:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 为作品的每个文件项获取访问URL
+  const loadWorkItemsUrls = async (worksList: Work[]): Promise<Work[]> => {
+    const updatedWorks = await Promise.all(
+      worksList.map(async (work) => {
+        if (!work.work_items || work.work_items.length === 0) {
+          return work;
+        }
+
+        const itemsWithUrls = await Promise.all(
+          work.work_items.map(async (item) => {
+            if (!item.file_key) return item;
+            try {
+              const res = await fetch('/api/file-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: item.file_key }),
+              });
+              const data = await res.json();
+              if (data.success) {
+                return { ...item, url: data.data.url };
+              }
+            } catch (error) {
+              console.error('获取文件URL失败:', error);
+            }
+            return item;
+          })
+        );
+
+        // 获取第一个图片或视频作为封面
+        const firstMediaItem = itemsWithUrls.find(
+          (item) => (item.type === 'image' || item.type === 'video') && item.url
+        );
+
+        return {
+          ...work,
+          work_items: itemsWithUrls,
+          thumbnailUrl: firstMediaItem?.url,
+        };
+      })
+    );
+    return updatedWorks;
   };
 
   const loadAvatarUrl = async (key: string) => {
@@ -357,7 +412,37 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold mb-6">作品集</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {works.map((work) => (
-                <Card key={work.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={work.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                  {/* 封面图片/视频 */}
+                  {work.thumbnailUrl && (
+                    <div 
+                      className="relative h-48 bg-slate-100 dark:bg-slate-800 cursor-pointer"
+                      onClick={() => {
+                        const firstItem = work.work_items?.[0];
+                        if (firstItem) setPreviewItem(firstItem);
+                      }}
+                    >
+                      {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                        <video 
+                          src={work.thumbnailUrl} 
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <img 
+                          src={work.thumbnailUrl} 
+                          alt={work.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium">
+                          点击预览
+                        </span>
+                      </div>
+                    </div>
+                  )}
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-semibold">{work.title}</h3>
@@ -375,13 +460,19 @@ export default function HomePage() {
                         ))}
                       </div>
                     )}
+                    {/* 文件列表 - 可点击预览 */}
                     {work.work_items && work.work_items.length > 0 && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2 pt-2 border-t">
                         {work.work_items.map((item) => (
-                          <div key={item.id} className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <button
+                            key={item.id}
+                            onClick={() => setPreviewItem(item)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
+                            title={`点击预览 ${item.title || item.type}`}
+                          >
                             {getFileIcon(item.type)}
-                            <span>{item.type}</span>
-                          </div>
+                            <span>{item.title || item.type}</span>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -407,6 +498,83 @@ export default function HomePage() {
       <footer className="py-8 text-center text-sm text-muted-foreground border-t">
         <p>© {new Date().getFullYear()} {profile?.name || '个人作品集'}. All rights reserved.</p>
       </footer>
+
+      {/* 预览模态框 */}
+      {previewItem && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPreviewItem(null)}
+        >
+          <div 
+            className="relative max-w-5xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 关闭按钮 */}
+            <button
+              onClick={() => setPreviewItem(null)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            {/* 预览内容 */}
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              {previewItem.type === 'image' && previewItem.url && (
+                <img 
+                  src={previewItem.url} 
+                  alt={previewItem.title || '预览图片'}
+                  className="max-w-full max-h-[80vh] object-contain"
+                />
+              )}
+              
+              {previewItem.type === 'video' && previewItem.url && (
+                <video 
+                  src={previewItem.url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[80vh]"
+                />
+              )}
+              
+              {(previewItem.type === 'pdf' || previewItem.type === 'ppt' || previewItem.type === 'other') && previewItem.url && (
+                <div className="flex flex-col items-center justify-center p-12 text-center">
+                  {getFileIcon(previewItem.type)}
+                  <h3 className="mt-4 text-lg font-semibold">{previewItem.title || '文件预览'}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {previewItem.type === 'pdf' ? 'PDF 文件' : previewItem.type === 'ppt' ? 'PPT 演示文稿' : '文件'}
+                  </p>
+                  <div className="mt-6 flex gap-3">
+                    <a
+                      href={previewItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      新窗口打开
+                    </a>
+                    <a
+                      href={previewItem.url}
+                      download={previewItem.title}
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      下载文件
+                    </a>
+                  </div>
+                </div>
+              )}
+              
+              {!previewItem.url && (
+                <div className="flex flex-col items-center justify-center p-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground" />
+                  <p className="mt-4 text-muted-foreground">文件暂不可预览</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
