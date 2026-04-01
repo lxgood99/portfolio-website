@@ -54,6 +54,7 @@ interface WorkExperience {
   company: string;
   position: string;
   description: string;
+  description_align?: string;
   start_date: string;
   end_date: string;
   location: string;
@@ -133,6 +134,7 @@ export default function ExperiencePage() {
     company: '',
     position: '',
     description: '',
+    description_align: 'left',
     start_date: '',
     end_date: '',
     location: '',
@@ -225,6 +227,7 @@ export default function ExperiencePage() {
         company: experience.company ?? '',
         position: experience.position ?? '',
         description: experience.description ?? '',
+        description_align: experience.description_align ?? 'left',
         start_date: experience.start_date ?? '',
         end_date: experience.end_date ?? '',
         location: experience.location ?? '',
@@ -261,6 +264,7 @@ export default function ExperiencePage() {
         company: '',
         position: '',
         description: '',
+        description_align: 'left',
         start_date: '',
         end_date: '',
         location: '',
@@ -530,9 +534,27 @@ export default function ExperiencePage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="描述您的工作内容和成就..."
+                placeholder="描述您的工作内容和成就...&#10;支持换行，按Enter键换行"
                 rows={4}
               />
+              <p className="text-xs text-muted-foreground">支持换行和空格</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description_align">描述对齐方式</Label>
+              <Select
+                value={formData.description_align}
+                onValueChange={(value) => setFormData({ ...formData, description_align: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择对齐方式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="left">左对齐</SelectItem>
+                  <SelectItem value="center">居中</SelectItem>
+                  <SelectItem value="right">右对齐</SelectItem>
+                  <SelectItem value="justify">两端对齐</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 图片上传区域 */}

@@ -14,6 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ArrowLeft, Plus, GripVertical, Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -40,6 +47,7 @@ interface Education {
   degree: string;
   field: string;
   description: string;
+  description_align?: string;
   start_date: string;
   end_date: string;
   order: number;
@@ -109,6 +117,7 @@ export default function EducationPage() {
     degree: '',
     field: '',
     description: '',
+    description_align: 'left',
     start_date: '',
     end_date: '',
   });
@@ -174,6 +183,7 @@ export default function EducationPage() {
         degree: education.degree ?? '',
         field: education.field ?? '',
         description: education.description ?? '',
+        description_align: education.description_align ?? 'left',
         start_date: education.start_date ?? '',
         end_date: education.end_date ?? '',
       });
@@ -184,6 +194,7 @@ export default function EducationPage() {
         degree: '',
         field: '',
         description: '',
+        description_align: 'left',
         start_date: '',
         end_date: '',
       });
@@ -365,9 +376,27 @@ export default function EducationPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="描述您的学习经历和成就..."
+                placeholder="描述您的学习经历和成就...&#10;支持换行，按Enter键换行"
                 rows={4}
               />
+              <p className="text-xs text-muted-foreground">支持换行和空格</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description_align">描述对齐方式</Label>
+              <Select
+                value={formData.description_align}
+                onValueChange={(value) => setFormData({ ...formData, description_align: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择对齐方式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="left">左对齐</SelectItem>
+                  <SelectItem value="center">居中</SelectItem>
+                  <SelectItem value="right">右对齐</SelectItem>
+                  <SelectItem value="justify">两端对齐</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>

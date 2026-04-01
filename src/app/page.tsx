@@ -70,6 +70,7 @@ interface WorkExperience {
   company: string;
   position: string;
   description: string;
+  description_align?: string;
   start_date: string;
   end_date: string;
   location: string;
@@ -83,6 +84,7 @@ interface Education {
   degree: string;
   field: string;
   description: string;
+  description_align?: string;
   start_date: string;
   end_date: string;
 }
@@ -107,6 +109,7 @@ interface Work {
   id: number;
   title: string;
   description: string;
+  description_align?: string;
   category: string;
   tags: string[];
   display_mode?: string;
@@ -594,7 +597,12 @@ export default function HomePage() {
                       </div>
                     </div>
                     {exp.description && (
-                      <p className="mt-3 text-muted-foreground">{exp.description}</p>
+                      <p 
+                        className="mt-3 text-muted-foreground whitespace-pre-wrap"
+                        style={{ textAlign: (exp.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                      >
+                        {exp.description}
+                      </p>
                     )}
                     {/* 工作经历图片展示 */}
                     {exp.work_experience_images && exp.work_experience_images.length > 0 && (
@@ -633,7 +641,12 @@ export default function HomePage() {
                       </div>
                     </div>
                     {edu.description && (
-                      <p className="mt-3 text-muted-foreground">{edu.description}</p>
+                      <p 
+                        className="mt-3 text-muted-foreground whitespace-pre-wrap"
+                        style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                      >
+                        {edu.description}
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -775,7 +788,14 @@ export default function HomePage() {
                       <h3 className="font-semibold text-lg">{work.title}</h3>
                       {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
                     </div>
-                    {work.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{work.description}</p>}
+                    {work.description && (
+                      <p 
+                        className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
+                        style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                      >
+                        {work.description}
+                      </p>
+                    )}
                     {work.tags && work.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {work.tags.slice(0, 4).map((tag, i) => (

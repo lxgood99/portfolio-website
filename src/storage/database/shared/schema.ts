@@ -64,6 +64,7 @@ export const workExperiences = pgTable(
     company: varchar("company", { length: 200 }).notNull(),
     position: varchar("position", { length: 200 }).notNull(),
     description: text("description"),
+    description_align: varchar("description_align", { length: 20 }).default('left'), // left, center, right, justify
     start_date: varchar("start_date", { length: 20 }).notNull(),
     end_date: varchar("end_date", { length: 20 }),
     location: varchar("location", { length: 200 }),
@@ -88,6 +89,7 @@ export const educations = pgTable(
     start_date: varchar("start_date", { length: 20 }).notNull(),
     end_date: varchar("end_date", { length: 20 }),
     description: text("description"),
+    description_align: varchar("description_align", { length: 20 }).default('left'), // left, center, right, justify
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -141,6 +143,7 @@ export const works = pgTable(
     id: serial().primaryKey(),
     title: varchar("title", { length: 200 }).notNull(),
     description: text("description"),
+    description_align: varchar("description_align", { length: 20 }).default('left'), // left, center, right, justify
     category: varchar("category", { length: 100 }),
     tags: jsonb("tags").$type<string[]>(),
     display_mode: varchar("display_mode", { length: 20 }).default("single"), // 'single', 'carousel', 'combined'

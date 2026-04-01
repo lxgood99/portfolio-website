@@ -56,6 +56,7 @@ interface Work {
   id: number;
   title: string;
   description: string;
+  description_align?: string;
   category: string;
   tags: string[];
   display_mode?: string;
@@ -174,6 +175,7 @@ export default function WorksPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    description_align: 'left',
     category: '',
     tags: '',
     display_mode: 'single',
@@ -254,6 +256,7 @@ export default function WorksPage() {
       setFormData({
         title: work.title ?? '',
         description: work.description ?? '',
+        description_align: work.description_align ?? 'left',
         category: work.category ?? '',
         tags: work.tags?.join(', ') ?? '',
         display_mode: work.display_mode ?? 'single',
@@ -304,6 +307,7 @@ export default function WorksPage() {
       setFormData({
         title: '',
         description: '',
+        description_align: 'left',
         category: '',
         tags: '',
         display_mode: 'single',
@@ -710,9 +714,26 @@ export default function WorksPage() {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="描述您的作品..."
+                  placeholder="描述您的作品...（支持换行）"
                   rows={3}
                 />
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground">对齐方式：</Label>
+                  <Select
+                    value={formData.description_align || 'left'}
+                    onValueChange={(value) => setFormData({ ...formData, description_align: value })}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="left">左对齐</SelectItem>
+                      <SelectItem value="center">居中</SelectItem>
+                      <SelectItem value="right">右对齐</SelectItem>
+                      <SelectItem value="justify">两端对齐</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
