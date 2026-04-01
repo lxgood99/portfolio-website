@@ -260,6 +260,19 @@ export const visitStats = pgTable("visit_stats", {
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
+// 访问IP记录表 - 用于去重
+export const visitIpRecords = pgTable(
+  "visit_ip_records",
+  {
+    id: serial().primaryKey(),
+    ip_address: varchar("ip_address", { length: 50 }).notNull(),
+    first_visit_at: timestamp("first_visit_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("visit_ip_records_ip_idx").on(table.ip_address)]
+);
+
 // 联系方式表
 export const contactInfo = pgTable("contact_info", {
   id: serial().primaryKey(),
@@ -290,4 +303,5 @@ export type SelfIntroduction = typeof selfIntroduction.$inferSelect;
 export type WorkExperienceImage = typeof workExperienceImages.$inferSelect;
 export type ModuleOrder = typeof moduleOrders.$inferSelect;
 export type VisitStats = typeof visitStats.$inferSelect;
+export type VisitIpRecord = typeof visitIpRecords.$inferSelect;
 export type ContactInfo = typeof contactInfo.$inferSelect;

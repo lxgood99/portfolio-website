@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
-import type { VisitStats } from '@/storage/database/shared/schema';
+import type { VisitStats, VisitIpRecord } from '@/storage/database/shared/schema';
+
+// 获取客户端真实IP
+function getClientIP(request: NextRequest): string {
+  // 尝试从各种header中获取真实IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfIP = request.headers.get('cf-connecting-ip'); // Cloudflare
+  
+  if (forwarded) {
+    // x-forwarded-for 可能包含多个IP，取第一个
+    return forwarded.split(',')[0].trim();
+  }
+  
+  if (realIP) {
+    return realIP.trim();
+  }
+  
+  if (cfIP) {
+    return cfIP.trim();
+  }
+  
+  // 如果都获取不到，返回一个标识
+  return 'unknown';
+}
 
 // GET - 获取访问统计（仅管理员）
 export async function GET() {
@@ -29,6 +53,41 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const client = getSupabaseClient();
+    const clientIP = getClientIP(request);
+    
+    // 检查该IP是否已经访问过
+    const { data: existingIP, error: checkError } = await client
+      .from('visit_ip_records')
+      .select('id')
+      .eq('ip_address', clientIP)
+      .limit(1);
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('检查IP记录失败:', checkError);
+    }
+
+    // 如果该IP已经访问过，不重复计数
+    if (existingIP && existingIP.length > 0) {
+      return NextResponse.json({ success: true, message: 'IP已记录，不重复计数' });
+    }
+
+    // 记录新IP（使用upsert防止并发插入）
+    const { error: insertIPError } = await client
+      .from('visit_ip_records')
+      .upsert(
+        { ip_address: clientIP },
+        { onConflict: 'ip_address', ignoreDuplicates: true }
+      );
+
+    if (insertIPError) {
+      console.error('记录IP失败:', insertIPError);
+      // 如果是唯一约束冲突，说明并发时其他请求已经记录了该IP
+      if (insertIPError.code === '23505') {
+        return NextResponse.json({ success: true, message: 'IP已记录，不重复计数' });
+      }
+      // 其他错误不影响继续统计
+    }
+
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
     // 获取当前统计
