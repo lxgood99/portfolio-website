@@ -275,7 +275,7 @@ export default function ProfilePage() {
                     <Label htmlFor="custom_title">栏目标题</Label>
                     <Input
                       id="custom_title"
-                      value={profile.custom_title}
+                      value={profile.custom_title ?? ''}
                       onChange={(e) => setProfile({ ...profile, custom_title: e.target.value })}
                       placeholder="如：意向岗位、曾经任职"
                     />
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                     <Label htmlFor="custom_content">栏目内容</Label>
                     <Input
                       id="custom_content"
-                      value={profile.custom_content}
+                      value={profile.custom_content ?? ''}
                       onChange={(e) => setProfile({ ...profile, custom_content: e.target.value })}
                       placeholder="填写对应的内容"
                     />
@@ -300,7 +300,7 @@ export default function ProfilePage() {
                   <Label htmlFor="name">姓名</Label>
                   <Input
                     id="name"
-                    value={profile.name}
+                    value={profile.name ?? ''}
                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                     placeholder="请输入姓名"
                   />
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                   <Label htmlFor="title">职位</Label>
                   <Input
                     id="title"
-                    value={profile.title}
+                    value={profile.title ?? ''}
                     onChange={(e) => setProfile({ ...profile, title: e.target.value })}
                     placeholder="如：高级前端工程师"
                   />
@@ -319,7 +319,7 @@ export default function ProfilePage() {
                 <Label htmlFor="bio">个人简介</Label>
                 <Textarea
                   id="bio"
-                  value={profile.bio}
+                  value={profile.bio ?? ''}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   placeholder="简单介绍一下自己..."
                   rows={4}
@@ -356,7 +356,7 @@ export default function ProfilePage() {
                 </div>
                 <Input
                   type="email"
-                  value={profile.email}
+                  value={profile.email ?? ''}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                   placeholder="your@email.com"
                 />
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.phone}
+                  value={profile.phone ?? ''}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                   placeholder="+86 123 4567 8900"
                 />
@@ -414,7 +414,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.location}
+                  value={profile.location ?? ''}
                   onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                   placeholder="如：北京，中国"
                 />
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                   <Label className="font-medium">个人网站</Label>
                 </div>
                 <Input
-                  value={profile.website}
+                  value={profile.website ?? ''}
                   onChange={(e) => setProfile({ ...profile, website: e.target.value })}
                   placeholder="https://yourwebsite.com"
                 />
@@ -470,7 +470,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.social_links?.github || ''}
+                  value={profile.social_links?.github ?? ''}
                   onChange={(e) =>
                     setProfile({
                       ...profile,
@@ -503,7 +503,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.social_links?.linkedin || ''}
+                  value={profile.social_links?.linkedin ?? ''}
                   onChange={(e) =>
                     setProfile({
                       ...profile,
@@ -536,7 +536,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.social_links?.twitter || ''}
+                  value={profile.social_links?.twitter ?? ''}
                   onChange={(e) =>
                     setProfile({
                       ...profile,
@@ -569,7 +569,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Input
-                  value={profile.social_links?.instagram || ''}
+                  value={profile.social_links?.instagram ?? ''}
                   onChange={(e) =>
                     setProfile({
                       ...profile,
