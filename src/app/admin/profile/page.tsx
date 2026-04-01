@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Upload, ExternalLink, Eye, EyeOff, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { ArrowLeft, Upload, ExternalLink, Eye, EyeOff, Mail, Phone, MapPin, Globe, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
@@ -36,6 +36,10 @@ interface Profile {
   show_linkedin: boolean;
   show_twitter: boolean;
   show_instagram: boolean;
+  // 自定义栏目
+  custom_title: string;
+  custom_content: string;
+  show_custom: boolean;
 }
 
 export default function ProfilePage() {
@@ -57,6 +61,9 @@ export default function ProfilePage() {
     show_linkedin: false,
     show_twitter: false,
     show_instagram: false,
+    custom_title: '',
+    custom_content: '',
+    show_custom: false,
   });
   const [avatarUrl, setAvatarUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -91,6 +98,9 @@ export default function ProfilePage() {
           show_linkedin: data.data.show_linkedin ?? false,
           show_twitter: data.data.show_twitter ?? false,
           show_instagram: data.data.show_instagram ?? false,
+          custom_title: data.data.custom_title ?? '',
+          custom_content: data.data.custom_content ?? '',
+          show_custom: data.data.show_custom ?? false,
         };
         setProfile(profileData);
         if (profileData.avatar_key) {
@@ -241,6 +251,50 @@ export default function ProfilePage() {
               <CardDescription>您的姓名、职位和简介</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* 自定义栏目 - 放在姓名下方、职位上方 */}
+              <div className="p-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-primary" />
+                    <Label className="font-medium">自定义栏目</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {profile.show_custom ? (
+                      <Eye className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <Switch
+                      checked={profile.show_custom}
+                      onCheckedChange={(checked) => setProfile({ ...profile, show_custom: checked })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="custom_title">栏目标题</Label>
+                    <Input
+                      id="custom_title"
+                      value={profile.custom_title}
+                      onChange={(e) => setProfile({ ...profile, custom_title: e.target.value })}
+                      placeholder="如：意向岗位、曾经任职"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="custom_content">栏目内容</Label>
+                    <Input
+                      id="custom_content"
+                      value={profile.custom_content}
+                      onChange={(e) => setProfile({ ...profile, custom_content: e.target.value })}
+                      placeholder="填写对应的内容"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {profile.show_custom ? '将在职位上方显示' : '已隐藏，不会在前端显示'}
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">姓名</Label>

@@ -46,6 +46,10 @@ export const profiles = pgTable("profiles", {
   show_linkedin: boolean("show_linkedin").default(false),
   show_twitter: boolean("show_twitter").default(false),
   show_instagram: boolean("show_instagram").default(false),
+  // 自定义栏目
+  custom_title: varchar("custom_title", { length: 50 }),
+  custom_content: varchar("custom_content", { length: 200 }),
+  show_custom: boolean("show_custom").default(false),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

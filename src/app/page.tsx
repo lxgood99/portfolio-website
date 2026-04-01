@@ -47,6 +47,9 @@ interface Profile {
   show_linkedin: boolean;
   show_twitter: boolean;
   show_instagram: boolean;
+  custom_title: string;
+  custom_content: string;
+  show_custom: boolean;
 }
 
 interface SelfIntroduction {
@@ -376,6 +379,9 @@ export default function HomePage() {
           show_linkedin: profileData.data.show_linkedin ?? false,
           show_twitter: profileData.data.show_twitter ?? false,
           show_instagram: profileData.data.show_instagram ?? false,
+          custom_title: profileData.data.custom_title ?? '',
+          custom_content: profileData.data.custom_content ?? '',
+          show_custom: profileData.data.show_custom ?? false,
         };
         setProfile(profileWithDefaults);
         if (profileData.data.avatar_key) {
@@ -957,6 +963,12 @@ export default function HomePage() {
             <AvatarFallback className="text-3xl">{profile?.name?.[0] || 'U'}</AvatarFallback>
           </Avatar>
           <h1 className="text-4xl font-bold mb-2">{profile?.name || '您的姓名'}</h1>
+          {/* 自定义栏目 - 显示在职位上方 */}
+          {profile?.show_custom && profile?.custom_title && profile?.custom_content && (
+            <p className="text-lg text-muted-foreground mb-1">
+              <span className="font-medium">{profile.custom_title}</span>：{profile.custom_content}
+            </p>
+          )}
           {profile?.title && <p className="text-xl text-muted-foreground mb-4">{profile.title}</p>}
           {profile?.bio && <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6">{profile.bio}</p>}
 
