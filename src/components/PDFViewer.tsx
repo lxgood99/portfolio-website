@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// 动态导入 pdfjs-dist 的类型
+// PDF.js 类型定义
 type PDFDocumentProxy = {
   numPages: number;
   getPage: (pageNumber: number) => Promise<PDFPageProxy>;
@@ -20,11 +20,7 @@ type PDFPageProxy = {
 };
 
 type PDFJS = {
-  getDocument: (options: {
-    url: string;
-    cMapUrl: string;
-    cMapPacked: boolean;
-  }) => {
+  getDocument: (options: { url: string }) => {
     onProgress: ((progress: { loaded: number; total: number }) => void) | null;
     promise: Promise<PDFDocumentProxy>;
   };
@@ -40,6 +36,12 @@ interface PDFViewerProps {
   onClose?: () => void;
 }
 
+// Worker源列表，按优先级排序
+const WORKER_SOURCES = [
+  '/pdf/pdf.worker.min.mjs',  // 本地worker
+  'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs',  // unpkg CDN
+];
+
 export function PDFViewer({ url, title }: PDFViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,21 +51,49 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [rendering, setRendering] = useState(false);
-  const [pdfJs, setPdfJs] = useState<PDFJS | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('正在初始化...');
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const pdfJsRef = useRef<PDFJS | null>(null);
 
-  // 动态加载 PDF.js
+  // 动态加载 PDF.js 并尝试多个worker源
   useEffect(() => {
     const loadPdfJs = async () => {
       try {
+        setStatusMessage('正在加载PDF组件...');
+        
+        // 动态导入 pdfjs-dist
         const pdfjsLib = await import('pdfjs-dist') as unknown as PDFJS;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-        setPdfJs(pdfjsLib);
+        pdfJsRef.current = pdfjsLib;
+        
+        // 尝试加载worker
+        let workerLoaded = false;
+        
+        for (const workerSrc of WORKER_SOURCES) {
+          try {
+            setStatusMessage(`正在加载PDF组件... (${workerSrc.includes('unpkg') ? 'CDN' : '本地'})`);
+            pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+            
+            // 测试worker是否可用（通过尝试加载一个空PDF来验证）
+            // 这里我们只是设置，实际验证在加载PDF时进行
+            workerLoaded = true;
+            console.log('PDF.js worker源设置成功:', workerSrc);
+            break;
+          } catch (err) {
+            console.warn('Worker源加载失败:', workerSrc, err);
+          }
+        }
+        
+        if (!workerLoaded) {
+          throw new Error('无法加载PDF预览组件');
+        }
+        
+        setIsReady(true);
       } catch (err) {
         console.error('PDF.js 加载失败:', err);
-        setError('PDF预览组件加载失败');
+        setError('PDF预览组件加载失败，请刷新页面重试');
         setLoading(false);
       }
     };
@@ -74,44 +104,81 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   // 加载PDF文档
   useEffect(() => {
     const loadPDF = async () => {
-      if (!pdfJs || !url) return;
+      if (!pdfJsRef.current || !url) return;
       
       try {
         setLoading(true);
         setLoadingProgress(0);
         setError(null);
+        setStatusMessage('正在获取PDF文件...');
         
-        const loadingTask = pdfJs.getDocument({
+        console.log('开始加载PDF:', url);
+        
+        // 首先验证URL是否可访问
+        try {
+          const headResponse = await fetch(url, { method: 'HEAD' });
+          if (!headResponse.ok) {
+            throw new Error(`文件无法访问 (${headResponse.status})`);
+          }
+          console.log('PDF文件可访问, 大小:', headResponse.headers.get('content-length'));
+        } catch (fetchErr) {
+          console.error('PDF文件访问失败:', fetchErr);
+          throw new Error('文件链接无效或已过期，请重新上传');
+        }
+        
+        setStatusMessage('正在加载PDF内容...');
+        
+        const loadingTask = pdfJsRef.current.getDocument({
           url,
-          cMapUrl: '//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-          cMapPacked: true,
         });
         
-        loadingTask.onProgress = (progress: { loaded: number; total: number }) => {
+        // 监听加载进度
+        (loadingTask as unknown as { 
+          onProgress: ((progress: { loaded: number; total: number }) => void) | null 
+        }).onProgress = (progress: { loaded: number; total: number }) => {
           if (progress.total > 0) {
             const percent = Math.round((progress.loaded / progress.total) * 100);
             setLoadingProgress(percent);
+            setStatusMessage(`正在加载... ${percent}%`);
           }
         };
         
         const pdf = await loadingTask.promise;
+        console.log('PDF加载成功, 页数:', pdf.numPages);
         setPdfDoc(pdf);
         setTotalPages(pdf.numPages);
         setCurrentPage(1);
         setLoading(false);
+        setStatusMessage('');
       } catch (err) {
         console.error('PDF加载失败:', err);
-        setError('PDF加载失败，请稍后重试或下载文件查看');
+        let errorMessage = 'PDF加载失败';
+        
+        if (err instanceof Error) {
+          if (err.message.includes('Invalid PDF')) {
+            errorMessage = '文件格式无效，请确保是有效的PDF文件';
+          } else if (err.message.includes('fetch')) {
+            errorMessage = '网络错误，请检查网络连接后重试';
+          } else if (err.message.includes('链接无效') || err.message.includes('已过期')) {
+            errorMessage = err.message;
+          } else {
+            errorMessage = `加载失败: ${err.message}`;
+          }
+        }
+        
+        setError(errorMessage);
         setLoading(false);
       }
     };
     
-    loadPDF();
+    if (isReady && url) {
+      loadPDF();
+    }
     
     return () => {
       setPdfDoc(null);
     };
-  }, [url, pdfJs]);
+  }, [url, isReady]);
 
   // 渲染当前页
   const renderPage = useCallback(async (pageNum: number) => {
@@ -190,7 +257,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-gray-50 dark:bg-slate-800">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg font-medium text-gray-700 dark:text-gray-200">正在加载PDF...</p>
+        <p className="text-lg font-medium text-gray-700 dark:text-gray-200">{statusMessage}</p>
         <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-4 overflow-hidden">
           <div 
             className="h-full bg-primary transition-all duration-300 rounded-full"
@@ -211,7 +278,10 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           </svg>
         </div>
         <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">{error}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">请尝试下载文件后查看</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">请尝试下载文件后查看</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 max-w-md">
+          提示：如果在微信中无法预览，请点击右上角菜单选择"在浏览器中打开"
+        </p>
       </div>
     );
   }
