@@ -15,7 +15,6 @@ type PDFPageProxy = {
   render: (params: {
     canvasContext: CanvasRenderingContext2D;
     viewport: { width: number; height: number };
-    canvas: HTMLCanvasElement;
   }) => { promise: Promise<void> };
 };
 
@@ -36,12 +35,6 @@ interface PDFViewerProps {
   onClose?: () => void;
 }
 
-// Worker源列表，按优先级排序
-const WORKER_SOURCES = [
-  '/pdf/pdf.worker.min.mjs',  // 本地worker
-  'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs',  // unpkg CDN
-];
-
 export function PDFViewer({ url, title }: PDFViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +51,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pdfJsRef = useRef<PDFJS | null>(null);
 
-  // 动态加载 PDF.js 并尝试多个worker源
+  // 动态加载 PDF.js
   useEffect(() => {
     const loadPdfJs = async () => {
       try {
@@ -66,31 +59,13 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         
         // 动态导入 pdfjs-dist
         const pdfjsLib = await import('pdfjs-dist') as unknown as PDFJS;
+        
+        // 设置 worker - 使用本地文件
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf/pdf.worker.min.mjs';
+        
         pdfJsRef.current = pdfjsLib;
-        
-        // 尝试加载worker
-        let workerLoaded = false;
-        
-        for (const workerSrc of WORKER_SOURCES) {
-          try {
-            setStatusMessage(`正在加载PDF组件... (${workerSrc.includes('unpkg') ? 'CDN' : '本地'})`);
-            pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-            
-            // 测试worker是否可用（通过尝试加载一个空PDF来验证）
-            // 这里我们只是设置，实际验证在加载PDF时进行
-            workerLoaded = true;
-            console.log('PDF.js worker源设置成功:', workerSrc);
-            break;
-          } catch (err) {
-            console.warn('Worker源加载失败:', workerSrc, err);
-          }
-        }
-        
-        if (!workerLoaded) {
-          throw new Error('无法加载PDF预览组件');
-        }
-        
         setIsReady(true);
+        console.log('PDF.js 加载成功, 版本:', pdfjsLib.version);
       } catch (err) {
         console.error('PDF.js 加载失败:', err);
         setError('PDF预览组件加载失败，请刷新页面重试');
@@ -113,20 +88,6 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         setStatusMessage('正在获取PDF文件...');
         
         console.log('开始加载PDF:', url);
-        
-        // 首先验证URL是否可访问
-        try {
-          const headResponse = await fetch(url, { method: 'HEAD' });
-          if (!headResponse.ok) {
-            throw new Error(`文件无法访问 (${headResponse.status})`);
-          }
-          console.log('PDF文件可访问, 大小:', headResponse.headers.get('content-length'));
-        } catch (fetchErr) {
-          console.error('PDF文件访问失败:', fetchErr);
-          throw new Error('文件链接无效或已过期，请重新上传');
-        }
-        
-        setStatusMessage('正在加载PDF内容...');
         
         const loadingTask = pdfJsRef.current.getDocument({
           url,
@@ -157,10 +118,8 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         if (err instanceof Error) {
           if (err.message.includes('Invalid PDF')) {
             errorMessage = '文件格式无效，请确保是有效的PDF文件';
-          } else if (err.message.includes('fetch')) {
+          } else if (err.message.includes('fetch') || err.message.includes('network')) {
             errorMessage = '网络错误，请检查网络连接后重试';
-          } else if (err.message.includes('链接无效') || err.message.includes('已过期')) {
-            errorMessage = err.message;
           } else {
             errorMessage = `加载失败: ${err.message}`;
           }
@@ -198,13 +157,19 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
       const baseScale = Math.min(containerWidth / viewport.width, 1.5);
       const scaledViewport = page.getViewport({ scale: baseScale * scale });
       
-      canvas.height = scaledViewport.height;
-      canvas.width = scaledViewport.width;
+      // 设置canvas尺寸（使用设备像素比提高清晰度）
+      const pixelRatio = window.devicePixelRatio || 1;
+      canvas.height = scaledViewport.height * pixelRatio;
+      canvas.width = scaledViewport.width * pixelRatio;
+      canvas.style.height = `${scaledViewport.height}px`;
+      canvas.style.width = `${scaledViewport.width}px`;
+      
+      // 缩放context以匹配设备像素比
+      context.scale(pixelRatio, pixelRatio);
       
       await page.render({
         canvasContext: context,
         viewport: scaledViewport,
-        canvas: canvas,
       }).promise;
       
       setRendering(false);
@@ -356,7 +321,6 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         <canvas
           ref={canvasRef}
           className="shadow-lg bg-white dark:bg-slate-900"
-          style={{ maxWidth: '100%', height: 'auto' }}
         />
       </div>
     </div>
