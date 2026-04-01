@@ -963,10 +963,12 @@ export default function HomePage() {
             <AvatarFallback className="text-3xl">{profile?.name?.[0] || 'U'}</AvatarFallback>
           </Avatar>
           <h1 className="text-4xl font-bold mb-2">{profile?.name || '您的姓名'}</h1>
-          {/* 自定义栏目 - 显示在职位上方 */}
-          {profile?.show_custom && profile?.custom_title && profile?.custom_content && (
+          {/* 自定义栏目 - 显示在职位上方，标题和内容可独立显示 */}
+          {profile?.show_custom && (profile?.custom_title || profile?.custom_content) && (
             <p className="text-lg text-muted-foreground mb-1">
-              <span className="font-medium">{profile.custom_title}</span>：{profile.custom_content}
+              {profile.custom_title && <span className="font-medium">{profile.custom_title}</span>}
+              {profile.custom_title && profile.custom_content && '：'}
+              {profile.custom_content}
             </p>
           )}
           {profile?.title && <p className="text-xl text-muted-foreground mb-4">{profile.title}</p>}
