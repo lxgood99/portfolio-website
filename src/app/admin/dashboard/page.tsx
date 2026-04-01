@@ -110,9 +110,14 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
+              <Link href="/">
+                返回首页
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/" target="_blank">
                 <ExternalLink className="h-4 w-4 mr-2" />
-                预览网站
+                新窗口预览
               </Link>
             </Button>
             <Button variant="outline" onClick={logout}>

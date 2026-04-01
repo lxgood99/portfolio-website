@@ -1085,9 +1085,9 @@ export default function HomePage() {
                 </div>
               )}
               {previewItem.type === 'pdf' && previewItem.url && (
-                <div className="w-full h-[80vh]">
+                <div className="w-full h-[80vh] relative">
                   <iframe 
-                    src={`${previewItem.url}#toolbar=1&navpanes=0`} 
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewItem.url)}&embedded=true`}
                     className="w-full h-full border-0"
                     title={previewItem.title || 'PDF预览'}
                   />
@@ -1112,11 +1112,39 @@ export default function HomePage() {
                   </div>
                 </div>
               )}
-              {(previewItem.type === 'ppt' || previewItem.type === 'other') && previewItem.url && (
+              {previewItem.type === 'ppt' && previewItem.url && (
+                <div className="w-full h-[80vh] relative">
+                  <iframe 
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewItem.url)}&embedded=true`}
+                    className="w-full h-full border-0"
+                    title={previewItem.title || 'PPT预览'}
+                  />
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <a 
+                      href={previewItem.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      新窗口打开
+                    </a>
+                    <a 
+                      href={previewItem.url} 
+                      download={previewItem.title || 'presentation.pptx'}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
+                    >
+                      <FileText className="h-4 w-4" />
+                      下载
+                    </a>
+                  </div>
+                </div>
+              )}
+              {previewItem.type === 'other' && previewItem.url && (
                 <div className="flex flex-col items-center justify-center p-12 text-center">
                   {getFileIcon(previewItem.type)}
                   <h3 className="mt-4 text-lg font-semibold">{previewItem.title || '文件预览'}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{previewItem.type === 'ppt' ? 'PPT 演示文稿' : '文件'}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">文件</p>
                   <div className="mt-6 flex gap-3">
                     <a href={previewItem.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                       <ExternalLink className="h-4 w-4" />新窗口打开

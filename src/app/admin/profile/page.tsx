@@ -584,16 +584,23 @@ export default function ProfilePage() {
 
           {/* 操作按钮 */}
           <div className="flex justify-between gap-4">
-            <Button variant="outline" asChild>
-              <Link href="/admin/dashboard">
-                返回
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href="/admin/dashboard">
+                  返回后台
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/">
+                  返回首页
+                </Link>
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link href="/" target="_blank">
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  预览
+                  新窗口预览
                 </Link>
               </Button>
               <Button onClick={handleSave} disabled={isSaving}>
