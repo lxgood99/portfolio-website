@@ -38,6 +38,14 @@ export const profiles = pgTable("profiles", {
     instagram?: string;
     [key: string]: string | undefined;
   }>(),
+  // 显示开关
+  show_email: boolean("show_email").default(true),
+  show_phone: boolean("show_phone").default(true),
+  show_location: boolean("show_location").default(true),
+  show_github: boolean("show_github").default(false),
+  show_linkedin: boolean("show_linkedin").default(false),
+  show_twitter: boolean("show_twitter").default(false),
+  show_instagram: boolean("show_instagram").default(false),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -104,6 +112,23 @@ export const skills = pgTable(
     index("skills_order_idx").on(table.order),
   ]
 );
+
+// 技能分类表
+export const skillCategories = pgTable(
+  "skill_categories",
+  {
+    id: serial().primaryKey(),
+    name: varchar("name", { length: 100 }).notNull().unique(),
+    order: integer("order").notNull().default(0),
+    is_visible: boolean("is_visible").default(true),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [index("skill_categories_order_idx").on(table.order)]
+);
+
 
 // 作品集表
 export const works = pgTable(
@@ -253,6 +278,7 @@ export type Profile = typeof profiles.$inferSelect;
 export type WorkExperience = typeof workExperiences.$inferSelect;
 export type Education = typeof educations.$inferSelect;
 export type Skill = typeof skills.$inferSelect;
+export type SkillCategory = typeof skillCategories.$inferSelect;
 export type Work = typeof works.$inferSelect;
 export type WorkItem = typeof workItems.$inferSelect;
 export type AdminUser = typeof adminUsers.$inferSelect;

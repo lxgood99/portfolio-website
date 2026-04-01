@@ -40,6 +40,13 @@ interface Profile {
   location: string;
   website: string;
   social_links: Record<string, string>;
+  show_email: boolean;
+  show_phone: boolean;
+  show_location: boolean;
+  show_github: boolean;
+  show_linkedin: boolean;
+  show_twitter: boolean;
+  show_instagram: boolean;
 }
 
 interface SelfIntroduction {
@@ -81,7 +88,7 @@ interface Skill {
   id: number;
   name: string;
   level: number;
-  category: string;
+  category: string | null;
 }
 
 interface WorkItem {
@@ -253,26 +260,28 @@ function WorkCarousel({ images, onImageClick }: { images: WorkItem[]; onImageCli
 
   return (
     <div 
-      className="relative h-48 bg-slate-100 dark:bg-slate-800 overflow-hidden"
+      className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
     >
       <div 
-        className="flex transition-transform duration-300 ease-out h-full"
+        className="flex transition-transform duration-500 ease-out h-full"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {images.map((item, index) => (
           <div 
             key={index} 
-            className="flex-shrink-0 w-full h-full cursor-pointer"
+            className="flex-shrink-0 w-full h-full cursor-pointer relative group"
             onClick={() => onImageClick(item)}
           >
             <img
               src={item.url}
               alt={item.title || `图片 ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
+            {/* 底部渐变遮罩 */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           </div>
         ))}
       </div>
@@ -281,13 +290,13 @@ function WorkCarousel({ images, onImageClick }: { images: WorkItem[]; onImageCli
         <>
           <button
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all duration-300 hover:scale-110"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all duration-300 hover:scale-110"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -296,8 +305,8 @@ function WorkCarousel({ images, onImageClick }: { images: WorkItem[]; onImageCli
               <button
                 key={index}
                 onClick={(e) => { e.stopPropagation(); setCurrentIndex(index); }}
-                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                  index === currentIndex ? 'bg-white w-4' : 'bg-white/50'
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? 'bg-white w-4' : 'bg-white/50 w-1.5 hover:bg-white/70'
                 }`}
               />
             ))}
@@ -315,6 +324,7 @@ export default function HomePage() {
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [skillCategories, setSkillCategories] = useState<Array<{ id: number; name: string; is_visible: boolean }>>([]);
   const [works, setWorks] = useState<Work[]>([]);
   const [moduleOrders, setModuleOrders] = useState<ModuleOrder[]>([]);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
@@ -334,12 +344,13 @@ export default function HomePage() {
       // 记录访问统计（静默执行，不阻塞页面加载）
       fetch('/api/visit-stats', { method: 'POST' }).catch(() => {});
 
-      const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
+      const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/self-introduction'),
         fetch('/api/work-experiences'),
         fetch('/api/educations'),
         fetch('/api/skills'),
+        fetch('/api/skill-categories'),
         fetch('/api/works'),
         fetch('/api/module-orders'),
         fetch('/api/contact-info'),
@@ -350,11 +361,23 @@ export default function HomePage() {
       const expData = await expRes.json();
       const eduData = await eduRes.json();
       const skillsData = await skillsRes.json();
+      const skillCategoriesData = await skillCategoriesRes.json();
       const worksData = await worksRes.json();
       const moduleOrdersData = await moduleOrdersRes.json();
 
       if (profileData.success && profileData.data) {
-        setProfile(profileData.data);
+        // 确保显示开关字段有默认值
+        const profileWithDefaults = {
+          ...profileData.data,
+          show_email: profileData.data.show_email ?? true,
+          show_phone: profileData.data.show_phone ?? true,
+          show_location: profileData.data.show_location ?? true,
+          show_github: profileData.data.show_github ?? false,
+          show_linkedin: profileData.data.show_linkedin ?? false,
+          show_twitter: profileData.data.show_twitter ?? false,
+          show_instagram: profileData.data.show_instagram ?? false,
+        };
+        setProfile(profileWithDefaults);
         if (profileData.data.avatar_key) {
           loadAvatarUrl(profileData.data.avatar_key);
         }
@@ -394,6 +417,7 @@ export default function HomePage() {
 
       if (eduData.success) setEducations(eduData.data);
       if (skillsData.success) setSkills(skillsData.data);
+      if (skillCategoriesData.success) setSkillCategories(skillCategoriesData.data.filter((c: { is_visible: boolean }) => c.is_visible));
       
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
@@ -619,22 +643,81 @@ export default function HomePage() {
               <Wrench className="h-6 w-6" />
               技能特长
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {skills.map((skill) => (
-                <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{skill.name}</h3>
-                      {skill.category && <Badge variant="secondary">{skill.category}</Badge>}
+            {/* 分类卡片展示 */}
+            {skillCategories.length > 0 ? (
+              // 按分类分组展示
+              <div className="space-y-8">
+                {skillCategories.map((cat) => {
+                  const catSkills = skills.filter(s => s.category === cat.name);
+                  if (catSkills.length === 0) return null;
+                  return (
+                    <div key={cat.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-primary rounded-full"></span>
+                        {cat.name}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {catSkills.map((skill) => (
+                          <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-white dark:bg-slate-800">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold">{skill.name}</h4>
+                                <Badge variant="secondary" className="text-xs">{skill.level}%</Badge>
+                              </div>
+                              <Progress value={skill.level} className="h-2" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Progress value={skill.level} className="flex-1" />
-                      <span className="text-sm text-muted-foreground w-12">{skill.level}%</span>
+                  );
+                })}
+                {/* 未分类的技能 */}
+                {(() => {
+                  const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                  if (uncategorizedSkills.length === 0) return null;
+                  return (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-slate-400 rounded-full"></span>
+                        其他
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {uncategorizedSkills.map((skill) => (
+                          <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-white dark:bg-slate-800">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold">{skill.name}</h4>
+                                <Badge variant="secondary" className="text-xs">{skill.level}%</Badge>
+                              </div>
+                              <Progress value={skill.level} className="h-2" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              // 默认展示（无分类时）
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {skills.map((skill) => (
+                  <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold">{skill.name}</h3>
+                        {skill.category && <Badge variant="secondary">{skill.category}</Badge>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Progress value={skill.level} className="flex-1" />
+                        <span className="text-sm text-muted-foreground w-12">{skill.level}%</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </section>
         ) : null;
 
@@ -651,10 +734,10 @@ export default function HomePage() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
                       selectedCategory === cat
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
                     }`}
                   >
                     {cat === 'all' ? '全部' : cat}
@@ -664,20 +747,20 @@ export default function HomePage() {
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
-                <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+                <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                   {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                     <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
                   ) : work.coverImageUrl ? (
-                    <div className="relative h-48 bg-slate-100 dark:bg-slate-800 cursor-pointer">
+                    <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
                       {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                        <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
+                        <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
                       ) : (
-                        <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
+                        <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                       )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
                     </div>
                   ) : (
-                    <div className="h-48 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
                       <FileText className="h-12 w-12 text-muted-foreground/30" />
                     </div>
                   )}
@@ -833,8 +916,12 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 dark:border-slate-700 border-t-primary"></div>
+          <div className="absolute inset-0 animate-pulse rounded-full h-12 w-12 bg-primary/10"></div>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground animate-pulse">加载中...</p>
       </div>
     );
   }
@@ -873,20 +960,41 @@ export default function HomePage() {
           {profile?.title && <p className="text-xl text-muted-foreground mb-4">{profile.title}</p>}
           {profile?.bio && <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6">{profile.bio}</p>}
 
+          {/* 联系方式 - 根据开关显示 */}
           <div className="flex flex-wrap justify-center gap-4 mb-6">
-            {profile?.email && (
-              <a href={`mailto:${profile.email}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+            {profile?.show_email && profile?.email && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(profile.email);
+                  setCopiedText('profile-email');
+                  setTimeout(() => setCopiedText(null), 2000);
+                }}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer group"
+              >
                 <Mail className="h-4 w-4" />
-                {profile.email}
-              </a>
+                <span>{profile.email}</span>
+                <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                  {copiedText === 'profile-email' ? '已复制!' : '点击复制'}
+                </span>
+              </button>
             )}
-            {profile?.phone && (
-              <a href={`tel:${profile.phone}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+            {profile?.show_phone && profile?.phone && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(profile.phone);
+                  setCopiedText('profile-phone');
+                  setTimeout(() => setCopiedText(null), 2000);
+                }}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer group"
+              >
                 <Phone className="h-4 w-4" />
-                {profile.phone}
-              </a>
+                <span>{profile.phone}</span>
+                <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                  {copiedText === 'profile-phone' ? '已复制!' : '点击复制'}
+                </span>
+              </button>
             )}
-            {profile?.location && (
+            {profile?.show_location && profile?.location && (
               <span className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 {profile.location}
@@ -900,16 +1008,29 @@ export default function HomePage() {
             )}
           </div>
 
-          {profile?.social_links && Object.keys(profile.social_links).length > 0 && (
+          {/* 社交链接 - 根据开关显示 */}
+          {profile && (
             <div className="flex justify-center gap-3">
-              {Object.entries(profile.social_links).map(([name, url]) => {
-                if (!url) return null;
-                return (
-                  <a key={name} href={url} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                    {getSocialIcon(name)}
-                  </a>
-                );
-              })}
+              {profile.show_github && profile.social_links?.github && (
+                <a href={profile.social_links.github} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                  <Github className="h-5 w-5" />
+                </a>
+              )}
+              {profile.show_linkedin && profile.social_links?.linkedin && (
+                <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              )}
+              {profile.show_twitter && profile.social_links?.twitter && (
+                <a href={profile.social_links.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                  <Twitter className="h-5 w-5" />
+                </a>
+              )}
+              {profile.show_instagram && profile.social_links?.instagram && (
+                <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                  <Instagram className="h-5 w-5" />
+                </a>
+              )}
             </div>
           )}
         </div>
