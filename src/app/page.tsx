@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { PDFViewer } from '@/components/PDFViewer';
 import { 
   Mail, 
   Phone, 
@@ -26,7 +27,9 @@ import {
   ChevronRight,
   User,
   Wrench,
-  FolderOpen
+  FolderOpen,
+  Download,
+  Presentation
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -1106,56 +1109,34 @@ export default function HomePage() {
               )}
               {previewItem.type === 'pdf' && previewItem.url && (
                 <div className="w-full h-[80vh] relative">
-                  <iframe 
-                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewItem.url)}&embedded=true`}
-                    className="w-full h-full border-0"
-                    title={previewItem.title || 'PDF预览'}
-                  />
-                  <div className="absolute bottom-4 right-4 flex gap-2">
-                    <a 
-                      href={previewItem.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      新窗口打开
-                    </a>
+                  <PDFViewer url={previewItem.url} title={previewItem.title || 'PDF预览'} />
+                  <div className="absolute bottom-4 right-4 flex gap-2 z-20">
                     <a 
                       href={previewItem.url} 
                       download={previewItem.title || 'document.pdf'}
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
                     >
-                      <FileText className="h-4 w-4" />
+                      <Download className="h-4 w-4" />
                       下载
                     </a>
                   </div>
                 </div>
               )}
               {previewItem.type === 'ppt' && previewItem.url && (
-                <div className="w-full h-[80vh] relative">
-                  <iframe 
-                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewItem.url)}&embedded=true`}
-                    className="w-full h-full border-0"
-                    title={previewItem.title || 'PPT预览'}
-                  />
-                  <div className="absolute bottom-4 right-4 flex gap-2">
-                    <a 
-                      href={previewItem.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      新窗口打开
-                    </a>
+                <div className="flex flex-col items-center justify-center h-[80vh] p-8 text-center bg-gray-50 dark:bg-slate-800">
+                  <Presentation className="h-20 w-20 text-orange-500 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{previewItem.title || 'PPT演示文稿'}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+                    PPT文件暂不支持在线预览，请下载后使用PowerPoint或其他演示软件打开查看
+                  </p>
+                  <div className="flex gap-3">
                     <a 
                       href={previewItem.url} 
                       download={previewItem.title || 'presentation.pptx'}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                     >
-                      <FileText className="h-4 w-4" />
-                      下载
+                      <Download className="h-5 w-5" />
+                      下载PPT
                     </a>
                   </div>
                 </div>
