@@ -281,11 +281,11 @@ export default function AnalyticsPage() {
         </div>
 
         {/* 清空所有数据 */}
-        <Card className="border-red-200 dark:border-red-900/50">
+        <Card className="border-orange-200 dark:border-orange-900/50">
           <CardHeader>
-            <CardTitle className="text-base text-red-600 dark:text-red-400 flex items-center gap-2">
+            <CardTitle className="text-base text-orange-600 dark:text-orange-400 flex items-center gap-2">
               <Trash2 className="h-4 w-4" />
-              危险操作
+              谨慎操作
             </CardTitle>
             <CardDescription>
               清空所有历史访问记录，归零重新统计（用于测试）
@@ -293,7 +293,8 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <Button
-              variant="destructive"
+              variant="outline"
+              className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-950"
               onClick={() => handleReset('reset_all')}
             >
               <Trash2 className="h-4 w-4 mr-2" />
