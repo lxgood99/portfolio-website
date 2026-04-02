@@ -260,13 +260,46 @@ export const visitStats = pgTable("visit_stats", {
   today_visits: integer("today_visits").default(0),
   last_visit_at: timestamp("last_visit_at", { withTimezone: true }),
   today_date: varchar("today_date", { length: 20 }), // 格式: YYYY-MM-DD
+  cumulative_visits: integer("cumulative_visits").default(0), // 累计访问总量（持续累计）
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-// 访问IP记录表 - 用于去重
+// 每日访问统计表 - 只保留5天
+export const visitDailyStats = pgTable(
+  "visit_daily_stats",
+  {
+    id: serial().primaryKey(),
+    date: varchar("date", { length: 20 }).notNull().unique(), // YYYY-MM-DD
+    visit_count: integer("visit_count").default(0),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [index("visit_daily_stats_date_idx").on(table.date)]
+);
+
+// 每日IP记录表 - 用于当天去重
+export const visitDailyIps = pgTable(
+  "visit_daily_ips",
+  {
+    id: serial().primaryKey(),
+    ip_address: varchar("ip_address", { length: 50 }).notNull(),
+    visit_date: varchar("visit_date", { length: 20 }).notNull(), // YYYY-MM-DD
+    first_visit_at: timestamp("first_visit_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("visit_daily_ips_date_idx").on(table.visit_date),
+    index("visit_daily_ips_ip_date_idx").on(table.ip_address, table.visit_date),
+  ]
+);
+
+// 访问IP记录表 - 用于去重（旧表，保留兼容）
 export const visitIpRecords = pgTable(
   "visit_ip_records",
   {
@@ -309,5 +342,7 @@ export type SelfIntroduction = typeof selfIntroduction.$inferSelect;
 export type WorkExperienceImage = typeof workExperienceImages.$inferSelect;
 export type ModuleOrder = typeof moduleOrders.$inferSelect;
 export type VisitStats = typeof visitStats.$inferSelect;
+export type VisitDailyStats = typeof visitDailyStats.$inferSelect;
+export type VisitDailyIp = typeof visitDailyIps.$inferSelect;
 export type VisitIpRecord = typeof visitIpRecords.$inferSelect;
 export type ContactInfo = typeof contactInfo.$inferSelect;
