@@ -745,7 +745,7 @@ export default function HomePage() {
             <div className="space-y-4">
               {educations.map((edu) => (
                 <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                  <CardContent className="p-3 sm:p-6">
+                  <CardContent className="p-6 sm:p-6">
                     {/* ========== 手机端布局（分行展示） ========== */}
                     <div className="sm:hidden space-y-1">
                       {/* 第一行：学校全称（增大一号字体） */}
@@ -815,7 +815,7 @@ export default function HomePage() {
                     {edu.description && (
                       <>
                         {/* 手机端：段落间距增加 + 两端对齐 */}
-                        <div className="sm:hidden mt-2 text-muted-foreground space-y-2">
+                        <div className="sm:hidden mt-5 text-muted-foreground space-y-2">
                           {edu.description.split('\n').map((line, idx) => (
                             <p key={idx} className="whitespace-pre-wrap text-justify">
                               {line}
@@ -824,7 +824,7 @@ export default function HomePage() {
                         </div>
                         {/* 电脑端：原有样式 */}
                         <p 
-                          className="hidden sm:block mt-2 text-muted-foreground whitespace-pre-wrap"
+                          className="hidden sm:block mt-5 text-muted-foreground whitespace-pre-wrap"
                           style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
                         >
                           {edu.description}
