@@ -8,8 +8,21 @@ import { cn } from "@/lib/utils"
 function Progress({
   className,
   value,
+  animate = true,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+}: React.ComponentProps<typeof ProgressPrimitive.Root> & { animate?: boolean }) {
+  const [animatedValue, setAnimatedValue] = React.useState(animate ? 0 : (value || 0))
+
+  React.useEffect(() => {
+    if (animate) {
+      // 延迟启动动画，让页面先渲染
+      const timer = setTimeout(() => {
+        setAnimatedValue(value || 0)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [value, animate])
+
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -21,8 +34,8 @@ function Progress({
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="bg-primary h-full w-full flex-1 transition-all"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+        className="bg-primary h-full w-full flex-1 transition-all duration-1000 ease-out"
+        style={{ transform: `translateX(-${100 - animatedValue}%)` }}
       />
     </ProgressPrimitive.Root>
   )

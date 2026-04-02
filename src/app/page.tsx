@@ -863,7 +863,7 @@ export default function HomePage() {
                           {catSkills.map((skill) => (
                             <div 
                               key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
                             >
                               {/* 技能名称 + 百分比 */}
                               <div className="flex items-center justify-between mb-1.5">
@@ -899,7 +899,7 @@ export default function HomePage() {
                           {uncategorizedSkills.map((skill) => (
                             <div 
                               key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
                             >
                               <div className="flex items-center justify-between mb-1.5">
                                 <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
@@ -927,7 +927,7 @@ export default function HomePage() {
                     {skills.map((skill) => (
                       <div 
                         key={skill.id} 
-                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
