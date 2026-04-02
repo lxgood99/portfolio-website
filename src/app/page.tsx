@@ -847,19 +847,19 @@ export default function HomePage() {
             </h2>
             {/* 分类卡片展示 */}
             {skillCategories.length > 0 ? (
-              // 大分类卡片：两列并排布局（电脑端和手机端都保持两列）
-              <div className="grid grid-cols-2 gap-4 items-start">
+              // 大分类卡片：两列并排布局，等高对齐
+              <div className="grid grid-cols-2 gap-4 items-stretch">
                 {skillCategories.map((cat) => {
                   const catSkills = skills.filter(s => s.category === cat.name);
                   if (catSkills.length === 0) return null;
                   return (
-                    <Card key={cat.id} className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                      <CardContent className="p-3 sm:p-4">
+                    <Card key={cat.id} className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex flex-col">
+                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col">
                         <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
                           {cat.name}
                         </h3>
-                        {/* 内层技能卡片：两列网格布局 */}
-                        <div className="grid grid-cols-2 gap-2">
+                        {/* 内层技能卡片：单列垂直排列 */}
+                        <div className="flex flex-col gap-2 flex-1">
                           {catSkills.map((skill) => (
                             <div 
                               key={skill.id} 
@@ -890,12 +890,12 @@ export default function HomePage() {
                   const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
                   if (uncategorizedSkills.length === 0) return null;
                   return (
-                    <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                      <CardContent className="p-3 sm:p-4">
+                    <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex flex-col">
+                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col">
                         <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
                           其他
                         </h3>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col gap-2 flex-1">
                           {uncategorizedSkills.map((skill) => (
                             <div 
                               key={skill.id} 
@@ -923,7 +923,7 @@ export default function HomePage() {
               // 默认展示（无分类时）
               <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
                 <CardContent className="p-3 sm:p-4">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-2">
                     {skills.map((skill) => (
                       <div 
                         key={skill.id} 
