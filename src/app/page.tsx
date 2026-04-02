@@ -592,7 +592,7 @@ export default function HomePage() {
                     {/* 首行：公司 | 岗位 | 时间+地点（三列对齐） */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
                       {/* 左侧：公司名称 */}
-                      <span className="text-base font-semibold text-primary text-left">
+                      <span className="text-lg font-semibold text-primary text-left">
                         {exp.company}
                       </span>
                       {/* 中间：岗位名称（居中） */}
@@ -651,7 +651,7 @@ export default function HomePage() {
                     {/* 首行：学校 | 学位·专业 | 时间（三列对齐） */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
                       {/* 左侧：学校名称 */}
-                      <span className="text-base font-semibold text-primary text-left">
+                      <span className="text-lg font-semibold text-primary text-left">
                         {edu.school}
                       </span>
                       {/* 中间：学位 · 专业（居中） */}
