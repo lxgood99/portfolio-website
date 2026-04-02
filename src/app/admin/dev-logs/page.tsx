@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2, FileText, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, AlertCircle, Home, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 interface DevLog {
   id: number;
@@ -240,10 +241,24 @@ export default function DevLogsPage() {
             记录项目开发历程，仅管理员可见
           </p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          新增日志
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/">
+              <Home className="h-4 w-4 mr-2" />
+              返回首页
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/admin/dashboard">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              返回后台
+            </Link>
+          </Button>
+          <Button onClick={() => handleOpenDialog()}>
+            <Plus className="h-4 w-4 mr-2" />
+            新增日志
+          </Button>
+        </div>
       </div>
 
       {/* 版本规则说明 */}
