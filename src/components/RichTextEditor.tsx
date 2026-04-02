@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -50,6 +50,7 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [showToolbar, setShowToolbar] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isInternalChange, setIsInternalChange] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -70,7 +71,10 @@ export function RichTextEditor({
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
+      setIsInternalChange(true);
       onChange(editor.getHTML());
+      // 重置标记
+      setTimeout(() => setIsInternalChange(false), 0);
     },
     onFocus: () => {
       setShowToolbar(true);
@@ -84,25 +88,51 @@ export function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[80px] px-3 py-2 text-sm leading-relaxed',
+        class: 'rich-text-editor prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm leading-relaxed',
         style: `min-height: ${minHeight}px`,
       },
     },
   });
 
+  // 同步外部value变化（解决多次编辑、反复保存问题）
+  useEffect(() => {
+    if (editor && !isInternalChange) {
+      const currentValue = editor.getHTML();
+      // 只有当外部value与编辑器内容不同时才更新
+      if (value !== currentValue) {
+        // 保留光标位置
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(value || '', { emitUpdate: false });
+        // 尝试恢复光标位置
+        try {
+          editor.commands.setTextSelection({ from: Math.min(from, editor.state.doc.content.size), to: Math.min(to, editor.state.doc.content.size) });
+        } catch {
+          // 如果恢复失败，忽略
+        }
+      }
+    }
+  }, [value, editor, isInternalChange]);
+
   const setTextColor = useCallback((color: string) => {
     if (!editor) return;
+    editor.chain().focus();
     if (color) {
-      editor.chain().focus().setColor(color).run();
+      editor.chain().setColor(color).run();
     } else {
-      editor.chain().focus().unsetColor().run();
+      editor.chain().unsetColor().run();
     }
     setShowColorPicker(false);
   }, [editor]);
 
   const clearFormat = useCallback(() => {
     if (!editor) return;
-    editor.chain().focus().clearNodes().unsetAllMarks().unsetColor().run();
+    // 先移除所有标记（加粗、斜体、下划线、颜色等）
+    editor.chain()
+      .focus()
+      .unsetAllMarks()
+      .unsetColor()
+      .clearNodes()
+      .run();
   }, [editor]);
 
   if (!editor) {
@@ -114,7 +144,7 @@ export function RichTextEditor({
       {/* 工具栏 */}
       <div 
         className={`transition-all duration-200 overflow-hidden ${
-          showToolbar ? 'max-h-16 opacity-100' : 'max-h-0 opacity-0'
+          showToolbar ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="flex items-center gap-0.5 p-1.5 border-b bg-slate-50 dark:bg-slate-800 flex-wrap">
@@ -178,15 +208,15 @@ export function RichTextEditor({
                       key={color.name}
                       type="button"
                       onClick={() => setTextColor(color.value)}
-                      className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs hover:bg-slate-100 dark:hover:bg-slate-700 whitespace-nowrap"
                     >
                       {color.value ? (
                         <span 
-                          className="w-3 h-3 rounded-full border" 
+                          className="w-3 h-3 rounded-full border flex-shrink-0" 
                           style={{ backgroundColor: color.value }}
                         />
                       ) : (
-                        <span className="w-3 h-3 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-[8px] text-slate-400">A</span>
+                        <span className="w-3 h-3 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-[8px] text-slate-400 flex-shrink-0">A</span>
                       )}
                       <span>{color.name}</span>
                     </button>
@@ -243,8 +273,8 @@ export function RichTextEditor({
 
       {/* 展开/收起工具栏提示 */}
       <div 
-        className={`flex items-center justify-center py-1 bg-slate-50 dark:bg-slate-800 border-t cursor-pointer transition-all ${
-          showToolbar ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-6'
+        className={`flex items-center justify-center bg-slate-50 dark:bg-slate-800 border-t cursor-pointer transition-all duration-200 ${
+          showToolbar ? 'max-h-0 opacity-0 overflow-hidden py-0' : 'max-h-8 opacity-100 py-1'
         }`}
         onClick={() => {
           setShowToolbar(true);

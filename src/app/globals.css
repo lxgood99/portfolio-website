@@ -136,11 +136,12 @@ body {
   @apply font-sans;
 }
 
-/* 富文本内容样式 */
+/* 富文本内容样式 - 展示端 */
 .rich-text-content {
-  line-height: 1.7;
+  line-height: 1.75;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .rich-text-content p {
@@ -149,6 +150,10 @@ body {
 
 .rich-text-content p:last-child {
   margin-bottom: 0;
+}
+
+.rich-text-content p:empty {
+  display: none;
 }
 
 .rich-text-content strong,
@@ -165,31 +170,44 @@ body {
   text-decoration: underline;
 }
 
+/* 列表样式 */
 .rich-text-content ul,
 .rich-text-content ol {
   margin: 0.5em 0;
-  padding-left: 1.5em;
+  padding-left: 1.25em;
 }
 
 .rich-text-content ul {
   list-style-type: disc;
+  list-style-position: outside;
 }
 
 .rich-text-content ol {
   list-style-type: decimal;
+  list-style-position: outside;
 }
 
 .rich-text-content li {
-  margin: 0.25em 0;
+  margin: 0.3em 0;
+  display: list-item;
 }
 
 .rich-text-content li::marker {
   color: var(--muted-foreground);
 }
 
+/* 嵌套列表 */
+.rich-text-content ul ul,
+.rich-text-content ol ol,
+.rich-text-content ul ol,
+.rich-text-content ol ul {
+  margin: 0.25em 0;
+}
+
 /* TipTap 编辑器样式 */
-.ProseMirror {
+.rich-text-editor.ProseMirror {
   outline: none;
+  min-height: 120px;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
