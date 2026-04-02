@@ -591,11 +591,11 @@ export default function HomePage() {
             <div className="space-y-4">
               {workExperiences.map((exp) => (
                 <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                  <CardContent className="p-6">
+                  <CardContent className="p-6 sm:p-6">
                     {/* ========== 手机端布局（分行展示） ========== */}
                     <div className="sm:hidden space-y-1">
-                      {/* 第一行：公司全称（黑色、常规字号） */}
-                      <div className="text-base font-semibold text-foreground">
+                      {/* 第一行：公司全称（增大一号字体） */}
+                      <div className="text-lg font-semibold text-foreground">
                         {exp.company}
                       </div>
                       {/* 第二行：职位名称（缩小、灰色） */}
@@ -633,10 +633,10 @@ export default function HomePage() {
                           // 富文本内容
                           <RichTextContent html={exp.description} />
                         ) : (
-                          // 普通文本，手机端段落间距增加
+                          // 普通文本，手机端段落间距增加 + 两端对齐
                           <div className="sm:hidden space-y-2">
                             {exp.description.split('\n').map((line, idx) => (
-                              <p key={idx} className="whitespace-pre-wrap">
+                              <p key={idx} className="whitespace-pre-wrap text-justify">
                                 {line}
                               </p>
                             ))}
@@ -678,11 +678,11 @@ export default function HomePage() {
             <div className="space-y-4">
               {educations.map((edu) => (
                 <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 sm:p-6">
                     {/* ========== 手机端布局（分行展示） ========== */}
                     <div className="sm:hidden space-y-1">
-                      {/* 第一行：学校全称（黑色、常规字号） */}
-                      <div className="text-base font-semibold text-foreground">
+                      {/* 第一行：学校全称（增大一号字体） */}
+                      <div className="text-lg font-semibold text-foreground">
                         {edu.school}
                       </div>
                       {/* 第二行：学历 + 专业（缩小、灰色） */}
@@ -747,10 +747,10 @@ export default function HomePage() {
                     </div>
                     {edu.description && (
                       <>
-                        {/* 手机端：段落间距增加 */}
+                        {/* 手机端：段落间距增加 + 两端对齐 */}
                         <div className="sm:hidden mt-2 text-muted-foreground space-y-2">
                           {edu.description.split('\n').map((line, idx) => (
-                            <p key={idx} className="whitespace-pre-wrap">
+                            <p key={idx} className="whitespace-pre-wrap text-justify">
                               {line}
                             </p>
                           ))}
