@@ -53,6 +53,7 @@ export function RichTextEditor({
   const [isInternalChange, setIsInternalChange] = useState(false);
 
   const editor = useEditor({
+    immediatelyRender: false, // 避免 SSR hydration 不匹配
     extensions: [
       StarterKit.configure({
         heading: false,
