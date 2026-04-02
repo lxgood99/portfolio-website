@@ -589,16 +589,22 @@ export default function HomePage() {
               {workExperiences.map((exp) => (
                 <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                      <div>
-                        <h3 className="text-lg font-semibold">{exp.position}</h3>
-                        <p className="text-primary">{exp.company}</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
+                    {/* 首行：公司 | 岗位 | 时间+地点 */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      {/* 左侧：公司名称 */}
+                      <span className="text-sm text-muted-foreground shrink-0">
+                        {exp.company}
+                      </span>
+                      {/* 中间：岗位名称 */}
+                      <span className="text-base font-semibold flex-1">
+                        {exp.position}
+                      </span>
+                      {/* 右侧：时间 + 地点 */}
+                      <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
                         {exp.start_date} - {exp.end_date || '至今'}
                         {exp.location && ` · ${exp.location}`}
-                      </div>
+                      </span>
                     </div>
                     {exp.description && (
                       <div className="mt-3 text-muted-foreground">
@@ -642,15 +648,21 @@ export default function HomePage() {
               {educations.map((edu) => (
                 <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                      <div>
-                        <h3 className="text-lg font-semibold">{edu.school}</h3>
-                        <p className="text-primary">{edu.degree} · {edu.field}</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
+                    {/* 首行：学校 | 学位·专业 | 时间 */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      {/* 左侧：学校名称 */}
+                      <span className="text-sm text-muted-foreground shrink-0">
+                        {edu.school}
+                      </span>
+                      {/* 中间：学位 · 专业 */}
+                      <span className="text-base font-semibold flex-1">
+                        {edu.degree} · {edu.field}
+                      </span>
+                      {/* 右侧：时间 */}
+                      <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
                         {edu.start_date} - {edu.end_date || '至今'}
-                      </div>
+                      </span>
                     </div>
                     {edu.description && (
                       <p 
