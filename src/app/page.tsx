@@ -896,17 +896,17 @@ export default function HomePage() {
                     <div className="relative w-32 h-1.5 bg-primary/20 rounded-full">
                       {/* 填充 */}
                       <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
-                      {/* 分段标记 */}
+                      {/* 分段标记 - 平均分布 */}
                       <div className="absolute top-0 left-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
-                      <div className="absolute top-0 left-[30%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
-                      <div className="absolute top-0 left-[60%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-1/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-2/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                       <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                     </div>
                     {/* 标签 */}
                     <div className="relative w-32 mt-1">
                       <span className="absolute left-0 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">入门</span>
-                      <span className="absolute left-[30%] -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
-                      <span className="absolute left-[60%] -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
+                      <span className="absolute left-1/3 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
+                      <span className="absolute left-2/3 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
                       <span className="absolute right-0 translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">精通</span>
                     </div>
                   </div>
@@ -918,9 +918,10 @@ export default function HomePage() {
                   <div className="sm:hidden flex flex-col items-center mb-4">
                     <div className="relative w-full max-w-48 h-1.5 bg-primary/20 rounded-full">
                       <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
+                      {/* 分段标记 - 平均分布 */}
                       <div className="absolute top-0 left-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
-                      <div className="absolute top-0 left-[30%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
-                      <div className="absolute top-0 left-[60%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-1/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-2/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                       <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                     </div>
                     <div className="relative w-full max-w-48 mt-1 flex justify-between px-0">
