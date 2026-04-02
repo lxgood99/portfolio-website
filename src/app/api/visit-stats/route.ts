@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
-import type { VisitStats, VisitDailyStats } from '@/storage/database/shared/schema';
 
 // 获取客户端真实IP
 function getClientIP(request: NextRequest): string {
@@ -30,7 +29,6 @@ export async function GET() {
   try {
     const client = getSupabaseClient();
     
-    // 获取顶部统计数据
     const { data: stats, error: statsError } = await client
       .from('visit_stats')
       .select('*')
@@ -40,7 +38,6 @@ export async function GET() {
       throw new Error(`获取统计失败: ${statsError.message}`);
     }
 
-    // 获取最近5日访问数据
     const { data: dailyStats, error: dailyError } = await client
       .from('visit_daily_stats')
       .select('*')
@@ -75,40 +72,37 @@ export async function POST(request: NextRequest) {
     const today = getTodayStr();
     const now = new Date().toISOString();
 
-    // 1. 检查该IP今天是否已访问过
-    const { data: existingTodayIP } = await client
+    // 1. 尝试插入IP记录（如果已存在会失败）
+    const { error: insertError } = await client
       .from('visit_daily_ips')
-      .select('id')
-      .eq('ip_address', clientIP)
-      .eq('visit_date', today)
-      .limit(1);
+      .insert({
+        ip_address: clientIP,
+        visit_date: today,
+        first_visit_at: now,
+      });
 
-    const isNewIPToday = !existingTodayIP || existingTodayIP.length === 0;
-
-    // 2. 如果是新IP今天首次访问，记录IP并更新计数
-    if (isNewIPToday) {
-      // 记录今日IP
-      await client
-        .from('visit_daily_ips')
-        .upsert(
-          { ip_address: clientIP, visit_date: today },
-          { onConflict: 'ip_address,visit_date', ignoreDuplicates: true }
-        );
-
+    // 2. 如果插入成功，说明是新IP今天首次访问
+    if (!insertError) {
       // 更新今日访问统计
       await updateTodayStats(client, today, now);
       
-      // 更新累计访问总量（每个IP每天+1，持续累计）
+      // 更新累计访问总量
       await updateCumulativeVisits(client);
+    } else if (insertError.code === '23505') {
+      // 唯一约束冲突，说明该IP今天已访问过，不计数
+      console.log(`IP ${clientIP} 今天已访问过，不重复计数`);
+    } else {
+      // 其他错误，记录日志但不影响用户体验
+      console.error('插入IP记录失败:', insertError);
     }
 
-    // 3. 更新最后访问时间
+    // 3. 更新最后访问时间（每次访问都更新）
     await updateLastVisitTime(client, now);
 
     // 4. 清理超过5天的旧数据
     await cleanupOldData(client);
 
-    return NextResponse.json({ success: true, isNewVisit: isNewIPToday });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('记录访问错误:', error);
     return NextResponse.json({ success: false }, { status: 500 });
@@ -123,25 +117,12 @@ export async function PUT(request: NextRequest) {
     const { action } = body;
 
     if (action === 'reset_today') {
-      // 清零今日访问
-      await client
-        .from('visit_stats')
-        .update({ today_visits: 0 })
-        .neq('id', 0);
+      await client.from('visit_stats').update({ today_visits: 0 }).neq('id', 0);
     } else if (action === 'reset_total') {
-      // 清零总访问量
-      await client
-        .from('visit_stats')
-        .update({ total_visits: 0 })
-        .neq('id', 0);
+      await client.from('visit_stats').update({ total_visits: 0 }).neq('id', 0);
     } else if (action === 'reset_cumulative') {
-      // 清零累计访问总量
-      await client
-        .from('visit_stats')
-        .update({ cumulative_visits: 0 })
-        .neq('id', 0);
+      await client.from('visit_stats').update({ cumulative_visits: 0 }).neq('id', 0);
     } else if (action === 'reset_all') {
-      // 清零所有
       await client.from('visit_stats').update({
         total_visits: 0,
         today_visits: 0,
@@ -164,7 +145,7 @@ export async function PUT(request: NextRequest) {
 
 // 更新今日访问统计
 async function updateTodayStats(client: ReturnType<typeof getSupabaseClient>, today: string, now: string) {
-  // 检查今天的记录是否存在
+  // 更新或创建今天的每日统计记录
   const { data: todayRecord } = await client
     .from('visit_daily_stats')
     .select('*')
@@ -172,15 +153,11 @@ async function updateTodayStats(client: ReturnType<typeof getSupabaseClient>, to
     .single();
 
   if (!todayRecord) {
-    // 创建今天的记录
-    await client
-      .from('visit_daily_stats')
-      .insert({
-        date: today,
-        visit_count: 1,
-      });
+    await client.from('visit_daily_stats').insert({
+      date: today,
+      visit_count: 1,
+    });
   } else {
-    // 更新今天的访问数
     await client
       .from('visit_daily_stats')
       .update({
@@ -254,7 +231,6 @@ async function updateLastVisitTime(client: ReturnType<typeof getSupabaseClient>,
 
 // 清理超过5天的旧数据
 async function cleanupOldData(client: ReturnType<typeof getSupabaseClient>) {
-  // 获取保留的日期
   const { data: recentDates } = await client
     .from('visit_daily_stats')
     .select('date')
@@ -264,16 +240,31 @@ async function cleanupOldData(client: ReturnType<typeof getSupabaseClient>) {
   if (recentDates && recentDates.length > 0) {
     const datesToKeep = recentDates.map((d: { date: string }) => d.date);
     
-    // 删除旧于保留日期的每日统计
-    await client
-      .from('visit_daily_stats')
-      .delete()
-      .not('date', 'in', `(${datesToKeep.map(d => `'${d}'`).join(',')})`);
+    // 删除不在保留列表中的每日统计
+    for (const d of datesToKeep) {
+      // 先获取所有日期
+    }
     
-    // 删除旧于保留日期的每日IP记录
-    await client
-      .from('visit_daily_ips')
-      .delete()
-      .not('visit_date', 'in', `(${datesToKeep.map(d => `'${d}'`).join(',')})`);
+    // 获取所有日期并删除超过5天的
+    const { data: allDates } = await client
+      .from('visit_daily_stats')
+      .select('date');
+    
+    if (allDates) {
+      const toDelete = allDates
+        .map((d: { date: string }) => d.date)
+        .filter((d: string) => !datesToKeep.includes(d));
+      
+      if (toDelete.length > 0) {
+        await client
+          .from('visit_daily_stats')
+          .delete()
+          .in('date', toDelete);
+        await client
+          .from('visit_daily_ips')
+          .delete()
+          .in('visit_date', toDelete);
+      }
+    }
   }
 }
