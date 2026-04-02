@@ -847,34 +847,34 @@ export default function HomePage() {
             </h2>
             {/* 分类卡片展示 */}
             {skillCategories.length > 0 ? (
-              // 按分类分组展示
-              <div className="space-y-6">
+              // 大分类卡片：两列并排布局（电脑端和手机端都保持两列）
+              <div className="grid grid-cols-2 gap-4 items-start">
                 {skillCategories.map((cat) => {
                   const catSkills = skills.filter(s => s.category === cat.name);
                   if (catSkills.length === 0) return null;
                   return (
                     <Card key={cat.id} className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                      <CardContent className="p-5 sm:p-6">
-                        <h3 className="text-base font-semibold mb-4 text-slate-700 dark:text-slate-300">
+                      <CardContent className="p-3 sm:p-4">
+                        <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
                           {cat.name}
                         </h3>
-                        {/* 内层技能卡片网格 */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {/* 内层技能卡片：两列网格布局 */}
+                        <div className="grid grid-cols-2 gap-2">
                           {catSkills.map((skill) => (
                             <div 
                               key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
                             >
                               {/* 技能名称 + 百分比 */}
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-sm">{skill.name}</h4>
-                                <span className="text-xs text-muted-foreground">{skill.level}%</span>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
                               </div>
                               {/* 进度条 */}
-                              <Progress value={skill.level} className="h-1.5 mb-2" />
+                              <Progress value={skill.level} className="h-1 mb-1.5" />
                               {/* 补充说明（可选） */}
                               {skill.description && (
-                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                                   {skill.description}
                                 </p>
                               )}
@@ -891,23 +891,23 @@ export default function HomePage() {
                   if (uncategorizedSkills.length === 0) return null;
                   return (
                     <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                      <CardContent className="p-5 sm:p-6">
-                        <h3 className="text-base font-semibold mb-4 text-slate-700 dark:text-slate-300">
+                      <CardContent className="p-3 sm:p-4">
+                        <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
                           其他
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                           {uncategorizedSkills.map((skill) => (
                             <div 
                               key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
                             >
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-sm">{skill.name}</h4>
-                                <span className="text-xs text-muted-foreground">{skill.level}%</span>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
                               </div>
-                              <Progress value={skill.level} className="h-1.5 mb-2" />
+                              <Progress value={skill.level} className="h-1 mb-1.5" />
                               {skill.description && (
-                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                                   {skill.description}
                                 </p>
                               )}
@@ -922,20 +922,20 @@ export default function HomePage() {
             ) : (
               // 默认展示（无分类时）
               <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                <CardContent className="p-5 sm:p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="grid grid-cols-2 gap-2">
                     {skills.map((skill) => (
                       <div 
                         key={skill.id} 
-                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3"
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-sm">{skill.name}</h4>
-                          <span className="text-xs text-muted-foreground">{skill.level}%</span>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
+                          <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
                         </div>
-                        <Progress value={skill.level} className="h-1.5 mb-2" />
+                        <Progress value={skill.level} className="h-1 mb-1.5" />
                         {skill.description && (
-                          <p className="text-xs text-muted-foreground leading-relaxed">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                             {skill.description}
                           </p>
                         )}
