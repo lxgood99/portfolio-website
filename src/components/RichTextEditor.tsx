@@ -146,6 +146,7 @@ export function RichTextEditor({
         className={`transition-all duration-200 overflow-hidden ${
           showToolbar ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
         }`}
+        onMouseDown={(e) => e.preventDefault()} // 阻止工具栏点击导致失焦
       >
         <div className="flex items-center gap-0.5 p-1.5 border-b bg-slate-50 dark:bg-slate-800 flex-wrap">
           {/* 加粗 */}
