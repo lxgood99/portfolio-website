@@ -48,6 +48,7 @@ interface Skill {
   name: string;
   level: number;
   category: string | null;
+  description: string | null;
   order: number;
 }
 
@@ -187,6 +188,7 @@ export default function SkillsPage() {
     name: '',
     level: 80,
     category: '__none__',
+    description: '',
   });
   const [categoryForm, setCategoryForm] = useState({ name: '' });
   const [activeTab, setActiveTab] = useState('skills');
@@ -300,6 +302,7 @@ export default function SkillsPage() {
         name: skill.name ?? '',
         level: skill.level ?? 80,
         category: skill.category ?? '__none__',
+        description: skill.description ?? '',
       });
     } else {
       setEditingSkill(null);
@@ -307,6 +310,7 @@ export default function SkillsPage() {
         name: '',
         level: 80,
         category: '__none__',
+        description: '',
       });
     }
     setDialogOpen(true);
@@ -319,6 +323,7 @@ export default function SkillsPage() {
     const body = {
       ...formData,
       category: formData.category === '__none__' ? null : formData.category,
+      description: formData.description || null,
       order: editingSkill ? editingSkill.order : skills.length,
     };
 
@@ -659,6 +664,16 @@ export default function SkillsPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">补充说明（可选）</Label>
+              <Input
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="如：熟练使用Excel函数/数据透视表"
+              />
+              <p className="text-xs text-muted-foreground">填写后将显示在进度条下方</p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>

@@ -101,6 +101,7 @@ interface Skill {
   name: string;
   level: number;
   category: string | null;
+  description: string | null;
 }
 
 interface WorkItem {
@@ -847,30 +848,41 @@ export default function HomePage() {
             {/* 分类卡片展示 */}
             {skillCategories.length > 0 ? (
               // 按分类分组展示
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {skillCategories.map((cat) => {
                   const catSkills = skills.filter(s => s.category === cat.name);
                   if (catSkills.length === 0) return null;
                   return (
-                    <div key={cat.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-primary rounded-full"></span>
-                        {cat.name}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {catSkills.map((skill) => (
-                          <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-white dark:bg-slate-800">
-                            <CardContent className="p-4">
+                    <Card key={cat.id} className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+                      <CardContent className="p-5 sm:p-6">
+                        <h3 className="text-base font-semibold mb-4 text-slate-700 dark:text-slate-300">
+                          {cat.name}
+                        </h3>
+                        {/* 内层技能卡片网格 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {catSkills.map((skill) => (
+                            <div 
+                              key={skill.id} 
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            >
+                              {/* 技能名称 + 百分比 */}
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold">{skill.name}</h4>
-                                <Badge variant="secondary" className="text-xs">{skill.level}%</Badge>
+                                <h4 className="font-medium text-sm">{skill.name}</h4>
+                                <span className="text-xs text-muted-foreground">{skill.level}%</span>
                               </div>
-                              <Progress value={skill.level} className="h-2" />
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
+                              {/* 进度条 */}
+                              <Progress value={skill.level} className="h-1.5 mb-2" />
+                              {/* 补充说明（可选） */}
+                              {skill.description && (
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {skill.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
                 {/* 未分类的技能 */}
@@ -878,46 +890,60 @@ export default function HomePage() {
                   const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
                   if (uncategorizedSkills.length === 0) return null;
                   return (
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-slate-400 rounded-full"></span>
-                        其他
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {uncategorizedSkills.map((skill) => (
-                          <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-white dark:bg-slate-800">
-                            <CardContent className="p-4">
+                    <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+                      <CardContent className="p-5 sm:p-6">
+                        <h3 className="text-base font-semibold mb-4 text-slate-700 dark:text-slate-300">
+                          其他
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {uncategorizedSkills.map((skill) => (
+                            <div 
+                              key={skill.id} 
+                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            >
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold">{skill.name}</h4>
-                                <Badge variant="secondary" className="text-xs">{skill.level}%</Badge>
+                                <h4 className="font-medium text-sm">{skill.name}</h4>
+                                <span className="text-xs text-muted-foreground">{skill.level}%</span>
                               </div>
-                              <Progress value={skill.level} className="h-2" />
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
+                              <Progress value={skill.level} className="h-1.5 mb-2" />
+                              {skill.description && (
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {skill.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })()}
               </div>
             ) : (
               // 默认展示（无分类时）
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {skills.map((skill) => (
-                  <Card key={skill.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{skill.name}</h3>
-                        {skill.category && <Badge variant="secondary">{skill.category}</Badge>}
+              <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+                <CardContent className="p-5 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {skills.map((skill) => (
+                      <div 
+                        key={skill.id} 
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-sm">{skill.name}</h4>
+                          <span className="text-xs text-muted-foreground">{skill.level}%</span>
+                        </div>
+                        <Progress value={skill.level} className="h-1.5 mb-2" />
+                        {skill.description && (
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {skill.description}
+                          </p>
+                        )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Progress value={skill.level} className="flex-1" />
-                        <span className="text-sm text-muted-foreground w-12">{skill.level}%</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </section>
         ) : null;

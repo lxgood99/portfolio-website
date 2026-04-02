@@ -110,6 +110,7 @@ export const skills = pgTable(
     name: varchar("name", { length: 100 }).notNull(),
     level: integer("level").default(80),
     category: varchar("category", { length: 100 }),
+    description: text("description"), // 技能补充说明
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
