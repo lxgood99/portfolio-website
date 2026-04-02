@@ -84,6 +84,7 @@
 - 联系方式管理（邮箱、电话、微信二维码、开关显示）
 - 模块排序设置（全局拖拽排序、显示控制）
 - 数据统计（访问量统计，仅后台可见）
+- 开发日志（项目历程记录，仅后台可见）
 
 ## 数据库表结构
 
@@ -119,6 +120,9 @@
 
 ### contact_info - 联系方式
 - id, email, phone, wechat_qr_key, wechat_id, is_visible, show_email, show_phone, show_wechat
+
+### dev_logs - 开发日志
+- id, version, title, created_at, requirements, completed_features, bug_fixes, notes, order_index
 
 ## 包管理规范
 

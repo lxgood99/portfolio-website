@@ -15,7 +15,8 @@ import {
   FileText,
   Settings,
   BarChart3,
-  Mail
+  Mail,
+  Notebook
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -96,6 +97,13 @@ export default function DashboardPage() {
       icon: BarChart3,
       href: '/admin/analytics',
       color: 'bg-indigo-500',
+    },
+    {
+      title: '开发日志',
+      description: '项目开发历程记录（仅后台可见）',
+      icon: Notebook,
+      href: '/admin/dev-logs',
+      color: 'bg-amber-500',
     },
   ];
 
