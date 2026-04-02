@@ -849,48 +849,83 @@ export default function HomePage() {
             {/* 单一大卡片 + 顶部标签页切换 */}
             <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
               <CardContent className="p-0">
-                {/* 顶部标签栏 */}
-                <div className="flex overflow-x-auto border-b border-slate-200 dark:border-slate-700 scrollbar-hide">
-                  {skillCategories.map((cat) => {
-                    const catSkills = skills.filter(s => s.category === cat.name);
-                    if (catSkills.length === 0) return null;
-                    const isActive = activeSkillCategory === cat.name;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActiveSkillCategory(cat.name)}
-                        className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                          isActive
-                            ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    );
-                  })}
-                  {/* 未分类标签 */}
-                  {(() => {
-                    const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
-                    if (uncategorizedSkills.length === 0) return null;
-                    const isActive = activeSkillCategory === '其他';
-                    return (
-                      <button
-                        onClick={() => setActiveSkillCategory('其他')}
-                        className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                          isActive
-                            ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
-                        }`}
-                      >
-                        其他
-                      </button>
-                    );
-                  })()}
+                {/* 顶部标签栏 + 图例 */}
+                <div className="flex items-center border-b border-slate-200 dark:border-slate-700">
+                  {/* 左侧标签 */}
+                  <div className="flex overflow-x-auto scrollbar-hide flex-1">
+                    {skillCategories.map((cat) => {
+                      const catSkills = skills.filter(s => s.category === cat.name);
+                      if (catSkills.length === 0) return null;
+                      const isActive = activeSkillCategory === cat.name;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => setActiveSkillCategory(cat.name)}
+                          className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                            isActive
+                              ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
+                      );
+                    })}
+                    {/* 未分类标签 */}
+                    {(() => {
+                      const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                      if (uncategorizedSkills.length === 0) return null;
+                      const isActive = activeSkillCategory === '其他';
+                      return (
+                        <button
+                          onClick={() => setActiveSkillCategory('其他')}
+                          className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                            isActive
+                              ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
+                          }`}
+                        >
+                          其他
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  {/* 右侧图例 */}
+                  <div className="hidden sm:flex items-center gap-1 px-4 py-3 text-[10px] text-slate-400 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700">
+                    <span className="flex items-center gap-0.5">
+                      <span className="w-2 h-0.5 bg-slate-300 dark:bg-slate-600 rounded"></span>
+                      入门
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">→</span>
+                    <span className="flex items-center gap-0.5">
+                      <span className="w-3 h-0.5 bg-slate-400 dark:bg-slate-500 rounded"></span>
+                      掌握
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">→</span>
+                    <span className="flex items-center gap-0.5">
+                      <span className="w-4 h-0.5 bg-slate-500 dark:bg-slate-400 rounded"></span>
+                      熟练
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">→</span>
+                    <span className="flex items-center gap-0.5">
+                      <span className="w-5 h-0.5 bg-primary rounded"></span>
+                      精通
+                    </span>
+                  </div>
                 </div>
                 
                 {/* 内容区域 */}
                 <div className="p-4 sm:p-6">
+                  {/* 手机端图例 */}
+                  <div className="sm:hidden flex items-center justify-center gap-2 mb-4 text-[10px] text-slate-400 dark:text-slate-500">
+                    <span>入门</span>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span>掌握</span>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span>熟练</span>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="text-primary">精通</span>
+                  </div>
                   {/* 当前分类的技能列表 */}
                   {(() => {
                     let currentSkills: Skill[] = [];
