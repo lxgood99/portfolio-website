@@ -140,15 +140,17 @@ export function RichTextEditor({
   }
 
   return (
-    <div className={`border rounded-md overflow-hidden bg-white dark:bg-slate-900 ${className}`}>
-      {/* 工具栏 */}
+    <div className={`border rounded-md bg-white dark:bg-slate-900 ${className}`}>
+      {/* 工具栏 - 使用 overflow-visible 让颜色选择器能弹出 */}
       <div 
-        className={`transition-all duration-200 overflow-hidden ${
-          showToolbar ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+        className={`transition-all duration-200 overflow-visible ${
+          showToolbar ? 'opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}
-        onMouseDown={(e) => e.preventDefault()} // 阻止工具栏点击导致失焦
       >
-        <div className="flex items-center gap-0.5 p-1.5 border-b bg-slate-50 dark:bg-slate-800 flex-wrap">
+        <div 
+          className="flex items-center gap-0.5 p-1.5 border-b bg-slate-50 dark:bg-slate-800 flex-wrap"
+          onMouseDown={(e) => e.preventDefault()} // 阻止工具栏点击导致失焦
+        >
           {/* 加粗 */}
           <Button
             type="button"
