@@ -607,7 +607,7 @@ export default function HomePage() {
                       </span>
                     </div>
                     {exp.description && (
-                      <div className="mt-3 text-muted-foreground">
+                      <div className="mt-5 text-muted-foreground">
                         {exp.description.includes('<') && exp.description.includes('>') ? (
                           // 富文本内容
                           <RichTextContent html={exp.description} />
@@ -666,7 +666,7 @@ export default function HomePage() {
                     </div>
                     {edu.description && (
                       <p 
-                        className="mt-3 text-muted-foreground whitespace-pre-wrap"
+                        className="mt-5 text-muted-foreground whitespace-pre-wrap"
                         style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
                       >
                         {edu.description}
