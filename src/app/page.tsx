@@ -91,6 +91,9 @@ interface Education {
   description_align?: string;
   start_date: string;
   end_date: string;
+  awards?: string;
+  gpa?: string;
+  ranking?: string;
 }
 
 interface Skill {
@@ -664,6 +667,23 @@ export default function HomePage() {
                         {edu.start_date} - {edu.end_date || '至今'}
                       </span>
                     </div>
+                    {/* 第二行：奖学金/荣誉 | GPA | 专业排名（三列对齐） */}
+                    {(edu.awards || edu.gpa || edu.ranking) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4 mt-5">
+                        {/* 左侧：奖学金/荣誉 */}
+                        <span className="text-sm text-muted-foreground text-left">
+                          {edu.awards}
+                        </span>
+                        {/* 中间：GPA（居中） */}
+                        <span className="text-sm text-muted-foreground text-center">
+                          {edu.gpa && `GPA：${edu.gpa}`}
+                        </span>
+                        {/* 右侧：专业排名 */}
+                        <span className="text-sm text-muted-foreground text-right">
+                          {edu.ranking && `专业排名 ${edu.ranking}`}
+                        </span>
+                      </div>
+                    )}
                     {edu.description && (
                       <p 
                         className="mt-5 text-muted-foreground whitespace-pre-wrap"

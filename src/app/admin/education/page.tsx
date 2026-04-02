@@ -51,6 +51,9 @@ interface Education {
   start_date: string;
   end_date: string;
   order: number;
+  awards?: string;
+  gpa?: string;
+  ranking?: string;
 }
 
 interface SortableItemProps {
@@ -120,6 +123,9 @@ export default function EducationPage() {
     description_align: 'left',
     start_date: '',
     end_date: '',
+    awards: '',
+    gpa: '',
+    ranking: '',
   });
 
   const sensors = useSensors(
@@ -186,6 +192,9 @@ export default function EducationPage() {
         description_align: education.description_align ?? 'left',
         start_date: education.start_date ?? '',
         end_date: education.end_date ?? '',
+        awards: education.awards ?? '',
+        gpa: education.gpa ?? '',
+        ranking: education.ranking ?? '',
       });
     } else {
       setEditingEducation(null);
@@ -197,6 +206,9 @@ export default function EducationPage() {
         description_align: 'left',
         start_date: '',
         end_date: '',
+        awards: '',
+        gpa: '',
+        ranking: '',
       });
     }
     setDialogOpen(true);
@@ -397,6 +409,39 @@ export default function EducationPage() {
                   <SelectItem value="justify">两端对齐</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            {/* 学术成绩信息 */}
+            <div className="border-t pt-4 mt-4">
+              <h4 className="text-sm font-medium mb-3 text-muted-foreground">学术成绩信息（选填）</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="awards">奖学金/荣誉</Label>
+                  <Input
+                    id="awards"
+                    value={formData.awards}
+                    onChange={(e) => setFormData({ ...formData, awards: e.target.value })}
+                    placeholder="如：国家奖学金"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gpa">GPA</Label>
+                  <Input
+                    id="gpa"
+                    value={formData.gpa}
+                    onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
+                    placeholder="如：3.8/4.0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ranking">专业排名</Label>
+                  <Input
+                    id="ranking"
+                    value={formData.ranking}
+                    onChange={(e) => setFormData({ ...formData, ranking: e.target.value })}
+                    placeholder="如：前5%"
+                  />
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>

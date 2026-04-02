@@ -90,6 +90,9 @@ export const educations = pgTable(
     end_date: varchar("end_date", { length: 20 }),
     description: text("description"),
     description_align: varchar("description_align", { length: 20 }).default('left'), // left, center, right, justify
+    awards: text("awards"), // 奖学金/荣誉
+    gpa: varchar("gpa", { length: 50 }), // GPA
+    ranking: varchar("ranking", { length: 50 }), // 专业排名
     order: integer("order").notNull().default(0),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
