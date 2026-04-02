@@ -186,7 +186,7 @@ export default function SkillsPage() {
   const [formData, setFormData] = useState({
     name: '',
     level: 80,
-    category: '',
+    category: '__none__',
   });
   const [categoryForm, setCategoryForm] = useState({ name: '' });
   const [activeTab, setActiveTab] = useState('skills');
@@ -299,14 +299,14 @@ export default function SkillsPage() {
       setFormData({
         name: skill.name ?? '',
         level: skill.level ?? 80,
-        category: skill.category ?? '',
+        category: skill.category ?? '__none__',
       });
     } else {
       setEditingSkill(null);
       setFormData({
         name: '',
         level: 80,
-        category: '',
+        category: '__none__',
       });
     }
     setDialogOpen(true);
@@ -318,7 +318,7 @@ export default function SkillsPage() {
 
     const body = {
       ...formData,
-      category: formData.category || null,
+      category: formData.category === '__none__' ? null : formData.category,
       order: editingSkill ? editingSkill.order : skills.length,
     };
 
@@ -651,7 +651,7 @@ export default function SkillsPage() {
                   <SelectValue placeholder="选择分类（可选）" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">未分类</SelectItem>
+                  <SelectItem value="__none__">未分类</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.name}>
                       {category.name}
