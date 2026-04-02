@@ -592,27 +592,39 @@ export default function HomePage() {
               {workExperiences.map((exp) => (
                 <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    {/* 手机端：岗位居中放大加粗第一行，公司/时间第二行缩小变浅左右分布 */}
-                    {/* 电脑端：公司 | 岗位 | 时间 三列对齐 */}
-                    {/* 手机端第一行：岗位居中放大加粗 */}
-                    <div className="sm:hidden text-xl font-bold text-center mb-2">
-                      {exp.position}
+                    {/* ========== 手机端布局（分行展示） ========== */}
+                    <div className="sm:hidden space-y-1">
+                      {/* 第一行：公司全称（黑色、常规字号） */}
+                      <div className="text-base font-semibold text-foreground">
+                        {exp.company}
+                      </div>
+                      {/* 第二行：职位名称（缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground">
+                        {exp.position}
+                      </div>
+                      {/* 第三行：时间信息（右对齐、缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {exp.start_date} - {exp.end_date || '至今'}
+                        {exp.location && ` · ${exp.location}`}
+                      </div>
                     </div>
-                    {/* 手机端第二行 + 电脑端三列 */}
-                    <div className="flex justify-between sm:grid sm:grid-cols-3 sm:items-center gap-2 sm:gap-4">
+                    
+                    {/* ========== 电脑端布局（三列对齐） ========== */}
+                    <div className="hidden sm:grid sm:grid-cols-3 sm:items-center gap-4">
                       {/* 左侧：公司名称 */}
-                      <span className="text-sm sm:text-lg text-muted-foreground sm:text-primary sm:font-semibold text-left truncate">
+                      <span className="text-lg font-semibold text-primary text-left">
                         {exp.company}
                       </span>
-                      {/* 电脑端中间：岗位名称（居中） */}
-                      <span className="hidden sm:block text-lg font-semibold text-center">
+                      {/* 中间：岗位名称（居中） */}
+                      <span className="text-lg font-semibold text-center">
                         {exp.position}
                       </span>
                       {/* 右侧：时间 + 地点 */}
-                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1 shrink-0">
+                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
                         <Calendar className="h-4 w-4" />
                         {exp.start_date} - {exp.end_date || '至今'}
-                        {exp.location && <span className="hidden sm:inline"> · {exp.location}</span>}
+                        {exp.location && ` · ${exp.location}`}
                       </span>
                     </div>
                     {exp.description && (
@@ -657,48 +669,75 @@ export default function HomePage() {
               {educations.map((edu) => (
                 <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    {/* 手机端：学位专业居中放大加粗第一行，学校/时间第二行缩小变浅左右分布 */}
-                    {/* 电脑端：学校 | 学位专业 | 时间 三列对齐 */}
-                    {/* 手机端第一行：学位专业居中放大加粗 */}
-                    <div className="sm:hidden text-xl font-bold text-center mb-2">
-                      {edu.degree} · {edu.field}
-                    </div>
-                    {/* 手机端第二行 + 电脑端三列 */}
-                    <div className="flex justify-between sm:grid sm:grid-cols-3 sm:items-center gap-2 sm:gap-4">
-                      {/* 左侧：学校名称 */}
-                      <span className="text-sm sm:text-lg text-muted-foreground sm:text-primary sm:font-semibold text-left truncate">
+                    {/* ========== 手机端布局（分行展示） ========== */}
+                    <div className="sm:hidden space-y-1">
+                      {/* 第一行：学校全称（黑色、常规字号） */}
+                      <div className="text-base font-semibold text-foreground">
                         {edu.school}
-                      </span>
-                      {/* 电脑端中间：学位 · 专业（居中） */}
-                      <span className="hidden sm:block text-lg font-semibold text-center">
-                        {edu.degree} · {edu.field}
-                      </span>
-                      {/* 右侧：时间 */}
-                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1 shrink-0">
-                        <Calendar className="h-4 w-4" />
+                      </div>
+                      {/* 第二行：学历 + 专业（缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground">
+                        {edu.degree} | {edu.field}
+                      </div>
+                      {/* 第三行：时间信息（右对齐、缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                        <Calendar className="h-3 w-3" />
                         {edu.start_date} - {edu.end_date || '至今'}
-                      </span>
+                      </div>
+                      {/* 补充信息：每行一个，左对齐，缩小、灰色 */}
+                      {edu.awards && (
+                        <div className="text-sm text-muted-foreground mt-2">
+                          🏆 {edu.awards}
+                        </div>
+                      )}
+                      {edu.gpa && (
+                        <div className="text-sm text-muted-foreground">
+                          📊 GPA：{edu.gpa}
+                        </div>
+                      )}
+                      {edu.ranking && (
+                        <div className="text-sm text-muted-foreground">
+                          🏅 专业排名：{edu.ranking}
+                        </div>
+                      )}
                     </div>
-                    {/* 第二行：奖学金/荣誉 | GPA | 专业排名（三列对齐） */}
-                    {(edu.awards || edu.gpa || edu.ranking) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4 mt-5">
-                        {/* 左侧：奖学金/荣誉 */}
-                        <span className="text-muted-foreground text-left">
-                          {edu.awards}
+                    
+                    {/* ========== 电脑端布局（三列对齐） ========== */}
+                    <div className="hidden sm:block">
+                      {/* 首行：学校 | 学位专业 | 时间 */}
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        {/* 左侧：学校名称 */}
+                        <span className="text-lg font-semibold text-primary text-left">
+                          {edu.school}
                         </span>
-                        {/* 中间：GPA（居中） */}
-                        <span className="text-muted-foreground text-center">
-                          {edu.gpa && `GPA：${edu.gpa}`}
+                        {/* 中间：学位 · 专业（居中） */}
+                        <span className="text-lg font-semibold text-center">
+                          {edu.degree} · {edu.field}
                         </span>
-                        {/* 右侧：专业排名 */}
-                        <span className="text-muted-foreground text-right">
-                          {edu.ranking && `专业排名 ${edu.ranking}`}
+                        {/* 右侧：时间 */}
+                        <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {edu.start_date} - {edu.end_date || '至今'}
                         </span>
                       </div>
-                    )}
+                      {/* 第二行：奖学金/荣誉 | GPA | 专业排名 */}
+                      {(edu.awards || edu.gpa || edu.ranking) && (
+                        <div className="grid grid-cols-3 items-center gap-4 mt-5">
+                          <span className="text-muted-foreground text-left">
+                            {edu.awards}
+                          </span>
+                          <span className="text-muted-foreground text-center">
+                            {edu.gpa && `GPA：${edu.gpa}`}
+                          </span>
+                          <span className="text-muted-foreground text-right">
+                            {edu.ranking && `专业排名 ${edu.ranking}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     {edu.description && (
                       <p 
-                        className="mt-2 text-muted-foreground whitespace-pre-wrap"
+                        className="mt-2 sm:mt-2 text-muted-foreground whitespace-pre-wrap"
                         style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
                       >
                         {edu.description}
