@@ -890,41 +890,45 @@ export default function HomePage() {
                       );
                     })()}
                   </div>
-                  {/* 右侧图例 */}
-                  <div className="hidden sm:flex items-center gap-1 px-4 py-3 text-[10px] text-slate-400 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700">
-                    <span className="flex items-center gap-0.5">
-                      <span className="w-2 h-0.5 bg-slate-300 dark:bg-slate-600 rounded"></span>
-                      入门
-                    </span>
-                    <span className="text-slate-300 dark:text-slate-600">→</span>
-                    <span className="flex items-center gap-0.5">
-                      <span className="w-3 h-0.5 bg-slate-400 dark:bg-slate-500 rounded"></span>
-                      掌握
-                    </span>
-                    <span className="text-slate-300 dark:text-slate-600">→</span>
-                    <span className="flex items-center gap-0.5">
-                      <span className="w-4 h-0.5 bg-slate-500 dark:bg-slate-400 rounded"></span>
-                      熟练
-                    </span>
-                    <span className="text-slate-300 dark:text-slate-600">→</span>
-                    <span className="flex items-center gap-0.5">
-                      <span className="w-5 h-0.5 bg-primary rounded"></span>
-                      精通
-                    </span>
+                  {/* 右侧图例 - 进度条样式 */}
+                  <div className="hidden sm:flex flex-col items-center px-4 py-2 border-l border-slate-200 dark:border-slate-700">
+                    {/* 进度条 */}
+                    <div className="relative w-32 h-1.5 bg-primary/20 rounded-full">
+                      {/* 填充 */}
+                      <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
+                      {/* 分段标记 */}
+                      <div className="absolute top-0 left-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-[30%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-[60%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                    </div>
+                    {/* 标签 */}
+                    <div className="relative w-32 mt-1">
+                      <span className="absolute left-0 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">入门</span>
+                      <span className="absolute left-[30%] -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
+                      <span className="absolute left-[60%] -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
+                      <span className="absolute right-0 translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                    </div>
                   </div>
                 </div>
                 
                 {/* 内容区域 */}
                 <div className="p-4 sm:p-6">
-                  {/* 手机端图例 */}
-                  <div className="sm:hidden flex items-center justify-center gap-2 mb-4 text-[10px] text-slate-400 dark:text-slate-500">
-                    <span>入门</span>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
-                    <span>掌握</span>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
-                    <span>熟练</span>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
-                    <span className="text-primary">精通</span>
+                  {/* 手机端图例 - 进度条样式 */}
+                  <div className="sm:hidden flex flex-col items-center mb-4">
+                    <div className="relative w-full max-w-48 h-1.5 bg-primary/20 rounded-full">
+                      <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
+                      <div className="absolute top-0 left-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-[30%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 left-[60%] w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                      <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
+                    </div>
+                    <div className="relative w-full max-w-48 mt-1 flex justify-between px-0">
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">入门</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                    </div>
                   </div>
                   {/* 当前分类的技能列表 */}
                   {(() => {
