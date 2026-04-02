@@ -348,6 +348,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [activeSkillCategory, setActiveSkillCategory] = useState<string>('办公软件');
 
   // 生成设备指纹（基于浏览器特性，不涉及隐私）
   const generateDeviceFingerprint = (): string => {
@@ -845,106 +846,96 @@ export default function HomePage() {
               <Wrench className="h-6 w-6" />
               技能特长
             </h2>
-            {/* 分类卡片展示 */}
-            {skillCategories.length > 0 ? (
-              // 大分类卡片：两列并排布局，等高对齐
-              <div className="grid grid-cols-2 gap-4 items-stretch">
-                {skillCategories.map((cat) => {
-                  const catSkills = skills.filter(s => s.category === cat.name);
-                  if (catSkills.length === 0) return null;
-                  return (
-                    <Card key={cat.id} className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex flex-col">
-                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col">
-                        <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
-                          {cat.name}
-                        </h3>
-                        {/* 内层技能卡片：单列垂直排列 */}
-                        <div className="flex flex-col gap-2 flex-1">
-                          {catSkills.map((skill) => (
-                            <div 
-                              key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
-                            >
-                              {/* 技能名称 + 百分比 */}
-                              <div className="flex items-center justify-between mb-1.5">
-                                <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
-                              </div>
-                              {/* 进度条 */}
-                              <Progress value={skill.level} className="h-1 mb-1.5" />
-                              {/* 补充说明（可选） */}
-                              {skill.description && (
-                                <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                  {skill.description}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-                {/* 未分类的技能 */}
-                {(() => {
-                  const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
-                  if (uncategorizedSkills.length === 0) return null;
-                  return (
-                    <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex flex-col">
-                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col">
-                        <h3 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">
-                          其他
-                        </h3>
-                        <div className="flex flex-col gap-2 flex-1">
-                          {uncategorizedSkills.map((skill) => (
-                            <div 
-                              key={skill.id} 
-                              className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
-                            >
-                              <div className="flex items-center justify-between mb-1.5">
-                                <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
-                              </div>
-                              <Progress value={skill.level} className="h-1 mb-1.5" />
-                              {skill.description && (
-                                <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                  {skill.description}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
-              </div>
-            ) : (
-              // 默认展示（无分类时）
-              <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex flex-col gap-2">
-                    {skills.map((skill) => (
-                      <div 
-                        key={skill.id} 
-                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
+            {/* 单一大卡片 + 顶部标签页切换 */}
+            <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+              <CardContent className="p-0">
+                {/* 顶部标签栏 */}
+                <div className="flex overflow-x-auto border-b border-slate-200 dark:border-slate-700 scrollbar-hide">
+                  {skillCategories.map((cat) => {
+                    const catSkills = skills.filter(s => s.category === cat.name);
+                    if (catSkills.length === 0) return null;
+                    const isActive = activeSkillCategory === cat.name;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveSkillCategory(cat.name)}
+                        className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                          isActive
+                            ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
+                        }`}
                       >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="font-medium text-xs sm:text-sm truncate">{skill.name}</h4>
-                          <span className="text-[10px] sm:text-xs text-muted-foreground ml-1 shrink-0">{skill.level}%</span>
+                        {cat.name}
+                      </button>
+                    );
+                  })}
+                  {/* 未分类标签 */}
+                  {(() => {
+                    const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                    if (uncategorizedSkills.length === 0) return null;
+                    const isActive = activeSkillCategory === '其他';
+                    return (
+                      <button
+                        onClick={() => setActiveSkillCategory('其他')}
+                        className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                          isActive
+                            ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
+                        }`}
+                      >
+                        其他
+                      </button>
+                    );
+                  })()}
+                </div>
+                
+                {/* 内容区域 */}
+                <div className="p-4 sm:p-6">
+                  {/* 当前分类的技能列表 */}
+                  {(() => {
+                    let currentSkills: Skill[] = [];
+                    if (activeSkillCategory === '其他') {
+                      currentSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                    } else {
+                      currentSkills = skills.filter(s => s.category === activeSkillCategory);
+                    }
+                    
+                    if (currentSkills.length === 0) {
+                      return (
+                        <div className="text-center text-muted-foreground py-8">
+                          暂无技能数据
                         </div>
-                        <Progress value={skill.level} className="h-1 mb-1.5" />
-                        {skill.description && (
-                          <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                            {skill.description}
-                          </p>
-                        )}
+                      );
+                    }
+                    
+                    return (
+                      <div className="flex flex-col gap-3">
+                        {currentSkills.map((skill) => (
+                          <div 
+                            key={skill.id} 
+                            className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 sm:p-4 transition-all duration-200 hover:shadow-md hover:bg-slate-100 dark:hover:bg-slate-700/70 cursor-default"
+                          >
+                            {/* 技能名称 + 百分比 */}
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-sm sm:text-base">{skill.name}</h4>
+                              <span className="text-xs sm:text-sm text-muted-foreground ml-2 shrink-0">{skill.level}%</span>
+                            </div>
+                            {/* 进度条 */}
+                            <Progress value={skill.level} className="h-1.5 mb-2" />
+                            {/* 补充说明（可选） */}
+                            {skill.description && (
+                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                {skill.description}
+                              </p>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                    );
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
           </section>
         ) : null;
 
