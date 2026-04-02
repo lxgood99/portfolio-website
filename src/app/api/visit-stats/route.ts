@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 
-// 获取客户端真实IP
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIP = request.headers.get('x-real-ip');
-  const cfIP = request.headers.get('cf-connecting-ip');
-  
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  if (realIP) {
-    return realIP.trim();
-  }
-  if (cfIP) {
-    return cfIP.trim();
-  }
-  return 'unknown';
-}
-
 // 获取今天的日期字符串
 function getTodayStr(): string {
   return new Date().toISOString().split('T')[0];
@@ -68,20 +50,25 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const client = getSupabaseClient();
-    const clientIP = getClientIP(request);
+    const body = await request.json();
+    const { deviceId } = body;
+    
+    // 如果没有设备ID，生成一个基于时间戳的临时ID
+    const deviceIdFinal = deviceId || `device_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const today = getTodayStr();
     const now = new Date().toISOString();
 
-    // 1. 尝试插入IP记录（如果已存在会失败）
+    // 1. 尝试插入设备记录（如果已存在会失败）
+    // 复用 visit_daily_ips 表，将 ip_address 字段存储 device_id
     const { error: insertError } = await client
       .from('visit_daily_ips')
       .insert({
-        ip_address: clientIP,
+        ip_address: deviceIdFinal, // 存储 device_id
         visit_date: today,
         first_visit_at: now,
       });
 
-    // 2. 如果插入成功，说明是新IP今天首次访问
+    // 2. 如果插入成功，说明是新设备今天首次访问
     if (!insertError) {
       // 更新今日访问统计
       await updateTodayStats(client, today, now);
@@ -89,11 +76,11 @@ export async function POST(request: NextRequest) {
       // 更新累计访问总量
       await updateCumulativeVisits(client);
     } else if (insertError.code === '23505') {
-      // 唯一约束冲突，说明该IP今天已访问过，不计数
-      console.log(`IP ${clientIP} 今天已访问过，不重复计数`);
+      // 唯一约束冲突，说明该设备今天已访问过，不计数
+      console.log(`设备 ${deviceIdFinal} 今天已访问过，不重复计数`);
     } else {
       // 其他错误，记录日志但不影响用户体验
-      console.error('插入IP记录失败:', insertError);
+      console.error('插入设备记录失败:', insertError);
     }
 
     // 3. 更新最后访问时间（每次访问都更新）
@@ -239,11 +226,6 @@ async function cleanupOldData(client: ReturnType<typeof getSupabaseClient>) {
 
   if (recentDates && recentDates.length > 0) {
     const datesToKeep = recentDates.map((d: { date: string }) => d.date);
-    
-    // 删除不在保留列表中的每日统计
-    for (const d of datesToKeep) {
-      // 先获取所有日期
-    }
     
     // 获取所有日期并删除超过5天的
     const { data: allDates } = await client

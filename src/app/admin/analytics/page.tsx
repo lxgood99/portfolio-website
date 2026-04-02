@@ -309,11 +309,12 @@ export default function AnalyticsPage() {
             <CardTitle className="text-base">统计规则说明</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>• 同一IP每天只记1次访问，不重复计数</p>
+            <p>• 同一设备每天只记1次访问，不重复计数</p>
+            <p>• 同一WiFi下，电脑、手机、平板分别算独立设备</p>
             <p>• 今日访问量每日零点自动重置</p>
-            <p>• 累计访问总量持续累计，同一IP第二天访问继续+1</p>
+            <p>• 累计访问总量持续累计，同一设备第二天访问继续+1</p>
             <p>• 最近5日数据滚动显示，超过5天自动删除</p>
-            <p>• 清零按钮仅影响顶部卡片显示，不影响累计访问总量</p>
+            <p>• 使用设备指纹区分设备，不收集IP等隐私信息</p>
           </CardContent>
         </Card>
       </main>

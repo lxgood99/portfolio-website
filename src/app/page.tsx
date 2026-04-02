@@ -348,14 +348,80 @@ export default function HomePage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
+  // 生成设备指纹（基于浏览器特性，不涉及隐私）
+  const generateDeviceFingerprint = (): string => {
+    try {
+      const components = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || '',
+        navigator.platform || '',
+        // 使用 canvas 指纹增强唯一性
+        (() => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.textBaseline = 'top';
+              ctx.font = '14px Arial';
+              ctx.fillStyle = '#f60';
+              ctx.fillRect(125, 1, 62, 20);
+              ctx.fillStyle = '#069';
+              ctx.fillText('fingerprint', 2, 15);
+              return canvas.toDataURL().slice(-50);
+            }
+          } catch {
+            return '';
+          }
+          return '';
+        })(),
+      ];
+      
+      // 简单哈希函数
+      const str = components.join('|');
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return 'device_' + Math.abs(hash).toString(36);
+    } catch {
+      // 降级方案：使用随机ID存储在localStorage
+      let storedId = localStorage.getItem('device_id');
+      if (!storedId) {
+        storedId = 'device_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+        localStorage.setItem('device_id', storedId);
+      }
+      return storedId;
+    }
+  };
+
+  // 记录访问（使用设备指纹）
+  const recordVisit = async () => {
+    try {
+      const deviceId = generateDeviceFingerprint();
+      await fetch('/api/visit-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId }),
+      });
+    } catch {
+      // 静默失败
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      // 记录访问统计（静默执行，不阻塞页面加载）
-      fetch('/api/visit-stats', { method: 'POST' }).catch(() => {});
+      // 记录访问统计（使用设备指纹去重）
+      recordVisit().catch(() => {});
 
       const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
         fetch('/api/profile'),
