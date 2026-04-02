@@ -116,11 +116,10 @@ export function RichTextEditor({
 
   const setTextColor = useCallback((color: string) => {
     if (!editor) return;
-    editor.chain().focus();
     if (color) {
-      editor.chain().setColor(color).run();
+      editor.chain().focus().setColor(color).run();
     } else {
-      editor.chain().unsetColor().run();
+      editor.chain().focus().unsetColor().run();
     }
     setShowColorPicker(false);
   }, [editor]);
@@ -202,12 +201,16 @@ export function RichTextEditor({
             </Button>
             
             {showColorPicker && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-50 min-w-[140px]">
+              <div 
+                className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-50 min-w-[140px]"
+                onMouseDown={(e) => e.preventDefault()} // 阻止失焦，保持编辑器焦点
+              >
                 <div className="grid grid-cols-3 gap-1">
                   {TEXT_COLORS.map((color) => (
                     <button
                       key={color.name}
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()} // 阻止失焦
                       onClick={() => setTextColor(color.value)}
                       className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs hover:bg-slate-100 dark:hover:bg-slate-700 whitespace-nowrap"
                     >
