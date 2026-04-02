@@ -592,18 +592,23 @@ export default function HomePage() {
               {workExperiences.map((exp) => (
                 <Card key={exp.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    {/* 首行：公司 | 岗位 | 时间+地点（三列对齐） */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
-                      {/* 左侧：公司名称 */}
-                      <span className="text-lg font-semibold text-primary text-left">
-                        {exp.company}
-                      </span>
-                      {/* 中间：岗位名称（居中） */}
-                      <span className="text-lg font-semibold text-center">
+                    {/* 手机端：标题居中第一行，公司/时间第二行左右分布 */}
+                    {/* 电脑端：公司 | 岗位 | 时间 三列对齐 */}
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
+                      {/* 手机端第一行：岗位居中 */}
+                      <span className="sm:hidden text-lg font-semibold text-center order-1">
                         {exp.position}
                       </span>
-                      {/* 右侧：时间 + 地点 */}
-                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                      {/* 手机端第二行左侧：公司名称 */}
+                      <span className="text-lg font-semibold text-primary text-left order-2 sm:order-1">
+                        {exp.company}
+                      </span>
+                      {/* 电脑端中间：岗位名称（居中） */}
+                      <span className="hidden sm:block text-lg font-semibold text-center order-2">
+                        {exp.position}
+                      </span>
+                      {/* 手机端第二行右侧 & 电脑端右侧：时间 + 地点 */}
+                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1 order-3">
                         <Calendar className="h-4 w-4" />
                         {exp.start_date} - {exp.end_date || '至今'}
                         {exp.location && ` · ${exp.location}`}
@@ -651,18 +656,23 @@ export default function HomePage() {
               {educations.map((edu) => (
                 <Card key={edu.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
                   <CardContent className="p-6">
-                    {/* 首行：学校 | 学位·专业 | 时间（三列对齐） */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
-                      {/* 左侧：学校名称 */}
-                      <span className="text-lg font-semibold text-primary text-left">
-                        {edu.school}
-                      </span>
-                      {/* 中间：学位 · 专业（居中） */}
-                      <span className="text-lg font-semibold text-center">
+                    {/* 手机端：学位专业居中第一行，学校/时间第二行左右分布 */}
+                    {/* 电脑端：学校 | 学位专业 | 时间 三列对齐 */}
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-1 sm:gap-4">
+                      {/* 手机端第一行：学位专业居中 */}
+                      <span className="sm:hidden text-lg font-semibold text-center order-1">
                         {edu.degree} · {edu.field}
                       </span>
-                      {/* 右侧：时间 */}
-                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                      {/* 手机端第二行左侧：学校名称 */}
+                      <span className="text-lg font-semibold text-primary text-left order-2 sm:order-1">
+                        {edu.school}
+                      </span>
+                      {/* 电脑端中间：学位 · 专业（居中） */}
+                      <span className="hidden sm:block text-lg font-semibold text-center order-2">
+                        {edu.degree} · {edu.field}
+                      </span>
+                      {/* 手机端第二行右侧 & 电脑端右侧：时间 */}
+                      <span className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1 order-3">
                         <Calendar className="h-4 w-4" />
                         {edu.start_date} - {edu.end_date || '至今'}
                       </span>
