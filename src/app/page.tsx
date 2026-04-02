@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PDFViewer } from '@/components/PDFViewer';
+import { RichTextContent } from '@/components/RichTextContent';
 import { 
   Mail, 
   Phone, 
@@ -600,12 +601,20 @@ export default function HomePage() {
                       </div>
                     </div>
                     {exp.description && (
-                      <p 
-                        className="mt-3 text-muted-foreground whitespace-pre-wrap"
-                        style={{ textAlign: (exp.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                      >
-                        {exp.description}
-                      </p>
+                      <div className="mt-3 text-muted-foreground">
+                        {exp.description.includes('<') && exp.description.includes('>') ? (
+                          // 富文本内容
+                          <RichTextContent html={exp.description} />
+                        ) : (
+                          // 普通文本，保持兼容性
+                          <p 
+                            className="whitespace-pre-wrap"
+                            style={{ textAlign: (exp.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                          >
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
                     )}
                     {/* 工作经历图片展示 */}
                     {exp.work_experience_images && exp.work_experience_images.length > 0 && (

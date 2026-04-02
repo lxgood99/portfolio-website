@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,6 +22,8 @@ import {
 import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { RichTextEditor } from '@/components/RichTextEditor';
+import { RichTextContent } from '@/components/RichTextContent';
 import {
   DndContext,
   closestCenter,
@@ -117,7 +118,9 @@ function SortableItem({ experience, onEdit, onDelete }: SortableItemProps) {
           </div>
         </div>
         {experience.description && (
-          <p className="text-sm text-muted-foreground mt-2">{experience.description}</p>
+          <div className="text-sm text-muted-foreground mt-2">
+            <RichTextContent html={experience.description} />
+          </div>
         )}
       </div>
     </div>
@@ -529,32 +532,14 @@ export default function ExperiencePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">工作描述</Label>
-              <Textarea
-                id="description"
+              <Label>工作描述</Label>
+              <RichTextEditor
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="描述您的工作内容和成就...&#10;支持换行，按Enter键换行"
-                rows={4}
+                onChange={(html) => setFormData({ ...formData, description: html })}
+                placeholder="描述您的工作内容和成就...&#10;支持加粗、颜色、列表等格式"
+                minHeight={150}
               />
-              <p className="text-xs text-muted-foreground">支持换行和空格</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description_align">描述对齐方式</Label>
-              <Select
-                value={formData.description_align}
-                onValueChange={(value) => setFormData({ ...formData, description_align: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择对齐方式" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="left">左对齐</SelectItem>
-                  <SelectItem value="center">居中</SelectItem>
-                  <SelectItem value="right">右对齐</SelectItem>
-                  <SelectItem value="justify">两端对齐</SelectItem>
-                </SelectContent>
-              </Select>
+              <p className="text-xs text-muted-foreground">支持加粗、颜色、下划线、列表等格式，点击编辑框显示工具栏</p>
             </div>
 
             {/* 图片上传区域 */}
