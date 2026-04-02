@@ -602,8 +602,8 @@ export default function HomePage() {
                       <div className="text-sm text-muted-foreground">
                         {exp.position}
                       </div>
-                      {/* 第三行：时间信息（右对齐、缩小、灰色） */}
-                      <div className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                      {/* 第三行：时间信息（左对齐、缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {exp.start_date} - {exp.end_date || '至今'}
                         {exp.location && ` · ${exp.location}`}
@@ -633,9 +633,19 @@ export default function HomePage() {
                           // 富文本内容
                           <RichTextContent html={exp.description} />
                         ) : (
-                          // 普通文本，保持兼容性
+                          // 普通文本，手机端段落间距增加
+                          <div className="sm:hidden space-y-2">
+                            {exp.description.split('\n').map((line, idx) => (
+                              <p key={idx} className="whitespace-pre-wrap">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {/* 电脑端普通文本 */}
+                        {!exp.description.includes('<') && !exp.description.includes('>') && (
                           <p 
-                            className="whitespace-pre-wrap"
+                            className="hidden sm:block whitespace-pre-wrap"
                             style={{ textAlign: (exp.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
                           >
                             {exp.description}
@@ -679,8 +689,8 @@ export default function HomePage() {
                       <div className="text-sm text-muted-foreground">
                         {edu.degree} | {edu.field}
                       </div>
-                      {/* 第三行：时间信息（右对齐、缩小、灰色） */}
-                      <div className="text-sm text-muted-foreground text-right flex items-center justify-end gap-1">
+                      {/* 第三行：时间信息（左对齐、缩小、灰色） */}
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {edu.start_date} - {edu.end_date || '至今'}
                       </div>
@@ -736,12 +746,23 @@ export default function HomePage() {
                       )}
                     </div>
                     {edu.description && (
-                      <p 
-                        className="mt-2 sm:mt-2 text-muted-foreground whitespace-pre-wrap"
-                        style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                      >
-                        {edu.description}
-                      </p>
+                      <>
+                        {/* 手机端：段落间距增加 */}
+                        <div className="sm:hidden mt-2 text-muted-foreground space-y-2">
+                          {edu.description.split('\n').map((line, idx) => (
+                            <p key={idx} className="whitespace-pre-wrap">
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                        {/* 电脑端：原有样式 */}
+                        <p 
+                          className="hidden sm:block mt-2 text-muted-foreground whitespace-pre-wrap"
+                          style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                        >
+                          {edu.description}
+                        </p>
+                      </>
                     )}
                   </CardContent>
                 </Card>
