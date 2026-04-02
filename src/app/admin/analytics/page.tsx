@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
     return `${month}月${day}日 ${weekday}`;
   };
 
-  // 生成最近5天的数据（包括0访问的日期）
+  // 生成最近5天的数据（包括0访问的日期）- 使用本地时区
   const getRecent5Days = () => {
     const result = [];
     const today = new Date();
@@ -103,7 +103,11 @@ export default function AnalyticsPage() {
     for (let i = 0; i < 5; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      // 使用本地时区格式化日期
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       
       const existingStat = dailyStats.find(s => s.date === dateStr);
       result.push({
