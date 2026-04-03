@@ -1138,6 +1138,11 @@ export default function HomePage() {
           contactInfo?.show_wechat && (contactInfo?.wechat_id || contactInfo?.wechatQrUrl),
         ].filter(Boolean).length;
 
+        // 检查是否需要显示左侧信息（邮箱或微信号）
+        const hasLeftInfo = (contactInfo?.show_email && contactInfo?.email) || (contactInfo?.show_wechat && contactInfo?.wechat_id);
+        // 检查是否需要显示二维码
+        const hasQrCode = contactInfo?.show_wechat && contactInfo?.wechatQrUrl;
+
         return contactInfo?.is_visible && visibleItems > 0 ? (
           <section key={moduleName} className="mb-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -1146,95 +1151,187 @@ export default function HomePage() {
             </h2>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
               <CardContent className="p-6">
-                <div className={`grid gap-6 ${
-                  visibleItems === 1 ? 'grid-cols-1 max-w-sm mx-auto' :
-                  visibleItems === 2 ? 'grid-cols-1 md:grid-cols-2' :
-                  'grid-cols-1 md:grid-cols-2'
-                }`}>
-                  {/* 邮箱 */}
-                  {contactInfo.show_email && contactInfo.email && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground">邮箱</p>
-                        <p className="font-medium truncate">{contactInfo.email}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(contactInfo.email);
-                          setCopiedText('email');
-                          setTimeout(() => setCopiedText(null), 2000);
-                        }}
-                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                      >
-                        {copiedText === 'email' ? '已复制' : '复制'}
-                      </button>
+                {/* 电脑端：左右两栏布局 */}
+                <div className="hidden md:flex md:items-start md:gap-8">
+                  {/* 左侧：邮箱和微信号（竖排显示） */}
+                  {hasLeftInfo && (
+                    <div className="flex flex-col gap-4 min-w-0 flex-1">
+                      {/* 邮箱 */}
+                      {contactInfo.show_email && contactInfo.email && (
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0">
+                            <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-muted-foreground">邮箱</p>
+                            <p className="font-medium truncate">{contactInfo.email}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(contactInfo.email);
+                              setCopiedText('email');
+                              setTimeout(() => setCopiedText(null), 2000);
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                          >
+                            {copiedText === 'email' ? '已复制' : '复制'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 电话（如果有的话也显示） */}
+                      {contactInfo.show_phone && contactInfo.phone && (
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg shrink-0">
+                            <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-muted-foreground">电话</p>
+                            <p className="font-medium truncate">{contactInfo.phone}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(contactInfo.phone);
+                              setCopiedText('phone');
+                              setTimeout(() => setCopiedText(null), 2000);
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                          >
+                            {copiedText === 'phone' ? '已复制' : '复制'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 微信号 */}
+                      {contactInfo.show_wechat && contactInfo.wechat_id && (
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
+                            <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088-.181-.013-.363-.027-.557-.034zm-2.89 3.015c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.97-.983zm4.844 0c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.969-.983z"/>
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-muted-foreground">微信</p>
+                            <p className="font-medium truncate">{contactInfo.wechat_id}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(contactInfo.wechat_id);
+                              setCopiedText('wechat');
+                              setTimeout(() => setCopiedText(null), 2000);
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                          >
+                            {copiedText === 'wechat' ? '已复制' : '复制'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* 电话 */}
-                  {contactInfo.show_phone && contactInfo.phone && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                        <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground">电话</p>
-                        <p className="font-medium truncate">{contactInfo.phone}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(contactInfo.phone);
-                          setCopiedText('phone');
-                          setTimeout(() => setCopiedText(null), 2000);
-                        }}
-                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                      >
-                        {copiedText === 'phone' ? '已复制' : '复制'}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 微信号 */}
-                  {contactInfo.show_wechat && contactInfo.wechat_id && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                        <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088-.181-.013-.363-.027-.557-.034zm-2.89 3.015c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.97-.983zm4.844 0c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.969-.983z"/>
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground">微信号</p>
-                        <p className="font-medium truncate">{contactInfo.wechat_id}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(contactInfo.wechat_id);
-                          setCopiedText('wechat');
-                          setTimeout(() => setCopiedText(null), 2000);
-                        }}
-                        className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                      >
-                        {copiedText === 'wechat' ? '已复制' : '复制'}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 微信二维码 */}
-                  {contactInfo.show_wechat && contactInfo.wechatQrUrl && (
-                    <div className={`${visibleItems > 1 ? 'md:col-span-2' : ''} flex justify-center mt-2`}>
+                  {/* 右侧：微信二维码（垂直居中） */}
+                  {hasQrCode && (
+                    <div className="flex items-center justify-center shrink-0">
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground mb-2">扫码添加微信</p>
                         <img
                           src={contactInfo.wechatQrUrl}
                           alt="微信二维码"
-                          className="w-32 h-32 border rounded-lg"
+                          className="w-28 h-28 border rounded-lg"
                         />
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* 手机端：保持原有自适应布局 */}
+                <div className="md:hidden">
+                  <div className="grid gap-4">
+                    {/* 邮箱 */}
+                    {contactInfo.show_email && contactInfo.email && (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0">
+                          <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-muted-foreground">邮箱</p>
+                          <p className="font-medium truncate">{contactInfo.email}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(contactInfo.email);
+                            setCopiedText('email');
+                            setTimeout(() => setCopiedText(null), 2000);
+                          }}
+                          className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                        >
+                          {copiedText === 'email' ? '已复制' : '复制'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 电话 */}
+                    {contactInfo.show_phone && contactInfo.phone && (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg shrink-0">
+                          <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-muted-foreground">电话</p>
+                          <p className="font-medium truncate">{contactInfo.phone}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(contactInfo.phone);
+                            setCopiedText('phone');
+                            setTimeout(() => setCopiedText(null), 2000);
+                          }}
+                          className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                        >
+                          {copiedText === 'phone' ? '已复制' : '复制'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 微信号 */}
+                    {contactInfo.show_wechat && contactInfo.wechat_id && (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
+                          <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088-.181-.013-.363-.027-.557-.034zm-2.89 3.015c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.97-.983zm4.844 0c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.543.434-.983.969-.983z"/>
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-muted-foreground">微信号</p>
+                          <p className="font-medium truncate">{contactInfo.wechat_id}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(contactInfo.wechat_id);
+                            setCopiedText('wechat');
+                            setTimeout(() => setCopiedText(null), 2000);
+                          }}
+                          className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
+                        >
+                          {copiedText === 'wechat' ? '已复制' : '复制'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 微信二维码 */}
+                    {contactInfo.show_wechat && contactInfo.wechatQrUrl && (
+                      <div className="flex justify-center pt-2">
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-2">扫码添加微信</p>
+                          <img
+                            src={contactInfo.wechatQrUrl}
+                            alt="微信二维码"
+                            className="w-32 h-32 border rounded-lg"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
