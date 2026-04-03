@@ -1150,12 +1150,12 @@ export default function HomePage() {
               联系方式
             </h2>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {/* 电脑端：左右两栏布局，左宽右窄 */}
                 <div className="hidden md:flex md:items-stretch">
                   {/* 左栏：邮箱和微信信息 */}
                   {hasLeftInfo && (
-                    <div className="flex flex-col gap-4 min-w-0 flex-[3] pr-6">
+                    <div className="flex flex-col gap-4 min-w-0 flex-[3] pl-5 pr-5">
                       {/* 邮箱 */}
                       {contactInfo.show_email && contactInfo.email && (
                         <div className="flex items-center gap-3">
@@ -1208,12 +1208,12 @@ export default function HomePage() {
 
                   {/* 分割线 */}
                   {hasLeftInfo && hasQrCode && (
-                    <div className="w-px bg-slate-200 dark:bg-slate-700 mx-2" />
+                    <div className="w-px bg-slate-200 dark:bg-slate-700" />
                   )}
 
                   {/* 右栏：二维码 */}
                   {hasQrCode && (
-                    <div className="flex flex-col items-center justify-center flex-[2] pl-6">
+                    <div className="flex flex-col items-center justify-center flex-[2] pl-5 pr-5">
                       <img
                         src={contactInfo.wechatQrUrl}
                         alt="微信二维码"
