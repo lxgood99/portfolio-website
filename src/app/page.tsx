@@ -1151,11 +1151,11 @@ export default function HomePage() {
             </h2>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
               <CardContent className="p-6">
-                {/* 电脑端：左右两栏布局 */}
-                <div className="hidden md:flex md:items-start md:gap-8">
-                  {/* 左侧：邮箱和微信号（竖排显示） */}
+                {/* 电脑端：左右两栏布局，左宽右窄 */}
+                <div className="hidden md:flex md:items-stretch">
+                  {/* 左栏：邮箱和微信信息 */}
                   {hasLeftInfo && (
-                    <div className="flex flex-col gap-4 min-w-0 flex-1">
+                    <div className="flex flex-col gap-4 min-w-0 flex-[3] pr-6">
                       {/* 邮箱 */}
                       {contactInfo.show_email && contactInfo.email && (
                         <div className="flex items-center gap-3">
@@ -1163,8 +1163,8 @@ export default function HomePage() {
                             <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-muted-foreground">邮箱</p>
-                            <p className="font-medium truncate">{contactInfo.email}</p>
+                            <span className="text-sm text-muted-foreground">邮箱：</span>
+                            <span className="font-medium">{contactInfo.email}</span>
                           </div>
                           <button
                             onClick={() => {
@@ -1179,29 +1179,6 @@ export default function HomePage() {
                         </div>
                       )}
 
-                      {/* 电话（如果有的话也显示） */}
-                      {contactInfo.show_phone && contactInfo.phone && (
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg shrink-0">
-                            <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-muted-foreground">电话</p>
-                            <p className="font-medium truncate">{contactInfo.phone}</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(contactInfo.phone);
-                              setCopiedText('phone');
-                              setTimeout(() => setCopiedText(null), 2000);
-                            }}
-                            className="text-xs px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shrink-0"
-                          >
-                            {copiedText === 'phone' ? '已复制' : '复制'}
-                          </button>
-                        </div>
-                      )}
-
                       {/* 微信号 */}
                       {contactInfo.show_wechat && contactInfo.wechat_id && (
                         <div className="flex items-center gap-3">
@@ -1211,8 +1188,8 @@ export default function HomePage() {
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-muted-foreground">微信</p>
-                            <p className="font-medium truncate">{contactInfo.wechat_id}</p>
+                            <span className="text-sm text-muted-foreground">微信：</span>
+                            <span className="font-medium">{contactInfo.wechat_id}</span>
                           </div>
                           <button
                             onClick={() => {
@@ -1229,17 +1206,20 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* 右侧：微信二维码（垂直居中） */}
+                  {/* 分割线 */}
+                  {hasLeftInfo && hasQrCode && (
+                    <div className="w-px bg-slate-200 dark:bg-slate-700 mx-2" />
+                  )}
+
+                  {/* 右栏：二维码 */}
                   {hasQrCode && (
-                    <div className="flex items-center justify-center shrink-0">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground mb-2">扫码添加微信</p>
-                        <img
-                          src={contactInfo.wechatQrUrl}
-                          alt="微信二维码"
-                          className="w-28 h-28 border rounded-lg"
-                        />
-                      </div>
+                    <div className="flex flex-col items-center justify-center flex-[2] pl-6">
+                      <img
+                        src={contactInfo.wechatQrUrl}
+                        alt="微信二维码"
+                        className="w-24 h-24 border rounded-lg"
+                      />
+                      <p className="text-sm text-muted-foreground mt-2">扫码添加微信</p>
                     </div>
                   )}
                 </div>
