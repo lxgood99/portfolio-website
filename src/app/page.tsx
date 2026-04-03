@@ -1153,9 +1153,9 @@ export default function HomePage() {
               <CardContent className="p-4 sm:p-6">
                 {/* 电脑端：左右两栏布局，左宽右窄 */}
                 <div className="hidden md:flex md:items-stretch">
-                  {/* 左栏：邮箱和微信信息 */}
+                  {/* 左栏：邮箱和微信信息（垂直居中） */}
                   {hasLeftInfo && (
-                    <div className="flex flex-col gap-4 min-w-0 flex-[3] pl-5 pr-5">
+                    <div className="flex flex-col justify-center gap-4 min-w-0 flex-[3] pl-5 pr-5">
                       {/* 邮箱 */}
                       {contactInfo.show_email && contactInfo.email && (
                         <div className="flex items-center gap-3">
