@@ -82,6 +82,7 @@
 - 技能管理
 - 作品集管理（多文件上传、轮播模式）
 - 联系方式管理（邮箱、电话、微信二维码、开关显示）
+- 成长规划管理（甘特图时间线、拖拽调整、断点设置）
 - 模块排序设置（全局拖拽排序、显示控制）
 - 数据统计（访问量统计，仅后台可见）
 - 开发日志（项目历程记录，仅后台可见）
@@ -123,6 +124,9 @@
 
 ### dev_logs - 开发日志
 - id, version, title, created_at, requirements, completed_features, bug_fixes, notes, order_index
+
+### timeline_items - 成长规划时间线
+- id, name, start_year, start_month, end_year, end_month, color, breaks (JSONB), order
 
 ## 包管理规范
 

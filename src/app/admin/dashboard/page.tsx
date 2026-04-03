@@ -16,7 +16,8 @@ import {
   Settings,
   BarChart3,
   Mail,
-  Notebook
+  Notebook,
+  Calendar
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -48,6 +49,13 @@ export default function DashboardPage() {
       icon: FileText,
       href: '/admin/self-introduction',
       color: 'bg-cyan-500',
+    },
+    {
+      title: '成长规划',
+      description: '管理甘特图时间线（支持拖拽调整）',
+      icon: Calendar,
+      href: '/admin/timeline',
+      color: 'bg-rose-500',
     },
     {
       title: '工作经历',

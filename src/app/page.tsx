@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PDFViewer } from '@/components/PDFViewer';
 import { RichTextContent } from '@/components/RichTextContent';
+import { GanttChartDisplay } from '@/components/gantt/GanttChartDisplay';
 import { 
   Mail, 
   Phone, 
@@ -146,6 +147,27 @@ interface ContactInfo {
   show_phone: boolean;
   show_wechat: boolean;
   wechatQrUrl?: string;
+}
+
+interface TimelineBreak {
+  startYear: number;
+  startMonth: number;
+  endYear: number;
+  endMonth: number;
+}
+
+interface TimelineItem {
+  id: number;
+  name: string;
+  start_year: number;
+  start_month: number;
+  end_year: number;
+  end_month: number;
+  color: string;
+  breaks: TimelineBreak[];
+  order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 // 图片轮播组件
@@ -346,6 +368,7 @@ export default function HomePage() {
   const [works, setWorks] = useState<Work[]>([]);
   const [moduleOrders, setModuleOrders] = useState<ModuleOrder[]>([]);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
@@ -429,7 +452,7 @@ export default function HomePage() {
       // 记录访问统计（使用设备指纹去重）
       recordVisit().catch(() => {});
 
-      const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
+      const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes, timelineRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/self-introduction'),
         fetch('/api/self-intro-cards'),
@@ -440,6 +463,7 @@ export default function HomePage() {
         fetch('/api/works'),
         fetch('/api/module-orders'),
         fetch('/api/contact-info'),
+        fetch('/api/timeline-items'),
       ]);
 
       const profileData = await profileRes.json();
@@ -555,6 +579,12 @@ export default function HomePage() {
           } catch {}
         }
         setContactInfo(contactData.data);
+      }
+
+      // 加载时间线数据
+      const timelineData = await timelineRes.json();
+      if (timelineData.success && timelineData.data) {
+        setTimelineItems(timelineData.data);
       }
     } catch (error) {
       console.error('加载数据失败:', error);
@@ -708,6 +738,19 @@ export default function HomePage() {
                 ) : (
                   <div className="text-center text-muted-foreground py-4">
                     暂无内容
+                  </div>
+                )}
+
+                {/* 甘特图板块 */}
+                {timelineItems.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                    <h3 className="font-semibold text-base sm:text-lg text-foreground mb-4 flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <span>成长规划</span>
+                    </h3>
+                    <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
+                      <GanttChartDisplay items={timelineItems} />
+                    </div>
                   </div>
                 )}
               </CardContent>
