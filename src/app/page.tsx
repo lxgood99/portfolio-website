@@ -1158,7 +1158,7 @@ export default function HomePage() {
                     <div className="flex flex-col justify-center gap-6 min-w-0 flex-[3] pl-5 pr-5">
                       {/* 邮箱 */}
                       {contactInfo.show_email && contactInfo.email && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 -mt-2">
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0">
                             <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           </div>
