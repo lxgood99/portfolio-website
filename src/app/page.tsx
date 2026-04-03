@@ -861,9 +861,7 @@ export default function HomePage() {
                 <div className="flex items-center border-b border-slate-200 dark:border-slate-700">
                   {/* 左侧标签 */}
                   <div className="flex overflow-x-auto scrollbar-hide flex-1">
-                    {skillCategories
-                      .filter(cat => cat.name !== '其他') // 排除"其他"分类，不单独显示为标签
-                      .map((cat) => {
+                    {skillCategories.map((cat) => {
                       const catSkills = skills.filter(s => s.category === cat.name);
                       if (catSkills.length === 0) return null;
                       const isActive = activeSkillCategory === cat.name;
