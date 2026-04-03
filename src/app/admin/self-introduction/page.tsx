@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Save, GripVertical, Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import {
   Dialog,
   DialogContent,
@@ -376,7 +376,7 @@ export default function SelfIntroductionPage() {
           <DialogHeader>
             <DialogTitle>{editingCard ? '编辑卡片' : '添加卡片'}</DialogTitle>
             <DialogDescription>
-              填写卡片的标题和内容，支持多段落
+              填写卡片的标题和内容，支持富文本编辑（加粗、斜体、颜色、列表等）
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -390,15 +390,16 @@ export default function SelfIntroductionPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="content">内容</Label>
-              <Textarea
-                id="content"
+              <Label>内容</Label>
+              <RichTextEditor
                 value={formContent}
-                onChange={(e) => setFormContent(e.target.value)}
-                placeholder="请输入卡片内容..."
-                rows={6}
-                className="resize-none"
+                onChange={setFormContent}
+                placeholder="请输入卡片内容，支持加粗、斜体、列表等格式..."
+                minHeight={150}
               />
+              <p className="text-xs text-muted-foreground">
+                提示：点击编辑区域显示格式工具栏，支持加粗、斜体、颜色、列表等格式
+              </p>
             </div>
           </div>
           <div className="flex justify-end gap-4">

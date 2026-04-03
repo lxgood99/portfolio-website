@@ -30,7 +30,10 @@ import {
   Wrench,
   FolderOpen,
   Download,
-  Presentation
+  Presentation,
+  Star,
+  Bot,
+  Code2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -648,6 +651,24 @@ export default function HomePage() {
     const moduleOrder = moduleOrders.find(m => m.module_name === moduleName);
     if (moduleOrder && !moduleOrder.is_visible) return null;
 
+    // 标题图标映射
+    const getTitleIcon = (title: string) => {
+      const titleLower = title.toLowerCase();
+      if (titleLower.includes('自我评价')) {
+        return <User className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 dark:text-slate-500 shrink-0" />;
+      }
+      if (titleLower.includes('优势') || titleLower.includes('优点')) {
+        return <Star className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 dark:text-slate-500 shrink-0" />;
+      }
+      if (titleLower.includes('工具') || titleLower.includes('探索')) {
+        return <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 dark:text-slate-500 shrink-0" />;
+      }
+      if (titleLower.includes('网页') || titleLower.includes('网站')) {
+        return <Code2 className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 dark:text-slate-500 shrink-0" />;
+      }
+      return null;
+    };
+
     switch (moduleName) {
       case 'self_introduction':
         return (selfIntroduction?.is_visible || selfIntroCards.length > 0) ? (
@@ -665,16 +686,18 @@ export default function HomePage() {
                         key={card.id} 
                         className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 sm:p-5 transition-all duration-200"
                       >
-                        {/* 小卡片标题 */}
+                        {/* 小卡片标题 + 图标 */}
                         {card.title && (
-                          <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2">
-                            {card.title}
+                          <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2 flex items-center gap-2">
+                            {getTitleIcon(card.title)}
+                            <span>{card.title}</span>
                           </h3>
                         )}
-                        {/* 小卡片正文 */}
-                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                          {card.content}
-                        </p>
+                        {/* 小卡片正文 - 支持富文本渲染 */}
+                        <RichTextContent 
+                          html={card.content} 
+                          className="text-sm sm:text-base text-muted-foreground [&>p]:leading-relaxed [&>p]:my-1 [&>strong]:font-semibold [&>em]:italic" 
+                        />
                       </div>
                     ))}
                   </div>
