@@ -1155,7 +1155,7 @@ export default function HomePage() {
                 <div className="hidden md:flex md:items-stretch">
                   {/* 左栏：邮箱和微信信息（垂直居中） */}
                   {hasLeftInfo && (
-                    <div className="flex flex-col justify-center gap-4 min-w-0 flex-[3] pl-5 pr-5">
+                    <div className="flex flex-col justify-center gap-6 min-w-0 flex-[3] pl-5 pr-5">
                       {/* 邮箱 */}
                       {contactInfo.show_email && contactInfo.email && (
                         <div className="flex items-center gap-3">
@@ -1213,7 +1213,7 @@ export default function HomePage() {
 
                   {/* 右栏：二维码 */}
                   {hasQrCode && (
-                    <div className="flex flex-col items-center justify-center flex-[2] pl-5 pr-5">
+                    <div className="flex flex-col items-center justify-center flex-[2] pl-5 pr-5 pt-2">
                       <img
                         src={contactInfo.wechatQrUrl}
                         alt="微信二维码"
