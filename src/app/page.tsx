@@ -58,6 +58,7 @@ interface Profile {
   custom_title: string;
   custom_content: string;
   show_custom: boolean;
+  timeline_title: string;
 }
 
 interface SelfIntroduction {
@@ -746,7 +747,7 @@ export default function HomePage() {
                   <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                     <h3 className="font-semibold text-base sm:text-lg text-foreground mb-4 flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <span>成长规划</span>
+                      <span>{profile?.timeline_title || '成长规划'}</span>
                     </h3>
                     <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
                       <GanttChartDisplay items={timelineItems} />

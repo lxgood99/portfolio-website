@@ -50,6 +50,8 @@ export const profiles = pgTable("profiles", {
   custom_title: varchar("custom_title", { length: 50 }),
   custom_content: varchar("custom_content", { length: 200 }),
   show_custom: boolean("show_custom").default(false),
+  // 甘特图标题
+  timeline_title: varchar("timeline_title", { length: 50 }).default("成长规划"),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

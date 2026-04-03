@@ -76,6 +76,7 @@ export default function TimelineAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<TimelineItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [timelineTitle, setTimelineTitle] = useState('成长规划');
   const [dragState, setDragState] = useState<{
     itemId: number;
     type: 'move' | 'resize-left' | 'resize-right';
@@ -91,6 +92,7 @@ export default function TimelineAdminPage() {
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       loadItems();
+      loadTimelineTitle();
     }
   }, [authLoading, isAuthenticated]);
 
@@ -105,6 +107,30 @@ export default function TimelineAdminPage() {
       console.error('加载时间线失败:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadTimelineTitle = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      const data = await res.json();
+      if (data.success && data.data?.timeline_title) {
+        setTimelineTitle(data.data.timeline_title);
+      }
+    } catch (error) {
+      console.error('加载标题失败:', error);
+    }
+  };
+
+  const handleSaveTitle = async (title: string) => {
+    try {
+      await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timeline_title: title }),
+      });
+    } catch (error) {
+      console.error('保存标题失败:', error);
     }
   };
 
@@ -417,13 +443,36 @@ export default function TimelineAdminPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">成长规划管理</h1>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">{timelineTitle}</h1>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">管理甘特图时间线</p>
+          </div>
         </div>
         <Button onClick={() => { setEditingItem(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
           添加任务
         </Button>
       </div>
+
+      {/* 标题设置卡片 */}
+      <Card className="mb-6">
+        <CardContent className="pt-4">
+          <div className="flex items-center gap-4">
+            <Label htmlFor="timeline-title" className="whitespace-nowrap">板块标题</Label>
+            <Input
+              id="timeline-title"
+              value={timelineTitle}
+              onChange={(e) => setTimelineTitle(e.target.value)}
+              onBlur={() => handleSaveTitle(timelineTitle)}
+              placeholder="输入标题名称"
+              className="max-w-xs"
+            />
+            <span className="text-sm text-muted-foreground">修改后点击其他位置自动保存</span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 甘特图编辑器 */}
       <Card>
