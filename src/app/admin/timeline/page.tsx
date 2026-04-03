@@ -18,9 +18,9 @@ import { ArrowLeft, Plus, Trash2, Save, X, Palette } from 'lucide-react';
 import Link from 'next/link';
 import type { TimelineItem, TimelineBreak } from '@/app/api/timeline-items/route';
 
-// 定义时间范围：2025年4月 - 2026年4月
+// 定义时间范围：2025年6月 - 2026年4月
 const START_YEAR = 2025;
-const START_MONTH = 4;
+const START_MONTH = 6;
 const END_YEAR = 2026;
 const END_MONTH = 4;
 
