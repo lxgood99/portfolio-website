@@ -501,7 +501,15 @@ export default function HomePage() {
 
       if (eduData.success) setEducations(eduData.data);
       if (skillsData.success) setSkills(skillsData.data);
-      if (skillCategoriesData.success) setSkillCategories(skillCategoriesData.data.filter((c: { is_visible: boolean }) => c.is_visible));
+      if (skillCategoriesData.success) {
+        const visibleCategories = skillCategoriesData.data.filter((c: { is_visible: boolean }) => c.is_visible);
+        setSkillCategories(visibleCategories);
+        // 自动选中第一个有技能的分类（排除"其他"）
+        const firstCategory = visibleCategories.find((c: { name: string }) => c.name !== '其他');
+        if (firstCategory) {
+          setActiveSkillCategory(firstCategory.name);
+        }
+      }
       
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
@@ -853,7 +861,9 @@ export default function HomePage() {
                 <div className="flex items-center border-b border-slate-200 dark:border-slate-700">
                   {/* 左侧标签 */}
                   <div className="flex overflow-x-auto scrollbar-hide flex-1">
-                    {skillCategories.map((cat) => {
+                    {skillCategories
+                      .filter(cat => cat.name !== '其他') // 排除"其他"分类，不单独显示为标签
+                      .map((cat) => {
                       const catSkills = skills.filter(s => s.category === cat.name);
                       if (catSkills.length === 0) return null;
                       const isActive = activeSkillCategory === cat.name;
@@ -871,21 +881,21 @@ export default function HomePage() {
                         </button>
                       );
                     })}
-                    {/* 未分类标签 */}
+                    {/* 未分类标签 - 只显示 category 为空/null 的技能 */}
                     {(() => {
-                      const uncategorizedSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                      const uncategorizedSkills = skills.filter(s => !s.category);
                       if (uncategorizedSkills.length === 0) return null;
-                      const isActive = activeSkillCategory === '其他';
+                      const isActive = activeSkillCategory === '未分类';
                       return (
                         <button
-                          onClick={() => setActiveSkillCategory('其他')}
+                          onClick={() => setActiveSkillCategory('未分类')}
                           className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                             isActive
                               ? 'text-primary border-b-2 border-primary bg-slate-50 dark:bg-slate-700/50'
                               : 'text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
                           }`}
                         >
-                          其他
+                          未分类
                         </button>
                       );
                     })()}
@@ -934,8 +944,9 @@ export default function HomePage() {
                   {/* 当前分类的技能列表 */}
                   {(() => {
                     let currentSkills: Skill[] = [];
-                    if (activeSkillCategory === '其他') {
-                      currentSkills = skills.filter(s => !s.category || !skillCategories.find(c => c.name === s.category));
+                    if (activeSkillCategory === '未分类') {
+                      // 只显示 category 为空/null 的技能
+                      currentSkills = skills.filter(s => !s.category);
                     } else {
                       currentSkills = skills.filter(s => s.category === activeSkillCategory);
                     }
