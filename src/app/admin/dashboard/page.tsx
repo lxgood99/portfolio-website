@@ -43,8 +43,8 @@ export default function DashboardPage() {
       color: 'bg-blue-500',
     },
     {
-      title: '自我评价',
-      description: '编辑自我评价内容',
+      title: '关于我',
+      description: '管理个人介绍卡片内容',
       icon: FileText,
       href: '/admin/self-introduction',
       color: 'bg-cyan-500',

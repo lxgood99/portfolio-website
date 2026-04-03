@@ -205,7 +205,7 @@ export const adminUsers = pgTable(
   (table) => [index("admin_users_username_idx").on(table.username)]
 );
 
-// 自我评价表
+// 自我评价表（保留兼容）
 export const selfIntroduction = pgTable("self_introduction", {
   id: serial().primaryKey(),
   content: text("content").notNull(),
@@ -215,6 +215,22 @@ export const selfIntroduction = pgTable("self_introduction", {
     .notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+// 自我评价卡片表
+export const selfIntroCards = pgTable(
+  "self_intro_cards",
+  {
+    id: serial().primaryKey(),
+    title: varchar("title", { length: 100 }).notNull(),
+    content: text("content").notNull(),
+    order_index: integer("order_index").notNull().default(0),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [index("self_intro_cards_order_idx").on(table.order_index)]
+);
 
 // 工作经历图片表
 export const workExperienceImages = pgTable(
@@ -340,6 +356,7 @@ export type Work = typeof works.$inferSelect;
 export type WorkItem = typeof workItems.$inferSelect;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type SelfIntroduction = typeof selfIntroduction.$inferSelect;
+export type SelfIntroCard = typeof selfIntroCards.$inferSelect;
 export type WorkExperienceImage = typeof workExperienceImages.$inferSelect;
 export type ModuleOrder = typeof moduleOrders.$inferSelect;
 export type VisitStats = typeof visitStats.$inferSelect;

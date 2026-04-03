@@ -335,6 +335,7 @@ export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [selfIntroduction, setSelfIntroduction] = useState<SelfIntroduction | null>(null);
+  const [selfIntroCards, setSelfIntroCards] = useState<Array<{ id: number; title: string; content: string }>>([]);
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -425,9 +426,10 @@ export default function HomePage() {
       // 记录访问统计（使用设备指纹去重）
       recordVisit().catch(() => {});
 
-      const [profileRes, selfIntroRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
+      const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/self-introduction'),
+        fetch('/api/self-intro-cards'),
         fetch('/api/work-experiences'),
         fetch('/api/educations'),
         fetch('/api/skills'),
@@ -469,6 +471,13 @@ export default function HomePage() {
 
       if (selfIntroData.success && selfIntroData.data) {
         setSelfIntroduction(selfIntroData.data);
+      }
+
+      if (selfIntroCardsRes.ok) {
+        const cardsData = await selfIntroCardsRes.json();
+        if (cardsData.success) {
+          setSelfIntroCards(cardsData.data);
+        }
       }
 
       if (expData.success) {
@@ -641,17 +650,43 @@ export default function HomePage() {
 
     switch (moduleName) {
       case 'self_introduction':
-        return selfIntroduction?.is_visible && selfIntroduction.content ? (
+        return (selfIntroduction?.is_visible || selfIntroCards.length > 0) ? (
           <section key={moduleName} className="mb-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <User className="h-6 w-6" />
-              自我评价
+              关于我
             </h2>
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <CardContent className="p-6">
-                <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                  {selfIntroduction.content}
-                </div>
+            <Card className="overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+              <CardContent className="p-4 sm:p-6">
+                {selfIntroCards.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {selfIntroCards.map((card) => (
+                      <div 
+                        key={card.id} 
+                        className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 sm:p-5 transition-all duration-200"
+                      >
+                        {/* 小卡片标题 */}
+                        {card.title && (
+                          <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2">
+                            {card.title}
+                          </h3>
+                        )}
+                        {/* 小卡片正文 */}
+                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                          {card.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : selfIntroduction?.content ? (
+                  <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                    {selfIntroduction.content}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-4">
+                    暂无内容
+                  </div>
+                )}
               </CardContent>
             </Card>
           </section>
