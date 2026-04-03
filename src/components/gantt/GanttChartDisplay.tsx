@@ -119,12 +119,12 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
     return (
       <div key={item.id} className="relative h-8 sm:h-9 mb-3 sm:mb-4">
         {/* 任务名称 */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-24 sm:w-32 truncate text-xs sm:text-sm font-medium pr-2 text-foreground">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-36 sm:w-44 text-xs sm:text-sm font-medium pr-2 text-foreground">
           {item.name}
         </div>
 
         {/* 任务条区域 */}
-        <div className="absolute left-24 sm:left-32 right-0 h-full">
+        <div className="absolute left-36 sm:left-44 right-0 h-full">
           {segments.map((segment, idx) => (
             <div
               key={idx}
@@ -144,9 +144,9 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className="min-w-[500px] sm:min-w-[650px]">
+      <div className="min-w-[550px] sm:min-w-[700px]">
         {/* 横轴时间刻度 */}
-        <div className="relative h-7 sm:h-8 mb-3 ml-24 sm:ml-32">
+        <div className="relative h-7 sm:h-8 mb-3 ml-36 sm:ml-44">
           <div className="absolute inset-0 flex">
             {monthLabels.map((label, index) => (
               <div

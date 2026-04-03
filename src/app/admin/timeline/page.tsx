@@ -336,9 +336,9 @@ export default function TimelineAdminPage() {
     return (
       <div key={item.id} className="relative h-12 mb-4 group">
         {/* 任务名称 + 操作按钮 */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-28 sm:w-32 flex items-center gap-1 pr-2">
-          <span className="flex-1 truncate text-xs sm:text-sm font-medium">{item.name}</span>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-36 sm:w-48 flex items-center gap-1 pr-2">
+          <span className="flex-1 text-xs sm:text-sm font-medium">{item.name}</span>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
               onClick={() => { setEditingItem(item); setIsDialogOpen(true); }}
               className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
@@ -355,7 +355,7 @@ export default function TimelineAdminPage() {
         </div>
 
         {/* 任务条区域 */}
-        <div className="absolute left-28 sm:left-32 right-0 h-full">
+        <div className="absolute left-36 sm:left-48 right-0 h-full">
           {segments.map((segment, idx) => (
             <div
               key={idx}
@@ -435,9 +435,9 @@ export default function TimelineAdminPage() {
         </CardHeader>
         <CardContent>
           <div ref={containerRef} className="overflow-x-auto">
-            <div className="min-w-[700px] sm:min-w-[800px]">
+            <div className="min-w-[750px] sm:min-w-[850px]">
               {/* 横轴时间刻度 */}
-              <div className="relative h-8 mb-4 ml-28 sm:ml-32">
+              <div className="relative h-8 mb-4 ml-36 sm:ml-48">
                 <div className="absolute inset-0 flex">
                   {monthLabels.map((label, index) => (
                     <div
