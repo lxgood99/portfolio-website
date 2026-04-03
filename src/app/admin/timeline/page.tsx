@@ -334,10 +334,10 @@ export default function TimelineAdminPage() {
     }
 
     return (
-      <div key={item.id} className="relative h-12 mb-3 group">
+      <div key={item.id} className="relative h-12 mb-4 group">
         {/* 任务名称 + 操作按钮 */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-28 flex items-center gap-1 pr-2">
-          <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-28 sm:w-32 flex items-center gap-1 pr-2">
+          <span className="flex-1 truncate text-xs sm:text-sm font-medium">{item.name}</span>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => { setEditingItem(item); setIsDialogOpen(true); }}
@@ -355,11 +355,11 @@ export default function TimelineAdminPage() {
         </div>
 
         {/* 任务条区域 */}
-        <div className="absolute left-28 right-0 h-full">
+        <div className="absolute left-28 sm:left-32 right-0 h-full">
           {segments.map((segment, idx) => (
             <div
               key={idx}
-              className="absolute top-1/2 -translate-y-1/2 h-8 rounded transition-all duration-150"
+              className="absolute top-1/2 -translate-y-1/2 h-7 sm:h-8 rounded transition-all duration-150"
               style={{
                 left: `${segment.start}%`,
                 width: `${segment.width}%`,
@@ -435,16 +435,16 @@ export default function TimelineAdminPage() {
         </CardHeader>
         <CardContent>
           <div ref={containerRef} className="overflow-x-auto">
-            <div className="min-w-[800px]">
+            <div className="min-w-[700px] sm:min-w-[800px]">
               {/* 横轴时间刻度 */}
-              <div className="relative h-8 mb-6 ml-28">
+              <div className="relative h-8 mb-4 ml-28 sm:ml-32">
                 <div className="absolute inset-0 flex">
                   {monthLabels.map((label, index) => (
                     <div
                       key={index}
-                      className="flex-1 border-l border-slate-200 dark:border-slate-700 relative"
+                      className="flex-1 border-l border-slate-200/60 dark:border-slate-600/40 relative"
                     >
-                      <span className="absolute left-1 top-1 text-xs text-muted-foreground">
+                      <span className="absolute left-0.5 sm:left-1 top-0.5 text-[10px] sm:text-xs text-muted-foreground">
                         {label}
                       </span>
                     </div>
@@ -453,7 +453,7 @@ export default function TimelineAdminPage() {
               </div>
 
               {/* 任务条列表 */}
-              <div className="space-y-1 pb-8">
+              <div className="space-y-1">
                 {items.map((item) => renderTaskBar(item))}
               </div>
             </div>

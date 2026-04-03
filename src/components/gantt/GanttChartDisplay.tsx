@@ -37,10 +37,11 @@ const generateMonthLabels = (): string[] => {
   
   for (let i = 0; i < totalMonths; i++) {
     const { year, month } = indexToYearMonth(i);
+    // 每年第一个月或起始月显示年份
     if (month === 1 || i === 0) {
-      labels.push(`${year}.${month}`);
+      labels.push(`${year}.${String(month).padStart(2, '0')}`);
     } else {
-      labels.push(`${month}`);
+      labels.push(String(month).padStart(2, '0'));
     }
   }
   
@@ -116,14 +117,14 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
     }
 
     return (
-      <div key={item.id} className="relative h-8 sm:h-10 mb-2 sm:mb-3">
+      <div key={item.id} className="relative h-8 sm:h-9 mb-3 sm:mb-4">
         {/* 任务名称 */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-20 sm:w-28 truncate text-xs sm:text-sm font-medium pr-2 text-foreground">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-24 sm:w-32 truncate text-xs sm:text-sm font-medium pr-2 text-foreground">
           {item.name}
         </div>
 
         {/* 任务条区域 */}
-        <div className="absolute left-20 sm:left-28 right-0 h-full">
+        <div className="absolute left-24 sm:left-32 right-0 h-full">
           {segments.map((segment, idx) => (
             <div
               key={idx}
@@ -134,14 +135,7 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
                 backgroundColor: item.color,
                 minWidth: '2px',
               }}
-            >
-              {/* 时间标签（电脑端） */}
-              {idx === 0 && (
-                <span className="hidden sm:block absolute -bottom-5 left-0 text-[10px] text-muted-foreground whitespace-nowrap">
-                  {item.start_year}.{item.start_month} - {item.end_year}.{item.end_month}
-                </span>
-              )}
-            </div>
+            />
           ))}
         </div>
       </div>
@@ -149,17 +143,17 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
   };
 
   return (
-    <div className="w-full overflow-x-auto -mx-2 px-2">
-      <div className="min-w-[450px] sm:min-w-[600px]">
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[500px] sm:min-w-[650px]">
         {/* 横轴时间刻度 */}
-        <div className="relative h-6 sm:h-8 mb-4 ml-20 sm:ml-28">
+        <div className="relative h-7 sm:h-8 mb-3 ml-24 sm:ml-32">
           <div className="absolute inset-0 flex">
             {monthLabels.map((label, index) => (
               <div
                 key={index}
-                className="flex-1 border-l border-slate-200/60 dark:border-slate-600/40 relative"
+                className="flex-1 border-l border-slate-200/50 dark:border-slate-600/30 relative"
               >
-                <span className="absolute left-0.5 sm:left-1 top-0.5 text-[9px] sm:text-xs text-muted-foreground font-medium">
+                <span className="absolute left-0.5 sm:left-1 top-0 text-[9px] sm:text-xs text-muted-foreground">
                   {label}
                 </span>
               </div>
@@ -168,7 +162,7 @@ export function GanttChartDisplay({ items }: GanttChartDisplayProps) {
         </div>
 
         {/* 任务条列表 */}
-        <div className="space-y-1 pb-4">
+        <div className="space-y-2">
           {items.map((item) => renderTaskBar(item))}
         </div>
       </div>
