@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, FileText, Image, Video, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, FileText, Image, Video, ImageIcon, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import {
   DndContext,
@@ -41,6 +41,14 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  UploadProgressBar,
+  useUploadProgress,
+  validateFileSize,
+  formatFileSize,
+  uploadWithProgress,
+} from '@/components/UploadProgress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface WorkItem {
   id?: number;
@@ -196,6 +204,19 @@ export default function WorksPage() {
   }>>([]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadingType, setUploadingType] = useState<'cover' | 'carousel' | 'file' | null>(null);
+  
+  // 上传进度管理
+  const {
+    uploadState,
+    startUpload,
+    updateProgress,
+    uploadSuccess,
+    uploadError,
+    resetUpload,
+  } = useUploadProgress();
+  
+  // 文件大小验证错误提示
+  const [sizeValidationError, setSizeValidationError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -338,26 +359,31 @@ export default function WorksPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingType('cover');
+    // 验证文件大小
+    const validation = validateFileSize(file);
+    if (!validation.valid) {
+      setSizeValidationError(validation.error || '文件大小超过限制');
+      return;
+    }
+    
+    // 清除之前的错误提示
+    setSizeValidationError(null);
 
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('type', 'work');
+    setUploadingType('cover');
+    startUpload(file.name, formatFileSize(file.size));
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setCoverImageKey(data.data.key);
-        setCoverImageUrl(data.data.url);
+      const result = await uploadWithProgress(file, 'work', updateProgress);
+      
+      if (result.success) {
+        setCoverImageKey(result.data.key);
+        setCoverImageUrl(result.data.url);
+        uploadSuccess();
       } else {
-        alert('上传失败：' + data.error);
+        uploadError(result.error || '上传失败');
       }
     } catch (error) {
-      alert('上传失败，请重试');
+      uploadError('上传失败，请重试');
     } finally {
       setUploadingType(null);
     }
@@ -367,6 +393,23 @@ export default function WorksPage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // 验证所有文件大小
+    const invalidFiles: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const validation = validateFileSize(files[i]);
+      if (!validation.valid) {
+        invalidFiles.push(`${files[i].name}: ${validation.error}`);
+      }
+    }
+    
+    if (invalidFiles.length > 0) {
+      setSizeValidationError(invalidFiles.join('\n'));
+      return;
+    }
+    
+    // 清除之前的错误提示
+    setSizeValidationError(null);
+
     setUploadingType('carousel');
 
     try {
@@ -374,28 +417,26 @@ export default function WorksPage() {
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        uploadFormData.append('type', 'work');
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
-        const data = await res.json();
+        startUpload(file.name, formatFileSize(file.size));
         
-        if (data.success) {
+        const result = await uploadWithProgress(file, 'work', updateProgress);
+        
+        if (result.success) {
           newItems.push({
-            file_key: data.data.key,
+            file_key: result.data.key,
             title: file.name,
-            url: data.data.url,
+            url: result.data.url,
           });
+        } else {
+          // 单个文件上传失败，继续上传其他文件
+          console.error(`上传 ${file.name} 失败:`, result.error);
         }
       }
 
       setCarouselItems([...carouselItems, ...newItems]);
+      uploadSuccess();
     } catch (error) {
-      alert('上传失败，请重试');
+      uploadError('上传失败，请重试');
     } finally {
       setUploadingType(null);
     }
@@ -405,20 +446,24 @@ export default function WorksPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 验证文件大小
+    const validation = validateFileSize(file);
+    if (!validation.valid) {
+      setSizeValidationError(validation.error || '文件大小超过限制');
+      return;
+    }
+    
+    // 清除之前的错误提示
+    setSizeValidationError(null);
+
     setUploadingIndex(index);
     setUploadingType('file');
-
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('type', 'work');
+    startUpload(file.name, formatFileSize(file.size));
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      if (data.success) {
+      const result = await uploadWithProgress(file, 'work', updateProgress);
+      
+      if (result.success) {
         const fileType = file.type.startsWith('image/')
           ? 'image'
           : file.type.startsWith('video/')
@@ -428,16 +473,17 @@ export default function WorksPage() {
         const newItems = [...workItems];
         newItems[index] = {
           ...newItems[index],
-          file_key: data.data.key,
+          file_key: result.data.key,
           title: file.name,
           type: fileType,
         };
         setWorkItems(newItems);
+        uploadSuccess();
       } else {
-        alert('上传失败：' + data.error);
+        uploadError(result.error || '上传失败');
       }
     } catch (error) {
-      alert('上传失败，请重试');
+      uploadError('上传失败，请重试');
     } finally {
       setUploadingIndex(null);
       setUploadingType(null);
@@ -876,11 +922,43 @@ export default function WorksPage() {
 
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
-              <Button onClick={handleSave}>保存</Button>
+              <Button onClick={handleSave} disabled={uploadState.isUploading}>
+                {uploadState.isUploading ? '上传中...' : '保存'}
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* 文件大小验证错误提示 */}
+      {sizeValidationError && (
+        <div className="fixed bottom-4 left-4 z-50 w-96">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="whitespace-pre-wrap">
+              {sizeValidationError}
+            </AlertDescription>
+            <button
+              onClick={() => setSizeValidationError(null)}
+              className="absolute top-2 right-2 p-1 hover:bg-red-100 rounded"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Alert>
+        </div>
+      )}
+      
+      {/* 上传进度条 */}
+      {uploadState.isUploading && (
+        <UploadProgressBar
+          progress={uploadState.progress}
+          status={uploadState.status}
+          fileName={uploadState.fileName}
+          fileSize={uploadState.fileSize}
+          errorMessage={uploadState.errorMessage}
+          onClose={resetUpload}
+        />
+      )}
     </div>
   );
 }
