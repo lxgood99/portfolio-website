@@ -1004,7 +1004,7 @@ export default function HomePage() {
                   <div className="hidden sm:flex flex-col items-center px-4 py-2 border-l border-slate-200 dark:border-slate-700">
                     {/* 进度条 + 两端数值 */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0">0</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0 w-2.5 text-right">0</span>
                       <div className="relative w-28 h-1.5 bg-primary/20 rounded-full">
                         {/* 填充 */}
                         <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
@@ -1014,14 +1014,18 @@ export default function HomePage() {
                         <div className="absolute top-0 left-2/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                         <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                       </div>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0">100%</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0 w-7">100%</span>
                     </div>
-                    {/* 标签 */}
-                    <div className="relative w-28 mt-1 ml-3.5">
-                      <span className="absolute left-0 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">入门</span>
-                      <span className="absolute left-1/3 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
-                      <span className="absolute left-2/3 -translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
-                      <span className="absolute right-0 translate-x-1/2 text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                    {/* 标签 - 与进度条对齐 */}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="shrink-0 w-2.5"></span>
+                      <div className="relative w-28 flex justify-between">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">入门</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                      </div>
+                      <span className="shrink-0 w-7"></span>
                     </div>
                   </div>
                 </div>
@@ -1032,7 +1036,7 @@ export default function HomePage() {
                   <div className="sm:hidden flex flex-col items-center mb-4">
                     {/* 进度条 + 两端数值 */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0">0</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0 w-2.5 text-right">0</span>
                       <div className="relative w-full max-w-44 h-1.5 bg-primary/20 rounded-full">
                         <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
                         {/* 分段标记 - 平均分布 */}
@@ -1041,14 +1045,18 @@ export default function HomePage() {
                         <div className="absolute top-0 left-2/3 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                         <div className="absolute top-0 right-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
                       </div>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0">100%</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0 w-7">100%</span>
                     </div>
-                    {/* 标签 */}
-                    <div className="relative w-full max-w-44 mt-1 ml-3.5 flex justify-between">
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">入门</span>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                    {/* 标签 - 与进度条对齐 */}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="shrink-0 w-2.5"></span>
+                      <div className="relative w-full max-w-44 flex justify-between">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">入门</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">精通</span>
+                      </div>
+                      <span className="shrink-0 w-7"></span>
                     </div>
                   </div>
                   {/* 当前分类的技能列表 */}
