@@ -1097,79 +1097,164 @@ export default function HomePage() {
               <FolderOpen className="h-6 w-6" />
               作品集
             </h2>
-            {categories.length > 1 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                      selectedCategory === cat
-                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
-                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
-                    }`}
-                  >
-                    {cat === 'all' ? '全部' : cat}
-                  </button>
+            
+            {/* 手机端：横向滚动布局 */}
+            <div className="md:hidden space-y-6">
+              {categories.map((cat) => {
+                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category === cat);
+                if (categoryWorks.length === 0) return null;
+                
+                return (
+                  <div key={cat} className="space-y-3">
+                    {/* 分类标题 + 滑动提示 */}
+                    <div className="flex items-center justify-between px-1">
+                      <h3 className="font-semibold text-base text-muted-foreground flex items-center gap-2">
+                        {cat === 'all' ? '全部作品' : cat}
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                      </h3>
+                      <span className="text-xs text-muted-foreground">
+                        {categoryWorks.length} 个作品
+                      </span>
+                    </div>
+                    
+                    {/* 横向滚动容器 */}
+                    <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+                      <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+                        {categoryWorks.map((work) => (
+                          <Card 
+                            key={work.id} 
+                            className="overflow-hidden hover:shadow-lg transition-all duration-300 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 shrink-0"
+                            style={{ width: 'calc(50vw - 28px)', maxWidth: '200px' }}
+                          >
+                            {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                                <img 
+                                  src={work.carouselItems[0].url} 
+                                  alt={work.title}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                                {work.carouselItems.length > 1 && (
+                                  <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/50 text-white text-xs">
+                                    +{work.carouselItems.length - 1}
+                                  </div>
+                                )}
+                              </div>
+                            ) : work.coverImageUrl ? (
+                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                                {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                                  <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
+                                ) : (
+                                  <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
+                                )}
+                              </div>
+                            ) : (
+                              <div className="h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                                <FileText className="h-8 w-8 text-muted-foreground/30" />
+                              </div>
+                            )}
+                            <CardContent className="p-3">
+                              <h4 className="font-medium text-sm truncate">{work.title}</h4>
+                              {work.category && (
+                                <Badge variant="outline" className="text-xs mt-1">{work.category}</Badge>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* 查看更多作品按钮 */}
+              <div className="pt-4 text-center">
+                <Link 
+                  href="/works"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                >
+                  查看更多作品
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+            
+            {/* 电脑端：保持原有网格布局 */}
+            <div className="hidden md:block">
+              {categories.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                        selectedCategory === cat
+                          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                          : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                      }`}
+                    >
+                      {cat === 'all' ? '全部' : cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
+                  <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+                    {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                      <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
+                    ) : work.coverImageUrl ? (
+                      <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
+                        {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                          <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
+                        ) : (
+                          <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{work.title}</h3>
+                        {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
+                      </div>
+                      {work.description && (
+                        <p 
+                          className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
+                          style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                        >
+                          {work.description}
+                        </p>
+                      )}
+                      {work.tags && work.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {work.tags.slice(0, 4).map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                          ))}
+                        </div>
+                      )}
+                      {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-3 border-t">
+                          {work.work_items.slice(0, 4).map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => setPreviewItem(item)}
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
+                            >
+                              {getFileIcon(item.type)}
+                              <span className="truncate max-w-[80px]">{item.title || item.type}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
-                <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
-                  {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                    <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
-                  ) : work.coverImageUrl ? (
-                    <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
-                      {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                        <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                      ) : (
-                        <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
-                    </div>
-                  ) : (
-                    <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                      <FileText className="h-12 w-12 text-muted-foreground/30" />
-                    </div>
-                  )}
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-lg">{work.title}</h3>
-                      {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
-                    </div>
-                    {work.description && (
-                      <p 
-                        className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
-                        style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                      >
-                        {work.description}
-                      </p>
-                    )}
-                    {work.tags && work.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {work.tags.slice(0, 4).map((tag, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                        ))}
-                      </div>
-                    )}
-                    {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-3 border-t">
-                        {work.work_items.slice(0, 4).map((item) => (
-                          <button
-                            key={item.id}
-                            onClick={() => setPreviewItem(item)}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
-                          >
-                            {getFileIcon(item.type)}
-                            <span className="truncate max-w-[80px]">{item.title || item.type}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </section>
         ) : null;

@@ -234,3 +234,13 @@ body {
 .ProseMirror li {
   margin: 0.25em 0;
 }
+
+/* 隐藏横向滚动条 - 用于作品集手机端滑动 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
