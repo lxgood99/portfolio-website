@@ -1037,7 +1037,7 @@ export default function HomePage() {
                     {/* 进度条 + 两端数值 */}
                     <div className="flex items-center gap-1.5">
                       <span className="text-[9px] text-slate-400 dark:text-slate-500 shrink-0 w-2.5 text-right">0</span>
-                      <div className="relative w-full max-w-44 h-1.5 bg-primary/20 rounded-full">
+                      <div className="relative w-44 h-1.5 bg-primary/20 rounded-full">
                         <div className="absolute inset-y-0 left-0 w-full bg-primary rounded-full"></div>
                         {/* 分段标记 - 平均分布 */}
                         <div className="absolute top-0 left-0 w-0.5 h-1.5 bg-slate-400 dark:bg-slate-500"></div>
@@ -1050,7 +1050,7 @@ export default function HomePage() {
                     {/* 标签 - 与进度条对齐 */}
                     <div className="flex items-center gap-1.5 mt-1">
                       <span className="shrink-0 w-2.5"></span>
-                      <div className="relative w-full max-w-44 flex justify-between">
+                      <div className="relative w-44 flex justify-between">
                         <span className="text-[9px] text-slate-400 dark:text-slate-500">入门</span>
                         <span className="text-[9px] text-slate-400 dark:text-slate-500">掌握</span>
                         <span className="text-[9px] text-slate-400 dark:text-slate-500">熟练</span>
