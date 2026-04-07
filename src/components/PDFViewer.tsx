@@ -245,7 +245,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">{error}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">请尝试下载文件后查看</p>
         <p className="text-xs text-gray-400 dark:text-gray-500 max-w-md">
-          提示：如果在微信中无法预览，请点击右上角菜单选择"在浏览器中打开"
+          提示：如果在微信中无法预览，请点击右上角菜单选择「在浏览器中打开」
         </p>
       </div>
     );

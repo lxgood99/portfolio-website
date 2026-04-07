@@ -200,18 +200,7 @@ export default function SkillsPage() {
     })
   );
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated]);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    await Promise.all([loadSkills(), loadCategories()]);
-    setIsLoading(false);
-  };
-
+  // 加载数据
   const loadSkills = async () => {
     try {
       const res = await fetch('/api/skills');
@@ -235,6 +224,19 @@ export default function SkillsPage() {
       console.error('加载分类失败:', error);
     }
   };
+
+  const loadData = async () => {
+    setIsLoading(true);
+    await Promise.all([loadSkills(), loadCategories()]);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // 技能拖拽排序
   const handleSkillDragEnd = async (event: DragEndEvent) => {

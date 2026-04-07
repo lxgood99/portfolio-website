@@ -290,7 +290,7 @@ export default function SelfIntroductionPage() {
               <div className="space-y-0.5">
                 <Label>是否显示</Label>
                 <p className="text-sm text-muted-foreground">
-                  关闭后，前端页面将不显示"关于我"模块
+                  关闭后，前端页面将不显示「关于我」模块
                 </p>
               </div>
               <div className="flex items-center gap-4">

@@ -36,7 +36,7 @@ interface Work {
 }
 
 // 作品集轮播组件
-function WorkCarousel({ images, onImageClick }: { images: WorkItem[]; onImageClick: (item: WorkItem) => void }) {
+function WorkCarousel({ images }: { images: WorkItem[]; onImageClick: (item: WorkItem) => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
 

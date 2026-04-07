@@ -40,8 +40,6 @@ function SimpleEditor({ value, onChange, placeholder }: {
   onChange: (html: string) => void;
   placeholder?: string;
 }) {
-  const contentRef = useState<HTMLDivElement | null>(null);
-  
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
   };

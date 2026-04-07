@@ -841,7 +841,7 @@ export default function WorksPage() {
                 </div>
                 {carouselItems.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg">
-                    点击"添加图片"上传轮播图片（支持多选）
+                    点击「添加图片」上传轮播图片（支持多选）
                   </p>
                 ) : (
                   <div className="grid grid-cols-3 gap-3">

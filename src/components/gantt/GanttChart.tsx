@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { TimelineItem, TimelineBreak } from '@/app/api/timeline-items/route';
+import type { TimelineItem } from '@/app/api/timeline-items/route';
 
 interface GanttChartProps {
   items: TimelineItem[];
@@ -49,18 +49,6 @@ const generateMonthLabels = (): string[] => {
   
   return labels;
 };
-
-// 低饱和度颜色预设
-const COLOR_PRESETS = [
-  '#3b82f6', // 蓝色
-  '#10b981', // 绿色
-  '#8b5cf6', // 紫色
-  '#f59e0b', // 橙色
-  '#ef4444', // 红色
-  '#06b6d4', // 青色
-  '#ec4899', // 粉色
-  '#6366f1', // 靛蓝
-];
 
 export default function GanttChart({ items, onUpdate, isEditing = false }: GanttChartProps) {
   const [localItems, setLocalItems] = useState<TimelineItem[]>(items);
@@ -246,8 +234,6 @@ export default function GanttChart({ items, onUpdate, isEditing = false }: Gantt
 
     // 计算断点
     const segments: { start: number; width: number }[] = [];
-    let currentStart = left;
-    let currentWidth = width;
 
     if (item.breaks && item.breaks.length > 0) {
       // 按开始位置排序断点

@@ -253,6 +253,7 @@ export function uploadWithProgress(
   file: File,
   type: string,
   onProgress: (progress: number) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();

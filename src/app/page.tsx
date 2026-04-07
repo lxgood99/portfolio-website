@@ -667,16 +667,6 @@ export default function HomePage() {
     }
   };
 
-  const getSocialIcon = (name: string) => {
-    switch (name) {
-      case 'github': return <Github className="h-5 w-5" />;
-      case 'linkedin': return <Linkedin className="h-5 w-5" />;
-      case 'twitter': return <Twitter className="h-5 w-5" />;
-      case 'instagram': return <Instagram className="h-5 w-5" />;
-      default: return null;
-    }
-  };
-
   // 根据模块排序渲染
   const renderModule = (moduleName: string) => {
     const moduleOrder = moduleOrders.find(m => m.module_name === moduleName);

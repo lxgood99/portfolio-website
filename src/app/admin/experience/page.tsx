@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { RichTextEditor } from '@/components/RichTextEditor';
