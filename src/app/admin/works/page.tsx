@@ -39,6 +39,9 @@ import {
   X,
   AlertCircle,
   Loader2,
+  Edit2,
+  Upload,
+  Settings,
 } from 'lucide-react';
 import { useUpload, uploadWithProgress } from '@/hooks/useUpload';
 import { formatFileSize } from '@/components/UploadProgress';
@@ -62,15 +65,20 @@ interface WorkItem {
   order: number;
   isUploading?: boolean;
   category: string;
+  cover_key?: string;
+  cover_url?: string | null;
+  summary?: string;
 }
 
 // 文件项行组件
 function FileItemRow({ 
   item, 
-  onRemove 
+  onRemove,
+  onEdit,
 }: { 
   item: WorkItem; 
   onRemove: () => void;
+  onEdit: () => void;
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   
@@ -104,10 +112,10 @@ function FileItemRow({
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg group">
-      <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg group">
+      <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-3 flex-shrink-0" />
       {displayUrl ? (
-        <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
+        <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
           {item.type === 'video' ? (
             <div className="w-full h-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
               <Video className="h-6 w-6 text-purple-500" />
@@ -117,7 +125,7 @@ function FileItemRow({
           )}
         </div>
       ) : (
-        <div className="w-12 h-12 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+        <div className="w-16 h-16 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
           {item.isUploading ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           ) : getTypeIcon()}
@@ -130,21 +138,39 @@ function FileItemRow({
         <p className="text-xs text-muted-foreground">
           {item.type === 'image' ? '图片' : item.type === 'video' ? '视频' : '文档'}
         </p>
+        {item.summary && (
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+            {item.summary}
+          </p>
+        )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onRemove}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Trash2 className="h-4 w-4 text-destructive" />
-      </Button>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {item.id && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onEdit}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            title="编辑封面和备注"
+          >
+            <Edit2 className="h-4 w-4 text-blue-500" />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </div>
     </div>
   );
 }
 
 // 可排序的文件项
-function SortableFileItem({ item, onRemove }: { item: WorkItem; onRemove: () => void }) {
+function SortableFileItem({ item, onRemove, onEdit }: { item: WorkItem; onRemove: () => void; onEdit: () => void }) {
   const {
     attributes,
     listeners,
@@ -162,7 +188,7 @@ function SortableFileItem({ item, onRemove }: { item: WorkItem; onRemove: () => 
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <FileItemRow item={item} onRemove={onRemove} />
+      <FileItemRow item={item} onRemove={onRemove} onEdit={onEdit} />
     </div>
   );
 }
@@ -183,6 +209,14 @@ export default function WorksAdminPage() {
   // 分类名称编辑
   const [editingCategory, setEditingCategory] = useState<WorkCategory | null>(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+
+  // 作品编辑对话框
+  const [editingWork, setEditingWork] = useState<WorkItem | null>(null);
+  const [workDialogOpen, setWorkDialogOpen] = useState(false);
+  const [workCoverKey, setWorkCoverKey] = useState('');
+  const [workCoverUrl, setWorkCoverUrl] = useState<string | null>(null);
+  const [workSummary, setWorkSummary] = useState('');
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -480,11 +514,112 @@ export default function WorksAdminPage() {
     }
   };
 
+  // 打开作品编辑对话框
+  const handleEditWork = (work: WorkItem) => {
+    setEditingWork(work);
+    setWorkCoverKey(work.cover_key || '');
+    setWorkSummary(work.summary || '');
+    setWorkCoverUrl(work.cover_url || null);
+    setWorkDialogOpen(true);
+    
+    // 如果有封面 key 但没有 url，加载 url
+    if (work.cover_key && !work.cover_url) {
+      fetch('/api/file-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: work.cover_key }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.success) {
+            setWorkCoverUrl(data.data.url);
+          }
+        });
+    }
+  };
+
+  // 上传封面图
+  const handleUploadCover = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.png,.jpg,.jpeg,.gif,.webp';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !editingWork) return;
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert('封面图片不能超过 5MB');
+        return;
+      }
+      
+      setIsUploadingCover(true);
+      try {
+        const result = await uploadWithProgress(file, 'work', () => {});
+        if (result.success) {
+          const key = result.data?.key || '';
+          setWorkCoverKey(key);
+          
+          // 获取预览 URL
+          const urlRes = await fetch('/api/file-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key }),
+          });
+          const urlData = await urlRes.json();
+          if (urlData?.success) {
+            setWorkCoverUrl(urlData.data.url);
+          }
+        } else {
+          alert('封面上传失败');
+        }
+      } catch {
+        alert('封面上传失败');
+      } finally {
+        setIsUploadingCover(false);
+      }
+    };
+    input.click();
+  };
+
+  // 保存作品编辑
+  const handleSaveWork = async () => {
+    if (!editingWork?.id) return;
+    
+    try {
+      const res = await fetch(`/api/work-items/${editingWork.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cover_key: workCoverKey,
+          summary: workSummary,
+        }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setWorks(prev => prev.map(w => 
+          w.id === editingWork.id 
+            ? { ...w, cover_key: workCoverKey, cover_url: workCoverUrl, summary: workSummary }
+            : w
+        ));
+        setWorkDialogOpen(false);
+      } else {
+        alert('保存失败：' + data.error);
+      }
+    } catch {
+      alert('保存失败，请重试');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">作品集管理</h1>
+          <Button variant="outline" onClick={() => window.location.href = '/admin/works/categories'}>
+            <Settings className="h-4 w-4 mr-2" />
+            管理分类
+          </Button>
         </div>
 
         {/* 分类标签 */}
@@ -577,6 +712,7 @@ export default function WorksAdminPage() {
                       key={item.tempId || item.id || 0}
                       item={item}
                       onRemove={() => handleRemoveFile(item)}
+                      onEdit={() => handleEditWork(item)}
                     />
                   ))}
                 </div>
@@ -618,6 +754,88 @@ export default function WorksAdminPage() {
               取消
             </Button>
             <Button onClick={handleSaveCategory}>
+              保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 作品编辑弹窗 */}
+      <Dialog open={workDialogOpen} onOpenChange={setWorkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>编辑作品</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* 封面图 */}
+            <div>
+              <Label className="mb-2 block">封面图片</Label>
+              <div className="flex items-start gap-3">
+                <div className="w-32 h-32 rounded-lg border-2 border-dashed border-muted-foreground/20 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800">
+                  {workCoverUrl ? (
+                    <img src={workCoverUrl} alt="封面" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      <ImageIcon className="h-8 w-8 mx-auto mb-1" />
+                      <p className="text-xs">无封面</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    上传封面图片，支持 JPG、PNG、GIF、WebP 格式，最大 5MB
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleUploadCover}
+                    disabled={isUploadingCover}
+                  >
+                    {isUploadingCover ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-1" />
+                    )}
+                    {workCoverKey ? '更换封面' : '上传封面'}
+                  </Button>
+                  {workCoverKey && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-2 text-destructive"
+                      onClick={() => {
+                        setWorkCoverKey('');
+                        setWorkCoverUrl(null);
+                      }}
+                    >
+                      移除
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 备注文字 */}
+            <div>
+              <Label htmlFor="workSummary" className="mb-2 block">作品简介</Label>
+              <textarea
+                id="workSummary"
+                value={workSummary}
+                onChange={(e) => setWorkSummary(e.target.value)}
+                placeholder="输入作品简介，用于在前端卡片中展示"
+                className="w-full h-20 px-3 py-2 text-sm rounded-lg border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                maxLength={200}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {workSummary.length}/200 字符
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setWorkDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSaveWork}>
               保存
             </Button>
           </DialogFooter>

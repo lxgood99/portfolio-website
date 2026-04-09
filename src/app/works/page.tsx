@@ -29,6 +29,9 @@ interface WorkItem {
   description?: string;
   order: number;
   category: string;
+  cover_key?: string;
+  cover_url?: string | null;
+  summary?: string;
 }
 
 // 加载文件URL
@@ -49,14 +52,17 @@ async function loadFileUrl(key: string): Promise<string> {
 
 // 图片卡片组件
 function ImageCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+  // 优先使用封面图，否则使用主图
+  const displayUrl = item.cover_url || item.url;
+  
   return (
     <div 
       className="relative group flex-shrink-0 w-full h-full rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
       onClick={onClick}
     >
-      {item.url ? (
+      {displayUrl ? (
         <img 
-          src={item.url} 
+          src={displayUrl} 
           alt={item.title}
           className="w-full h-full object-cover"
           loading="lazy"
@@ -72,9 +78,12 @@ function ImageCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
           <ZoomIn className="h-5 w-5" />
         </div>
       </div>
-      {/* 标题 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+      {/* 标题和备注 */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
         <p className="text-white text-sm font-medium truncate">{item.title}</p>
+        {item.summary && (
+          <p className="text-white/80 text-xs mt-1 line-clamp-2">{item.summary}</p>
+        )}
       </div>
     </div>
   );
@@ -82,14 +91,17 @@ function ImageCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
 
 // 视频卡片组件
 function VideoCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+  // 优先使用封面图，否则使用主图
+  const displayUrl = item.cover_url || item.url;
+  
   return (
     <div 
       className="relative group flex-shrink-0 w-full h-full rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
       onClick={onClick}
     >
-      {item.url ? (
+      {displayUrl ? (
         <img 
-          src={item.url} 
+          src={displayUrl} 
           alt={item.title}
           className="w-full h-full object-cover"
           loading="lazy"
@@ -105,9 +117,12 @@ function VideoCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
           <Play className="h-6 w-6 text-slate-800 ml-1" fill="currentColor" />
         </div>
       </div>
-      {/* 标题 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+      {/* 标题和备注 */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
         <p className="text-white text-sm font-medium truncate">{item.title}</p>
+        {item.summary && (
+          <p className="text-white/80 text-xs mt-1 line-clamp-2">{item.summary}</p>
+        )}
       </div>
     </div>
   );
@@ -115,20 +130,50 @@ function VideoCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
 
 // PPT卡片组件
 function PPTCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+  // 优先使用封面图
+  const displayUrl = item.cover_url || item.url;
+  
   return (
     <div 
-      className="relative group flex-shrink-0 w-full h-full rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20"
+      className="relative group flex-shrink-0 w-full h-full rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
       onClick={onClick}
     >
-      <div className="w-full h-full flex flex-col items-center justify-center p-4">
-        <div className="w-16 h-16 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-          <FileText className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+      {displayUrl ? (
+        <>
+          <img 
+            src={displayUrl} 
+            alt={item.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          {/* 悬停遮罩 */}
+          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+            <div className="bg-white/90 dark:bg-slate-800/90 px-3 py-1.5 rounded-full">
+              <ZoomIn className="h-5 w-5" />
+            </div>
+          </div>
+          {/* 标题和备注 */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+            <p className="text-white text-sm font-medium truncate">{item.title}</p>
+            {item.summary && (
+              <p className="text-white/80 text-xs mt-1 line-clamp-2">{item.summary}</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+            <FileText className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+          </div>
+          <p className="text-sm font-medium text-center line-clamp-2 px-2">{item.title}</p>
+          {item.summary && (
+            <p className="text-xs text-muted-foreground mt-1 px-2 line-clamp-1">{item.summary}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">点击预览</p>
+          {/* 悬停效果 */}
+          <div className="absolute inset-0 border-2 border-transparent group-hover:border-orange-200 dark:group-hover:border-orange-800 rounded-xl transition-all duration-300" />
         </div>
-        <p className="text-sm font-medium text-center line-clamp-2">{item.title}</p>
-        <p className="text-xs text-muted-foreground mt-1">点击预览</p>
-      </div>
-      {/* 悬停效果 */}
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-orange-200 dark:group-hover:border-orange-800 rounded-xl transition-all duration-300" />
+      )}
     </div>
   );
 }
@@ -184,10 +229,20 @@ export default function WorksPage() {
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         const worksWithUrls = await Promise.all(
-          data.data.map(async (item: WorkItem) => ({
-            ...item,
-            url: await loadFileUrl(item.file_key),
-          }))
+          data.data.map(async (item: WorkItem) => {
+            // 加载主文件 URL
+            const mainUrl = await loadFileUrl(item.file_key);
+            // 如果有封面图，加载封面 URL
+            let coverUrl: string | null = null;
+            if (item.cover_key) {
+              coverUrl = await loadFileUrl(item.cover_key);
+            }
+            return {
+              ...item,
+              url: mainUrl,
+              cover_url: coverUrl,
+            };
+          })
         );
         setWorks(worksWithUrls);
       } else {
