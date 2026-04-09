@@ -574,7 +574,7 @@ export default function WorksPage() {
     // 验证文件大小
     const validation = validateFileSize(file);
     if (!validation.valid) {
-      setWorkItems(workItems.filter(item => item.tempId !== tempId));
+      setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
       setSizeValidationError(validation.error || '文件大小超过限制');
       return;
     }
@@ -583,7 +583,7 @@ export default function WorksPage() {
     setSizeValidationError(null);
 
     // 标记该项为上传中，并显示文件名
-    setWorkItems(workItems.map(item => 
+    setWorkItems(prev => prev.map(item => 
       item.tempId === tempId 
         ? { ...item, title: file.name, isUploading: true }
         : item
@@ -603,8 +603,8 @@ export default function WorksPage() {
               ? 'video'
               : 'pdf';
         
-        // 更新该项为已上传状态
-        setWorkItems(workItems.map(item => 
+        // 更新该项为已上传状态（使用函数式更新确保获取最新状态）
+        setWorkItems(prev => prev.map(item => 
           item.tempId === tempId 
             ? { ...item, type: fileType, title: file.name, file_key: result.data.key, isUploading: false }
             : item
@@ -612,12 +612,12 @@ export default function WorksPage() {
         uploadSuccess();
       } else {
         // 上传失败，移除该项
-        setWorkItems(workItems.filter(item => item.tempId !== tempId));
+        setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
         uploadError(result.error || '上传失败');
       }
     } catch {
       // 上传失败，移除该项
-      setWorkItems(workItems.filter(item => item.tempId !== tempId));
+      setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
       uploadError('上传失败，请重试');
     } finally {
       setUploadingType(null);
@@ -628,7 +628,7 @@ export default function WorksPage() {
   const handleAddFileItem = () => {
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     // 先添加一个临时项，显示"选择文件中..."
-    setWorkItems([...workItems, { tempId, type: 'pdf', title: '选择文件中...', file_key: '', isUploading: false }]);
+    setWorkItems(prev => [...prev, { tempId, type: 'pdf', title: '选择文件中...', file_key: '', isUploading: false }]);
     
     // 创建一个唯一的文件输入框
     const inputId = `file-input-${tempId}`;
@@ -648,8 +648,8 @@ export default function WorksPage() {
       if (file) {
         handleFileUploadWithFile(file, tempId);
       } else {
-        // 用户取消选择，移除临时项
-        setWorkItems(workItems.filter(item => item.tempId !== tempId));
+        // 用户取消选择，移除临时项（使用函数式更新）
+        setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
       }
       // 清理 input
       if (input && document.body.contains(input)) {
@@ -664,8 +664,8 @@ export default function WorksPage() {
   const handleRemoveFileItem = (index: number) => {
     const item = workItems[index];
     if (item?.tempId) {
-      // 如果是临时项，直接移除
-      setWorkItems(workItems.filter((_, i) => i !== index));
+      // 如果是临时项，直接移除（使用函数式更新）
+      setWorkItems(prev => prev.filter((_, i) => i !== index));
     } else if (item?.id) {
       // 如果是已保存的项，需要从服务器删除
       // 从服务器删除文件记录
@@ -673,7 +673,7 @@ export default function WorksPage() {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            setWorkItems(workItems.filter((_, i) => i !== index));
+            setWorkItems(prev => prev.filter((_, i) => i !== index));
           } else {
             alert('删除失败：' + data.error);
           }
