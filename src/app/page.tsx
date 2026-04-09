@@ -373,8 +373,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('image');
-  const [categories, setCategories] = useState<string[]>(['图片', 'PPT/PDF', '视频']);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [categories] = useState<string[]>(['图片', 'PPT/PDF', '视频']);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeSkillCategory, setActiveSkillCategory] = useState<string>('办公软件');
 
@@ -553,11 +553,8 @@ export default function HomePage() {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
         setWorks(worksWithUrls);
         
-        const cats = new Set<string>();
-        worksWithUrls.forEach(w => {
-          if (w.category) cats.add(w.category);
-        });
-        setCategories(['all', ...Array.from(cats)]);
+        // 从作品数据中提取分类，但不需要添加 'all' 选项
+        // 分类已经在 useState 中设置了默认值 ['图片', 'PPT/PDF', '视频']
       }
 
       if (moduleOrdersData.success) {
@@ -1207,7 +1204,10 @@ export default function HomePage() {
                 ))}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(selectedCategory === '全部' || selectedCategory === '图片' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
+                {(!selectedCategory 
+                  ? works 
+                  : works.filter(w => w.category === selectedCategory)
+                ).map((work) => (
                   <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                     {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                       <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
