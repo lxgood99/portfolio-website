@@ -18,7 +18,7 @@ interface WorkItem {
 // GET - 获取指定分类的所有作品
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ category }> }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const { category } = await params;
@@ -47,12 +47,50 @@ export async function GET(
 // POST - 创建作品
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ category }> }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const { category } = await params;
     const body = await request.json();
     const client = getSupabaseClient();
+
+    // 根据 category_type 获取对应的 work_id
+    // image -> works 中 category 为 AI绘图 或 title 包含图片的记录
+    // ppt -> works 中 category 为 PPT设计 或 title 包含 PPT 的记录  
+    // video -> works 中 category 为 视频剪辑 或 title 包含视频的记录
+    let workId: number;
+    
+    // 尝试根据 category_type 查找对应的 work
+    const categoryMapping: Record<string, string[]> = {
+      'image': ['AI绘图', '图片'],
+      'ppt': ['PPT设计', 'PPT/PDF'],
+      'video': ['视频剪辑', '视频'],
+    };
+    
+    const possibleTitles = categoryMapping[category] || [category];
+    
+    // 先尝试通过 title 匹配
+    const { data: workData } = await client
+      .from('works')
+      .select('id')
+      .or(`title.ilike.%${possibleTitles[0]}%,category.ilike.%${possibleTitles[0]}%`)
+      .limit(1);
+    
+    if (workData && workData.length > 0) {
+      workId = workData[0].id;
+    } else {
+      // 如果找不到，尝试获取任意一个 work 作为兜底
+      const { data: anyWork } = await client
+        .from('works')
+        .select('id')
+        .limit(1);
+      
+      if (anyWork && anyWork.length > 0) {
+        workId = anyWork[0].id;
+      } else {
+        throw new Error('请先在作品管理中创建作品分类');
+      }
+    }
 
     // 如果没有指定order，获取该分类最大的order值
     let order = body.order;
@@ -60,7 +98,7 @@ export async function POST(
       const { data: existingData } = await client
         .from('work_items')
         .select('order')
-        .eq('category', category)
+        .eq('work_id', workId)
         .order('order', { ascending: false })
         .limit(1);
       
@@ -70,6 +108,7 @@ export async function POST(
     const { data, error } = await client
       .from('work_items')
       .insert({
+        work_id: workId,
         category: category,
         type: body.type,
         title: body.title,
@@ -98,7 +137,7 @@ export async function POST(
 // PUT - 批量更新排序
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ category }> }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const { category } = await params;

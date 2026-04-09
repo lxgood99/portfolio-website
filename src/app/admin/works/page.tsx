@@ -40,7 +40,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { useUpload } from '@/hooks/useUpload';
+import { useUpload, uploadWithProgress } from '@/hooks/useUpload';
 import { formatFileSize } from '@/components/UploadProgress';
 
 interface WorkCategory {
@@ -162,14 +162,14 @@ function SortableFileItem({ item, onRemove }: { item: WorkItem; onRemove: () => 
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <FileItemRow item={item} index={index} onRemove={onRemove} />
+      <FileItemRow item={item} onRemove={onRemove} />
     </div>
   );
 }
 
 export default function WorksAdminPage() {
   useAdminAuth();
-  const { uploadWithProgress, startUpload, updateProgress, uploadSuccess, uploadError } = useUpload();
+  const { startUpload, updateProgress, uploadSuccess, uploadError } = useUpload();
   
   const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
@@ -279,20 +279,56 @@ export default function WorksAdminPage() {
     startUpload(file.name, formatFileSize(file.size));
 
     try {
-      const result = await uploadWithProgress(file, 'work', updateProgress);
+      console.log('[上传] 开始上传:', file.name, file.size);
+      const result = await uploadWithProgress(file, 'work', (progress: number) => {
+        try {
+          updateProgress(progress);
+        } catch (e) {
+          console.error('[上传] 进度回调错误:', e);
+        }
+      });
+      console.log('[上传] 上传结果:', result);
       
       if (result.success) {
-        setWorks(prev => prev.map(item => 
-          item.tempId === tempId 
-            ? { ...item, type: fileType, title: file.name, file_key: result.data.key, isUploading: false }
-            : item
-        ));
-        uploadSuccess();
+        const fileKey = result.data?.key || '';
+        
+        // 立即保存到数据库
+        try {
+          const saveRes = await fetch(`/api/works-by-category/${activeCategory}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: fileType,
+              title: file.name,
+              file_key: fileKey,
+            }),
+          });
+          const saveData = await saveRes.json();
+          
+          if (saveData.success) {
+            // 更新状态，使用从数据库返回的真实 ID
+            setWorks(prev => prev.map(item => 
+              item.tempId === tempId 
+                ? { ...item, id: saveData.data.id, type: fileType, title: file.name, file_key: fileKey, isUploading: false }
+                : item
+            ));
+            uploadSuccess();
+          } else {
+            console.error('[上传] 保存失败:', saveData.error);
+            setWorks(prev => prev.filter(item => item.tempId !== tempId));
+            uploadError(saveData.error || '保存失败');
+          }
+        } catch (saveError) {
+          console.error('[上传] 保存异常:', saveError);
+          setWorks(prev => prev.filter(item => item.tempId !== tempId));
+          uploadError('保存失败，请重试');
+        }
       } else {
         setWorks(prev => prev.filter(item => item.tempId !== tempId));
         uploadError(result.error || '上传失败');
       }
-    } catch {
+    } catch (error) {
+      console.error('[上传] 上传异常:', error);
       setWorks(prev => prev.filter(item => item.tempId !== tempId));
       uploadError('上传失败，请重试');
     }
@@ -312,6 +348,7 @@ export default function WorksAdminPage() {
       type: defaultType, 
       title: '选择文件中...', 
       file_key: '', 
+      order: prev.length,
       isUploading: false,
       category: activeCategory,
     }]);
