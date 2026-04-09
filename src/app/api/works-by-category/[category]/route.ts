@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 
+// 禁用静态优化，确保每次请求都执行
+export const dynamic = 'force-dynamic';
+
 interface WorkItem {
   id: number;
   work_id: number;
@@ -34,7 +37,16 @@ export async function GET(
       throw new Error(`获取作品失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as WorkItem[] });
+    return NextResponse.json(
+      { success: true, data: data as WorkItem[] },
+      { 
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      }
+    );
   } catch (error) {
     console.error('获取作品错误:', error);
     return NextResponse.json(

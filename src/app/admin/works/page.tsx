@@ -192,28 +192,32 @@ export default function WorksAdminPage() {
   );
 
   // 加载分类
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (setDefaultCategory: boolean = true) => {
     try {
       const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         setCategories(data.data);
-        if (!activeCategory && data.data.length > 0) {
+        // 默认设置第一个分类
+        if (setDefaultCategory && data.data.length > 0) {
           setActiveCategory(data.data[0].category_type);
         }
       }
     } catch (error) {
       console.error('加载分类失败:', error);
     }
-  }, [activeCategory]);
+  }, []);
 
   // 加载作品
   const loadWorks = useCallback(async (category: string) => {
     if (!category) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/works-by-category/${category}`);
-      const data = res.ok ? await res.json() : null;
+      const res = await fetch(`/api/works-by-category/${encodeURIComponent(category)}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
+      const data = await res.json();
       if (data?.success) {
         setWorks(data.data.map((item: WorkItem & { type: string }) => ({
           ...item,
@@ -222,6 +226,7 @@ export default function WorksAdminPage() {
       }
     } catch (error) {
       console.error('加载作品失败:', error);
+      setWorks([]); // 确保出错时清空列表，而不是留下旧数据
     } finally {
       setIsLoading(false);
     }

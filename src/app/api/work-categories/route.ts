@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 
+// 禁用静态优化，确保每次请求都执行
+export const dynamic = 'force-dynamic';
+
 interface WorkCategory {
   id: number;
   category_type: string;
