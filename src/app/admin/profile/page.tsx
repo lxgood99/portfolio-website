@@ -73,7 +73,8 @@ export default function ProfilePage() {
     if (!authLoading && isAuthenticated) {
       loadProfile();
     }
-  }, [authLoading, isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]); // loadProfile 在组件生命周期内不会变化
 
   const loadProfile = async () => {
     try {
@@ -167,7 +168,7 @@ export default function ProfilePage() {
       } else {
         alert('保存失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('保存失败，请重试');
     } finally {
       setIsSaving(false);

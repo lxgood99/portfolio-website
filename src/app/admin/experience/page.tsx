@@ -315,7 +315,7 @@ export default function ExperiencePage() {
       if (formData.image_display_mode === 'none' && newImages.length > 0) {
         setFormData({ ...formData, image_display_mode: 'grid' });
       }
-    } catch (error) {
+    } catch {
       alert('上传失败，请重试');
     } finally {
       setUploading(false);
@@ -387,7 +387,7 @@ export default function ExperiencePage() {
       } else {
         alert('保存失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('保存失败，请重试');
     }
   };
@@ -403,7 +403,7 @@ export default function ExperiencePage() {
       } else {
         alert('删除失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('删除失败，请重试');
     }
   };

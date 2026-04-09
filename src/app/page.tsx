@@ -446,7 +446,8 @@ export default function HomePage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // loadData 在组件生命周期内不会变化
 
   const loadData = async () => {
     try {

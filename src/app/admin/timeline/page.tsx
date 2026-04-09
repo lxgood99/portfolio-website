@@ -73,7 +73,6 @@ const generateMonthLabels = (): string[] => {
 export default function TimelineAdminPage() {
   const { isLoading: authLoading, isAuthenticated } = useAdminAuth();
   const [items, setItems] = useState<TimelineItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<TimelineItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [timelineTitle, setTimelineTitle] = useState('成长规划');
@@ -105,8 +104,6 @@ export default function TimelineAdminPage() {
       }
     } catch (error) {
       console.error('加载时间线失败:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -11,7 +11,8 @@ export function useAdminAuth() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // checkAuth 在组件生命周期内不会变化
 
   const checkAuth = async () => {
     try {

@@ -51,7 +51,8 @@ export default function ContactPage() {
     if (isAuthenticated) {
       loadContactInfo();
     }
-  }, [isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]); // loadContactInfo 在组件生命周期内不会变化
 
   const loadContactInfo = async () => {
     try {

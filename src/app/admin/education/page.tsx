@@ -238,7 +238,7 @@ export default function EducationPage() {
       } else {
         alert('保存失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('保存失败，请重试');
     }
   };
@@ -254,7 +254,7 @@ export default function EducationPage() {
       } else {
         alert('删除失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('删除失败，请重试');
     }
   };

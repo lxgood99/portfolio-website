@@ -17,7 +17,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // checkAuth 在组件生命周期内不会变化
 
   const checkAuth = async () => {
     try {
@@ -71,7 +72,7 @@ export default function AdminPage() {
         setError(data.error || '登录失败');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch {
       setError('登录失败，请重试');
       setIsLoading(false);
     }
@@ -108,7 +109,7 @@ export default function AdminPage() {
         setError(data.error || '初始化失败');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch {
       setError('初始化失败，请重试');
       setIsLoading(false);
     }

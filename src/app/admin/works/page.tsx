@@ -98,13 +98,13 @@ function SortableItem({ work, onEdit, onDelete }: SortableItemProps) {
   const getFileIcon = (type: string) => {
     switch (type) {
       case 'pdf':
-        return <FileText className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" aria-hidden="true" />;
       case 'image':
-        return <Image className="h-4 w-4" />;
+        return <Image className="h-4 w-4" aria-hidden="true" />;
       case 'video':
-        return <Video className="h-4 w-4" />;
+        return <Video className="h-4 w-4" aria-hidden="true" />;
       default:
-        return <FileText className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" aria-hidden="true" />;
     }
   };
 
@@ -382,7 +382,7 @@ export default function WorksPage() {
       } else {
         uploadError(result.error || '上传失败');
       }
-    } catch (error) {
+    } catch {
       uploadError('上传失败，请重试');
     } finally {
       setUploadingType(null);
@@ -455,7 +455,7 @@ export default function WorksPage() {
         setCarouselItems([...carouselItems, ...newItems]);
       }
       uploadSuccess();
-    } catch (error) {
+    } catch {
       uploadError('上传失败，请重试');
     } finally {
       setUploadingType(null);
@@ -502,7 +502,7 @@ export default function WorksPage() {
       } else {
         uploadError(result.error || '上传失败');
       }
-    } catch (error) {
+    } catch {
       uploadError('上传失败，请重试');
     } finally {
       setUploadingIndex(null);
@@ -638,7 +638,7 @@ export default function WorksPage() {
       } else {
         alert('保存失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('保存失败，请重试');
     }
   };
@@ -654,7 +654,7 @@ export default function WorksPage() {
       } else {
         alert('删除失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('删除失败，请重试');
     }
   };

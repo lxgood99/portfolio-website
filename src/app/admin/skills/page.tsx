@@ -342,7 +342,7 @@ export default function SkillsPage() {
       } else {
         alert('保存失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('保存失败，请重试');
     }
   };
@@ -358,7 +358,7 @@ export default function SkillsPage() {
       } else {
         alert('删除失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('删除失败，请重试');
     }
   };
@@ -406,7 +406,7 @@ export default function SkillsPage() {
         } else {
           alert('保存失败：' + data.error);
         }
-      } catch (error) {
+      } catch {
         alert('保存失败，请重试');
       }
     } else {
@@ -424,7 +424,7 @@ export default function SkillsPage() {
         } else {
           alert('保存失败：' + data.error);
         }
-      } catch (error) {
+      } catch {
         alert('保存失败，请重试');
       }
     }
@@ -448,7 +448,7 @@ export default function SkillsPage() {
       } else {
         alert('删除失败：' + data.error);
       }
-    } catch (error) {
+    } catch {
       alert('删除失败，请重试');
     }
   };
