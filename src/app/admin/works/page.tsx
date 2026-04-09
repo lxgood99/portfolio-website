@@ -74,25 +74,25 @@ function FileItemRow({
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   
-  const loadFileUrl = async (key: string) => {
-    try {
-      const res = await fetch('/api/file-url', {
+  useEffect(() => {
+    if (item.file_key && !item.url && !item.isUploading) {
+      // 获取 URL
+      fetch('/api/file-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key }),
-      });
-      const data = res.ok ? await res.json() : null;
-      return data?.success ? data.data.url : '';
-    } catch {
-      return '';
+        body: JSON.stringify({ key: item.file_key }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.success) {
+            setImageUrl(data.data.url);
+          }
+        })
+        .catch(() => {
+          // 忽略错误
+        });
     }
-  };
-  
-  useEffect(() => {
-    if (item.file_key && !item.url) {
-      loadFileUrl(item.file_key).then(setImageUrl);
-    }
-  }, [item.file_key, item.url]);
+  }, [item.file_key, item.url, item.isUploading]);
   
   // 直接使用 url prop
   const displayUrl = item.url || imageUrl;
@@ -384,21 +384,20 @@ export default function WorksAdminPage() {
   };
 
   // 移除文件
-  const handleRemoveFile = (index: number) => {
-    const item = works[index];
-    if (item?.id) {
+  const handleRemoveFile = (itemToRemove: WorkItem) => {
+    if (itemToRemove?.id) {
       if (!confirm('确定要删除这个作品吗？')) return;
-      fetch(`/api/work-items/${item.id}`, { method: 'DELETE' })
+      fetch(`/api/work-items/${itemToRemove.id}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            setWorks(prev => prev.filter((_, i) => i !== index));
+            setWorks(prev => prev.filter(item => item.id !== itemToRemove.id));
           } else {
             alert('删除失败：' + data.error);
           }
         });
     } else {
-      setWorks(prev => prev.filter((_, i) => i !== index));
+      setWorks(prev => prev.filter(item => item.tempId !== itemToRemove.tempId));
     }
   };
 
@@ -413,17 +412,22 @@ export default function WorksAdminPage() {
       const newWorks = arrayMove(works, oldIndex, newIndex);
       setWorks(newWorks);
       
-      // 更新服务器排序
-      try {
-        await fetch(`/api/works-by-category/${activeCategory}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items: newWorks.map((item, idx) => ({ id: item.id, order: idx })),
-          }),
-        });
-      } catch (error) {
-        console.error('更新排序失败:', error);
+      // 只更新有 id 的项目的排序
+      const itemsWithId = newWorks
+        .filter(item => item.id !== undefined)
+        .map((item, idx) => ({ id: item.id, order: idx }));
+      
+      if (itemsWithId.length > 0) {
+        // 更新服务器排序
+        try {
+          await fetch(`/api/works-by-category/${activeCategory}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: itemsWithId }),
+          });
+        } catch (error) {
+          console.error('更新排序失败:', error);
+        }
       }
     }
   };
@@ -567,7 +571,7 @@ export default function WorksAdminPage() {
                     <SortableFileItem
                       key={item.tempId || item.id || 0}
                       item={item}
-                      onRemove={() => handleRemoveFile(works.indexOf(item))}
+                      onRemove={() => handleRemoveFile(item)}
                     />
                   ))}
                 </div>
