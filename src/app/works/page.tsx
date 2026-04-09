@@ -135,9 +135,10 @@ function PPTCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
 
 export default function WorksPage() {
   const [categories, setCategories] = useState<WorkCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<string>('image'); // 默认选中图片
   const [works, setWorks] = useState<WorkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   // 预览状态
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
@@ -146,27 +147,30 @@ export default function WorksPage() {
   // 轮播状态
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
   // 加载分类
-  const loadCategories = useCallback(async () => {
-    try {
-      const res = await fetch('/api/work-categories');
-      const data = res.ok ? await res.json() : null;
-      if (data?.success && data.data.length > 0) {
-        setCategories(data.data);
-        if (!activeCategory) {
-          setActiveCategory(data.data[0].category_type);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch('/api/work-categories');
+        const data = res.ok ? await res.json() : null;
+        if (data?.success && data.data.length > 0) {
+          setCategories(data.data);
+          // 如果当前没有选中分类，设置第一个
+          if (!activeCategory || !data.data.find((c: WorkCategory) => c.category_type === activeCategory)) {
+            setActiveCategory(data.data[0].category_type);
+          }
         }
+      } catch (error) {
+        console.error('加载分类失败:', error);
       }
-    } catch (error) {
-      console.error('加载分类失败:', error);
-    }
-  }, [activeCategory]);
+    };
+    loadCategories();
+  }, []); // 只在组件挂载时加载一次
 
   // 加载作品
   const loadWorks = useCallback(async (category: string) => {
@@ -186,7 +190,6 @@ export default function WorksPage() {
           }))
         );
         setWorks(worksWithUrls);
-        setCurrentIndex(0);
       } else {
         setWorks([]);
       }
@@ -195,14 +198,12 @@ export default function WorksPage() {
       setWorks([]);
     } finally {
       setIsLoading(false);
-      setIsTransitioning(false);
+      // 延迟关闭过渡状态，让动画更平滑
+      setTimeout(() => setIsTransitioning(false), 300);
     }
   }, []);
 
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
-
+  // 分类变化时加载作品
   useEffect(() => {
     if (activeCategory) {
       loadWorks(activeCategory);
@@ -213,7 +214,7 @@ export default function WorksPage() {
   useEffect(() => {
     if (isAutoPlaying && works.length > 1) {
       autoPlayRef.current = setInterval(() => {
-        goToNext();
+        setCurrentIndex((prev) => (prev + 1) % works.length);
       }, 4000);
     }
     return () => {
@@ -246,7 +247,7 @@ export default function WorksPage() {
   const handleCategoryChange = (category: string) => {
     if (category !== activeCategory && !isTransitioning) {
       setIsAutoPlaying(true);
-      loadWorks(category);
+      setActiveCategory(category);
     }
   };
 
@@ -265,13 +266,11 @@ export default function WorksPage() {
 
   // 预览导航
   const handlePreviewNav = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      setPreviewIndex((prev) => (prev - 1 + works.length) % works.length);
-      setPreviewItem(works[(previewIndex - 1 + works.length) % works.length]);
-    } else {
-      setPreviewIndex((prev) => (prev + 1) % works.length);
-      setPreviewItem(works[(previewIndex + 1) % works.length]);
-    }
+    const newIndex = direction === 'prev' 
+      ? (previewIndex - 1 + works.length) % works.length
+      : (previewIndex + 1) % works.length;
+    setPreviewIndex(newIndex);
+    setPreviewItem(works[newIndex]);
   };
 
   // 触摸滑动开始
@@ -309,7 +308,7 @@ export default function WorksPage() {
     }
   };
 
-  const currentCategoryName = categories.find(c => c.category_type === activeCategory)?.display_name || '';
+  const currentCategoryName = categories.find(c => c.category_type === activeCategory)?.display_name || '作品';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -317,20 +316,30 @@ export default function WorksPage() {
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b shadow-sm">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-center gap-2 py-4">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.category_type)}
-                disabled={isTransitioning}
-                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 transform ${
-                  activeCategory === cat.category_type
-                    ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                    : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105 disabled:opacity-50'
-                }`}
-              >
-                {cat.display_name}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat.category_type;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.category_type)}
+                  disabled={isTransitioning}
+                  className={`
+                    px-6 py-2.5 rounded-full text-sm font-medium 
+                    transition-all duration-300 ease-out
+                    ${isActive 
+                      ? 'bg-primary text-primary-foreground shadow-lg scale-105 ring-2 ring-primary/30' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                    }
+                    ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  style={{
+                    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  }}
+                >
+                  {cat.display_name}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -342,7 +351,7 @@ export default function WorksPage() {
           <h2 className="text-2xl font-bold text-foreground">{currentCategoryName}</h2>
         </div>
 
-        {isLoading ? (
+        {isLoading || isTransitioning ? (
           <div className="flex items-center justify-center h-80">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
           </div>
@@ -366,7 +375,12 @@ export default function WorksPage() {
             >
               {/* 卡片容器 - 响应式尺寸 */}
               <div className="relative mx-auto" style={{ maxWidth: '400px' }}>
-                <div className="aspect-[4/3]">
+                <div 
+                  className="aspect-[4/3] transition-all duration-300"
+                  style={{
+                    opacity: isTransitioning ? 0.5 : 1,
+                  }}
+                >
                   {renderCurrentCard()}
                 </div>
               </div>
@@ -397,11 +411,13 @@ export default function WorksPage() {
                   <button
                     key={idx}
                     onClick={() => goToIndex(idx)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      idx === currentIndex 
+                    className={`
+                      w-2 h-2 rounded-full transition-all duration-300 
+                      ${idx === currentIndex 
                         ? 'bg-primary w-6' 
                         : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400'
-                    }`}
+                      }
+                    `}
                   />
                 ))}
               </div>
@@ -427,7 +443,7 @@ export default function WorksPage() {
       {/* 图片预览模态框 */}
       {previewItem && activeCategory === 'image' && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center animate-in fade-in duration-200"
           onClick={handleClosePreview}
         >
           <button
@@ -455,7 +471,7 @@ export default function WorksPage() {
             </>
           )}
           
-          {/* 图片 - 支持缩放 */}
+          {/* 图片 */}
           <div 
             className="w-full h-full flex items-center justify-center p-8 overflow-auto"
             onClick={(e) => e.stopPropagation()}
@@ -479,7 +495,7 @@ export default function WorksPage() {
       {/* PPT/PDF 预览模态框 */}
       {previewItem && activeCategory === 'ppt' && (
         <div 
-          className="fixed inset-0 z-50 bg-black flex flex-col"
+          className="fixed inset-0 z-50 bg-black flex flex-col animate-in fade-in duration-200"
           onClick={handleClosePreview}
         >
           <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
@@ -517,7 +533,7 @@ export default function WorksPage() {
       {/* 视频预览模态框 */}
       {previewItem && activeCategory === 'video' && (
         <div 
-          className="fixed inset-0 z-50 bg-black flex flex-col"
+          className="fixed inset-0 z-50 bg-black flex flex-col animate-in fade-in duration-200"
           onClick={handleClosePreview}
         >
           <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
