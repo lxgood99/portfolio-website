@@ -393,12 +393,28 @@ export default function WorksPage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // 获取已存在的文件名集合，用于去重
+    const existingTitles = new Set(carouselItems.map(item => item.title));
+
+    // 过滤出新的文件（排除已存在的）
+    const newFiles: File[] = [];
+    for (let i = 0; i < files.length; i++) {
+      if (!existingTitles.has(files[i].name)) {
+        newFiles.push(files[i]);
+      }
+    }
+
+    if (newFiles.length === 0) {
+      setSizeValidationError('所选文件均已添加，请选择其他文件');
+      return;
+    }
+
     // 验证所有文件大小
     const invalidFiles: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const validation = validateFileSize(files[i]);
+    for (let i = 0; i < newFiles.length; i++) {
+      const validation = validateFileSize(newFiles[i]);
       if (!validation.valid) {
-        invalidFiles.push(`${files[i].name}: ${validation.error}`);
+        invalidFiles.push(`${newFiles[i].name}: ${validation.error}`);
       }
     }
     
@@ -414,10 +430,12 @@ export default function WorksPage() {
 
     try {
       const newItems: typeof carouselItems = [];
+      const totalFiles = newFiles.length;
       
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        startUpload(file.name, formatFileSize(file.size));
+      for (let i = 0; i < newFiles.length; i++) {
+        const file = newFiles[i];
+        // 更新 UI 显示当前上传进度（显示第几个文件）
+        startUpload(`(${i + 1}/${totalFiles}) ${file.name}`, formatFileSize(file.size));
         
         const result = await uploadWithProgress(file, 'work', updateProgress);
         
@@ -433,7 +451,9 @@ export default function WorksPage() {
         }
       }
 
-      setCarouselItems([...carouselItems, ...newItems]);
+      if (newItems.length > 0) {
+        setCarouselItems([...carouselItems, ...newItems]);
+      }
       uploadSuccess();
     } catch (error) {
       uploadError('上传失败，请重试');
@@ -491,11 +511,19 @@ export default function WorksPage() {
   };
 
   const handleAddCarouselItem = () => {
-    // 通过文件选择器触发多图上传
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
+    // 创建一个隐藏的文件输入框，使用 ref 来确保唯一性
+    let input = document.getElementById('carousel-file-input') as HTMLInputElement | null;
+    if (!input) {
+      input = document.createElement('input');
+      input.id = 'carousel-file-input';
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.style.display = 'none';
+      document.body.appendChild(input);
+    }
+    // 清除之前的选择，避免累积
+    input.value = '';
     input.onchange = (e) => handleCarouselUpload(e as unknown as React.ChangeEvent<HTMLInputElement>);
     input.click();
   };
