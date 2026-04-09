@@ -373,8 +373,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('image');
+  const [categories, setCategories] = useState<string[]>(['图片', 'PPT/PDF', '视频']);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeSkillCategory, setActiveSkillCategory] = useState<string>('办公软件');
 
@@ -1110,15 +1110,15 @@ export default function HomePage() {
             {/* 手机端：横向滚动布局 */}
             <div className="md:hidden space-y-6">
               {categories.map((cat) => {
-                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category === cat);
+                const categoryWorks = works.filter(w => w.category === cat || (cat === '图片' && !w.category));
                 if (categoryWorks.length === 0) return null;
                 
                 return (
                   <div key={cat} className="space-y-3">
-                    {/* 分类标题 + 滑动提示 */}
+                    {/* 分类标题 */}
                     <div className="flex items-center justify-between px-1">
                       <h3 className="font-semibold text-base text-muted-foreground flex items-center gap-2">
-                        {cat === 'all' ? '全部作品' : cat}
+                        {cat}
                         <ChevronRight className="h-4 w-4 text-primary" />
                       </h3>
                       <span className="text-xs text-muted-foreground">
@@ -1190,7 +1190,7 @@ export default function HomePage() {
             
             {/* 电脑端：保持原有网格布局 */}
             <div className="hidden md:block">
-              {categories.length > 1 && (
+              {categories.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
                   {categories.map((cat) => (
                     <button
@@ -1202,13 +1202,13 @@ export default function HomePage() {
                           : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
                       }`}
                     >
-                      {cat === 'all' ? '全部' : cat}
+                      {cat}
                     </button>
                   ))}
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
+                {(selectedCategory === '全部' || selectedCategory === '图片' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
                   <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                     {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                       <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
