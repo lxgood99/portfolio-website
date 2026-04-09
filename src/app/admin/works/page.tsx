@@ -41,7 +41,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useUpload } from '@/hooks/useUpload';
-import { formatFileSize } from '@/lib/utils';
+import { formatFileSize } from '@/components/UploadProgress';
 
 interface WorkCategory {
   id: number;

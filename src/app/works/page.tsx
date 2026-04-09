@@ -48,7 +48,7 @@ async function loadFileUrl(key: string): Promise<string> {
 }
 
 // 图片卡片组件
-function ImageCard({ item, onClick, isActive }: { item: WorkItem; onClick: () => void; isActive?: boolean }) {
+function ImageCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
   return (
     <div 
       className="relative group flex-shrink-0 w-full h-full rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
