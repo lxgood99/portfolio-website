@@ -690,6 +690,18 @@ export default function WorksPage() {
       return;
     }
 
+    // 检查是否有正在上传的文件
+    const pendingUploads = workItems.filter(item => item.isUploading || !item.file_key);
+    if (pendingUploads.length > 0) {
+      alert(`还有 ${pendingUploads.length} 个文件正在上传或未上传完成，请等待上传完成后再保存`);
+      return;
+    }
+
+    // 保存当前状态快照，避免闭包问题
+    const currentWorkItems = [...workItems];
+    const currentCarouselItems = [...carouselItems];
+    console.log(`[保存] 开始保存，普通文件: ${currentWorkItems.length} 个，轮播图片: ${currentCarouselItems.length} 张`);
+
     const url = editingWork ? `/api/works/${editingWork.id}` : '/api/works';
     const method = editingWork ? 'PUT' : 'POST';
 
@@ -711,10 +723,13 @@ export default function WorksPage() {
       if (data.success) {
         const workId = data.data.id;
 
-        // 处理轮播图片
-        for (let i = 0; i < carouselItems.length; i++) {
-          const item = carouselItems[i];
-          if (!item.file_key) continue;
+        // 保存轮播图片
+        for (let i = 0; i < currentCarouselItems.length; i++) {
+          const item = currentCarouselItems[i];
+          if (!item.file_key) {
+            console.log(`[保存] 跳过轮播图片 ${i + 1}：file_key 为空`);
+            continue;
+          }
 
           if (item.id) {
             await fetch(`/api/work-items/${item.id}`, {
@@ -743,37 +758,47 @@ export default function WorksPage() {
           }
         }
 
-        // 处理普通文件
-        for (let i = 0; i < workItems.length; i++) {
-          const item = workItems[i];
-          if (!item.file_key) continue;
+        // 保存普通文件
+        let savedCount = 0;
+        for (let i = 0; i < currentWorkItems.length; i++) {
+          const item = currentWorkItems[i];
+          if (!item.file_key) {
+            console.log(`[保存] 跳过普通文件 ${i + 1}：file_key 为空`);
+            continue;
+          }
 
-          if (item.id) {
-            await fetch(`/api/work-items/${item.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: item.type,
-                title: item.title,
-                file_key: item.file_key,
-                is_carousel_item: false,
-                order: i,
-              }),
-            });
-          } else {
-            await fetch(`/api/works/${workId}/items`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: item.type,
-                title: item.title,
-                file_key: item.file_key,
-                is_carousel_item: false,
-                order: i,
-              }),
-            });
+          try {
+            if (item.id) {
+              await fetch(`/api/work-items/${item.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: item.type,
+                  title: item.title,
+                  file_key: item.file_key,
+                  is_carousel_item: false,
+                  order: i,
+                }),
+              });
+            } else {
+              await fetch(`/api/works/${workId}/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: item.type,
+                  title: item.title,
+                  file_key: item.file_key,
+                  is_carousel_item: false,
+                  order: i,
+                }),
+              });
+            }
+            savedCount++;
+          } catch (err) {
+            console.error(`[保存] 保存文件失败:`, item.title, err);
           }
         }
+        console.log(`[保存] 完成，成功保存 ${savedCount}/${currentWorkItems.length} 个文件`);
 
         setDialogOpen(false);
         loadWorks();
