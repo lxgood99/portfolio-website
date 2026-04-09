@@ -125,8 +125,8 @@ export default function SelfIntroductionPage() {
         fetch('/api/self-introduction'),
         fetch('/api/self-intro-cards'),
       ]);
-      const introData = await introRes.json();
-      const cardsData = await cardsRes.json();
+      const introData = introRes.ok ? await introRes.json() : null;
+      const cardsData = cardsRes.ok ? await cardsRes.json() : null;
       
       if (introData.success && introData.data) {
         setSelfIntro(introData.data);

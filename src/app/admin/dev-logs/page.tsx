@@ -121,8 +121,8 @@ export default function DevLogsPage() {
     try {
       setIsLoading(true);
       const res = await fetch('/api/dev-logs');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setLogs(data.data);
       }
     } catch (error) {

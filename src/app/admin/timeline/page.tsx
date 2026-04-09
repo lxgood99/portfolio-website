@@ -99,8 +99,8 @@ export default function TimelineAdminPage() {
   const loadItems = async () => {
     try {
       const res = await fetch('/api/timeline-items');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setItems(data.data);
       }
     } catch (error) {
@@ -111,8 +111,8 @@ export default function TimelineAdminPage() {
   const loadTimelineTitle = async () => {
     try {
       const res = await fetch('/api/profile');
-      const data = await res.json();
-      if (data.success && data.data?.timeline_title) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success && data.data?.timeline_title) {
         setTimelineTitle(data.data.timeline_title);
       }
     } catch (error) {

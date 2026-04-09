@@ -162,8 +162,8 @@ export default function ExperiencePage() {
   const loadExperiences = async () => {
     try {
       const res = await fetch('/api/work-experiences');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         // 加载图片URL
         const experiencesWithUrls = await Promise.all(
           data.data.map(async (exp: WorkExperience) => {

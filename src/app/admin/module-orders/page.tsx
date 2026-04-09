@@ -113,8 +113,8 @@ export default function ModuleOrdersPage() {
   const loadModules = async () => {
     try {
       const res = await fetch('/api/module-orders');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setModules(data.data);
       }
     } catch (error) {

@@ -468,14 +468,14 @@ export default function HomePage() {
         fetch('/api/timeline-items'),
       ]);
 
-      const profileData = await profileRes.json();
-      const selfIntroData = await selfIntroRes.json();
-      const expData = await expRes.json();
-      const eduData = await eduRes.json();
-      const skillsData = await skillsRes.json();
-      const skillCategoriesData = await skillCategoriesRes.json();
-      const worksData = await worksRes.json();
-      const moduleOrdersData = await moduleOrdersRes.json();
+      const profileData = profileRes.ok ? await profileRes.json() : null;
+      const selfIntroData = selfIntroRes.ok ? await selfIntroRes.json() : null;
+      const expData = expRes.ok ? await expRes.json() : null;
+      const eduData = eduRes.ok ? await eduRes.json() : null;
+      const skillsData = skillsRes.ok ? await skillsRes.json() : null;
+      const skillCategoriesData = skillCategoriesRes.ok ? await skillCategoriesRes.json() : null;
+      const worksData = worksRes.ok ? await worksRes.json() : null;
+      const moduleOrdersData = moduleOrdersRes.ok ? await moduleOrdersRes.json() : null;
 
       if (profileData.success && profileData.data) {
         // 确保显示开关字段有默认值

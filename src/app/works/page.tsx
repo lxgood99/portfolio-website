@@ -137,7 +137,7 @@ export default function WorksListPage() {
   const loadData = async () => {
     try {
       const worksRes = await fetch('/api/works');
-      const worksData = await worksRes.json();
+      const worksData = worksRes.ok ? await worksRes.json() : null;
 
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);

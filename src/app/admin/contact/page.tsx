@@ -57,8 +57,8 @@ export default function ContactPage() {
   const loadContactInfo = async () => {
     try {
       const res = await fetch('/api/contact-info');
-      const data = await res.json();
-      if (data.success && data.data) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success && data.data) {
         setFormData({
           email: data.data.email || '',
           phone: data.data.phone || '',

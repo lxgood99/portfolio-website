@@ -144,8 +144,8 @@ export default function EducationPage() {
   const loadEducations = async () => {
     try {
       const res = await fetch('/api/educations');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setEducations(data.data);
       }
     } catch (error) {

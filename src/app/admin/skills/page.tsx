@@ -204,8 +204,8 @@ export default function SkillsPage() {
   const loadSkills = async () => {
     try {
       const res = await fetch('/api/skills');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setSkills(data.data);
       }
     } catch (error) {
@@ -216,7 +216,7 @@ export default function SkillsPage() {
   const loadCategories = async () => {
     try {
       const res = await fetch('/api/skill-categories');
-      const data = await res.json();
+      const data = res.ok ? await res.json() : null;
       if (data.success) {
         setCategories(data.data);
       }

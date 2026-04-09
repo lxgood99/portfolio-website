@@ -316,8 +316,8 @@ export default function WorksPage() {
   const loadWorks = async () => {
     try {
       const res = await fetch('/api/works');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setWorks(data.data);
       }
     } catch (error) {

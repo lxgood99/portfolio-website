@@ -37,8 +37,8 @@ export default function AnalyticsPage() {
   const loadStats = async () => {
     try {
       const res = await fetch('/api/visit-stats');
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         setStats(data.data.stats);
         setDailyStats(data.data.dailyStats || []);
       }
@@ -65,8 +65,8 @@ export default function AnalyticsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       });
-      const data = await res.json();
-      if (data.success) {
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
         loadStats();
       }
     } catch (error) {
