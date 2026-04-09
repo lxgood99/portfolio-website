@@ -93,7 +93,8 @@ export default function TimelineAdminPage() {
       loadItems();
       loadTimelineTitle();
     }
-  }, [authLoading, isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]); // loadItems 和 loadTimelineTitle 在组件生命周期内不会变化
 
   const loadItems = async () => {
     try {

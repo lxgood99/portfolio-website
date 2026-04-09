@@ -1,6 +1,86 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+// 文件项行组件
+function FileItemRow({ 
+  item, 
+  onRemove, 
+  onReselect,
+  isUploading 
+}: { 
+  item: {
+    type: string;
+    title: string;
+    file_key: string;
+    isUploading?: boolean;
+  }; 
+  onRemove: () => void;
+  onReselect: () => void;
+  isUploading: boolean;
+}) {
+  const getFileIcon = (type: string) => {
+    switch (type) {
+      case 'pdf':
+        return <FileText className="h-4 w-4" aria-hidden="true" />;
+      case 'image':
+        return <Image className="h-4 w-4" aria-hidden="true" />;
+      case 'video':
+        return <Video className="h-4 w-4" aria-hidden="true" />;
+      default:
+        return <FileText className="h-4 w-4" aria-hidden="true" />;
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-2 p-3 border rounded-lg">
+      <div className="flex items-center gap-2">
+        {getFileIcon(item.type)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className={item.isUploading ? 'bg-blue-50 border-blue-200' : ''}>
+            {item.type || '未上传'}
+          </Badge>
+          {item.title ? (
+            <span className={`text-sm truncate ${item.isUploading ? 'text-blue-500' : 'text-muted-foreground'}`}>
+              {item.title}
+              {item.isUploading && <span className="ml-1 animate-pulse">(上传中...)</span>}
+            </span>
+          ) : (
+            <span className="text-sm text-gray-400 animate-pulse">选择文件中...</span>
+          )}
+        </div>
+        {item.file_key && !item.isUploading && (
+          <span className="text-xs text-green-600 mt-1 block">已上传</span>
+        )}
+      </div>
+      <div className="flex items-center gap-1">
+        {item.file_key && !item.isUploading && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onReselect}
+            title="重新选择文件"
+          >
+            <Upload className="h-4 w-4" />
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          disabled={item.isUploading}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -198,11 +278,13 @@ export default function WorksPage() {
   }>>([]);
   const [workItems, setWorkItems] = useState<Array<{
     id?: number;
+    tempId?: string; // 用于本地新建项的唯一ID
     type: string;
     title: string;
     file_key: string;
+    isUploading?: boolean; // 标记是否正在上传
   }>>([]);
-  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingTempId, setUploadingTempId] = useState<string | null>(null); // 当前正在上传的临时ID
   const [uploadingType, setUploadingType] = useState<'cover' | 'carousel' | 'file' | null>(null);
   
   // 上传进度管理
@@ -462,53 +544,7 @@ export default function WorksPage() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // 验证文件大小
-    const validation = validateFileSize(file);
-    if (!validation.valid) {
-      setSizeValidationError(validation.error || '文件大小超过限制');
-      return;
-    }
-    
-    // 清除之前的错误提示
-    setSizeValidationError(null);
-
-    setUploadingIndex(index);
-    setUploadingType('file');
-    startUpload(file.name, formatFileSize(file.size));
-
-    try {
-      const result = await uploadWithProgress(file, 'work', updateProgress);
-      
-      if (result.success) {
-        const fileType = file.type.startsWith('image/')
-          ? 'image'
-          : file.type.startsWith('video/')
-          ? 'video'
-          : 'pdf';
-
-        const newItems = [...workItems];
-        newItems[index] = {
-          ...newItems[index],
-          file_key: result.data.key,
-          title: file.name,
-          type: fileType,
-        };
-        setWorkItems(newItems);
-        uploadSuccess();
-      } else {
-        uploadError(result.error || '上传失败');
-      }
-    } catch {
-      uploadError('上传失败，请重试');
-    } finally {
-      setUploadingIndex(null);
-      setUploadingType(null);
-    }
-  };
+  // 旧的 handleFileUpload 函数已弃用，使用 handleFileUploadWithFile 替代
 
   const handleAddCarouselItem = () => {
     // 创建一个隐藏的文件输入框，使用 ref 来确保唯一性
@@ -533,13 +569,119 @@ export default function WorksPage() {
     setCarouselItems(newItems);
   };
 
-  const handleAddFileItem = () => {
-    setWorkItems([...workItems, { type: 'pdf', title: '', file_key: '' }]);
+  // 处理文件上传（使用临时ID）
+  const handleFileUploadWithFile = async (file: File, tempId: string) => {
+    // 验证文件大小
+    const validation = validateFileSize(file);
+    if (!validation.valid) {
+      setWorkItems(workItems.filter(item => item.tempId !== tempId));
+      setSizeValidationError(validation.error || '文件大小超过限制');
+      return;
+    }
+    
+    // 清除之前的错误提示
+    setSizeValidationError(null);
+
+    // 标记该项为上传中，并显示文件名
+    setWorkItems(workItems.map(item => 
+      item.tempId === tempId 
+        ? { ...item, title: file.name, isUploading: true }
+        : item
+    ));
+    setUploadingType('file');
+    startUpload(file.name, formatFileSize(file.size));
+
+    try {
+      const result = await uploadWithProgress(file, 'work', updateProgress);
+      
+      if (result.success) {
+        const fileType = file.type.startsWith('image/')
+          ? 'image'
+          : file.type === 'application/pdf' || file.type.includes('presentation') || file.type.includes('document')
+            ? 'pdf'
+            : file.type.startsWith('video/')
+              ? 'video'
+              : 'pdf';
+        
+        // 更新该项为已上传状态
+        setWorkItems(workItems.map(item => 
+          item.tempId === tempId 
+            ? { ...item, type: fileType, title: file.name, file_key: result.data.key, isUploading: false }
+            : item
+        ));
+        uploadSuccess();
+      } else {
+        // 上传失败，移除该项
+        setWorkItems(workItems.filter(item => item.tempId !== tempId));
+        uploadError(result.error || '上传失败');
+      }
+    } catch {
+      // 上传失败，移除该项
+      setWorkItems(workItems.filter(item => item.tempId !== tempId));
+      uploadError('上传失败，请重试');
+    } finally {
+      setUploadingType(null);
+    }
   };
 
+  // 添加文件项 - 打开文件选择器
+  const handleAddFileItem = () => {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // 先添加一个临时项，显示"选择文件中..."
+    setWorkItems([...workItems, { tempId, type: 'pdf', title: '选择文件中...', file_key: '', isUploading: false }]);
+    
+    // 创建一个唯一的文件输入框
+    const inputId = `file-input-${tempId}`;
+    let input = document.getElementById(inputId) as HTMLInputElement | null;
+    if (!input) {
+      input = document.createElement('input');
+      input.id = inputId;
+      input.type = 'file';
+      input.accept = '.pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov,.avi';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+    }
+    // 清除之前的选择
+    input.value = '';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        handleFileUploadWithFile(file, tempId);
+      } else {
+        // 用户取消选择，移除临时项
+        setWorkItems(workItems.filter(item => item.tempId !== tempId));
+      }
+      // 清理 input
+      if (input && document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
+    };
+    input.click();
+  };
+
+  
+
   const handleRemoveFileItem = (index: number) => {
-    const newItems = workItems.filter((_, i) => i !== index);
-    setWorkItems(newItems);
+    const item = workItems[index];
+    if (item?.tempId) {
+      // 如果是临时项，直接移除
+      setWorkItems(workItems.filter((_, i) => i !== index));
+    } else if (item?.id) {
+      // 如果是已保存的项，需要从服务器删除
+      // 从服务器删除文件记录
+      fetch(`/api/works/items/${item.id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setWorkItems(workItems.filter((_, i) => i !== index));
+          } else {
+            alert('删除失败：' + data.error);
+          }
+        })
+        .catch(() => {
+          alert('删除失败，请重试');
+        });
+    }
   };
 
   const handleSave = async () => {
@@ -904,46 +1046,13 @@ export default function WorksPage() {
                   </Button>
                 </div>
                 {workItems.map((item, index) => (
-                  <div key={index} className="flex items-start gap-2 p-3 border rounded-lg">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{item.type || '未上传'}</Badge>
-                        {item.title && <span className="text-sm text-muted-foreground">{item.title}</span>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="file"
-                          accept=".pdf,image/*,video/*"
-                          onChange={(e) => handleFileUpload(e, index)}
-                          className="hidden"
-                          id={`file-${index}`}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          disabled={uploadingIndex === index && uploadingType === 'file'}
-                        >
-                          <label htmlFor={`file-${index}`} className="cursor-pointer">
-                            <Upload className="h-4 w-4 mr-1" />
-                            {uploadingIndex === index && uploadingType === 'file' ? '上传中...' : item.file_key ? '重新上传' : '上传文件'}
-                          </label>
-                        </Button>
-                        {item.file_key && (
-                          <span className="text-xs text-green-600">已上传</span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveFileItem(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <FileItemRow 
+                    key={item.tempId || item.id || index}
+                    item={item}
+                    onRemove={() => handleRemoveFileItem(index)}
+                    onReselect={() => handleAddFileItem()}
+                    isUploading={uploadingType === 'file' && (uploadingTempId === item.tempId || (item.tempId === undefined && index === 0))}
+                  />
                 ))}
               </div>
             )}
