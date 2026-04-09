@@ -1,13 +1,28 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FolderOpen, FileText, ArrowLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { X } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  X, 
+  Play, 
+  Pause, 
+  Image as ImageIcon, 
+  FileText, 
+  Video,
+  Maximize2
+} from 'lucide-react';
 import { PDFViewer } from '@/components/PDFViewer';
+
+interface WorkCategory {
+  id: number;
+  category_type: string;
+  display_name: string;
+  sort_order: number;
+  is_visible: boolean;
+}
 
 interface WorkItem {
   id: number;
@@ -16,358 +31,465 @@ interface WorkItem {
   file_key: string;
   url?: string;
   description?: string;
-  is_carousel_item?: boolean;
   order: number;
-}
-
-interface Work {
-  id: number;
-  title: string;
-  description: string;
-  description_align?: string;
   category: string;
-  tags: string[];
-  display_mode?: string;
-  cover_image_key?: string;
-  coverImageUrl?: string;
-  order: number;
-  work_items?: WorkItem[];
-  carouselItems?: WorkItem[];
 }
 
-// 作品集轮播组件
-function WorkCarousel({ images }: { images: WorkItem[]; onImageClick: (item: WorkItem) => void }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const touchStartX = useRef(0);
+// 加载文件URL
+async function loadFileUrl(key: string): Promise<string> {
+  if (!key) return '';
+  try {
+    const res = await fetch('/api/file-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+    const data = res.ok ? await res.json() : null;
+    return data?.success ? data.data.url : '';
+  } catch {
+    return '';
+  }
+}
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) handleNext();
-      else handlePrev();
-    }
-  };
-
-  const currentImage = images[currentIndex];
-
+// 图片卡片组件
+function ImageCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
   return (
     <div 
-      className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      className="relative group flex-shrink-0 w-72 h-48 md:w-80 md:h-52 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
+      onClick={onClick}
     >
-      {currentImage?.url && (
+      {item.url ? (
         <img 
-          src={currentImage.url} 
-          alt={currentImage.title || '作品图片'} 
+          src={item.url} 
+          alt={item.title}
           className="w-full h-full object-cover"
           loading="lazy"
         />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+          <ImageIcon className="h-12 w-12 text-muted-foreground" />
+        </div>
       )}
-      
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
-          >
-            <ChevronRight className="h-4 w-4 rotate-180" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentIndex ? 'bg-white w-4' : 'bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {/* 悬停遮罩 */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="bg-white/90 dark:bg-slate-800/90 px-3 py-1.5 rounded-full">
+          <Maximize2 className="h-4 w-4" />
+        </div>
+      </div>
+      {/* 标题 */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+        <p className="text-white text-sm font-medium truncate">{item.title}</p>
+      </div>
     </div>
   );
 }
 
-function getFileIcon(type: string) {
-  switch (type) {
-    case 'pdf':
-      return <FileText className="h-4 w-4" />;
-    case 'image':
-      return <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>;
-    case 'video':
-      return <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
-    default:
-      return <FileText className="h-4 w-4" />;
-  }
+// 视频卡片组件
+function VideoCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+  return (
+    <div 
+      className="relative group flex-shrink-0 w-72 h-48 md:w-80 md:h-52 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
+      onClick={onClick}
+    >
+      {item.url ? (
+        <img 
+          src={item.url} 
+          alt={item.title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+          <Video className="h-12 w-12 text-muted-foreground" />
+        </div>
+      )}
+      {/* 播放按钮遮罩 */}
+      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full bg-white/90 dark:bg-slate-800/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <Play className="h-6 w-6 text-slate-800 ml-1" fill="currentColor" />
+        </div>
+      </div>
+      {/* 标题 */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+        <p className="text-white text-sm font-medium truncate">{item.title}</p>
+      </div>
+    </div>
+  );
 }
 
-export default function WorksListPage() {
-  const [works, setWorks] = useState<Work[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<string[]>([]);
+// PPT卡片组件
+function PPTCard({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+  return (
+    <div 
+      className="relative group flex-shrink-0 w-72 h-48 md:w-80 md:h-52 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20"
+      onClick={onClick}
+    >
+      <div className="w-full h-full flex flex-col items-center justify-center p-4">
+        <div className="w-16 h-16 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+          <FileText className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+        </div>
+        <p className="text-sm font-medium text-center line-clamp-2">{item.title}</p>
+        <p className="text-xs text-muted-foreground mt-1">点击预览</p>
+      </div>
+      {/* 悬停效果 */}
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-orange-200 dark:group-hover:border-orange-800 rounded-xl transition-all duration-300" />
+    </div>
+  );
+}
+
+export default function WorksPage() {
+  const [categories, setCategories] = useState<WorkCategory[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('');
+  const [works, setWorks] = useState<WorkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 预览状态
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  // 轮播状态
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // loadData 在组件生命周期内不会变化
-
-  const loadData = async () => {
+  // 加载分类
+  const loadCategories = useCallback(async () => {
     try {
-      const worksRes = await fetch('/api/works');
-      const worksData = worksRes.ok ? await worksRes.json() : null;
-
-      if (worksData.success && worksData.data) {
-        const worksWithUrls = await loadWorkItemsUrls(worksData.data);
-        setWorks(worksWithUrls);
-        
-        const cats = new Set<string>();
-        worksWithUrls.forEach(w => {
-          if (w.category) cats.add(w.category);
-        });
-        setCategories(['all', ...Array.from(cats)]);
+      const res = await fetch('/api/work-categories');
+      const data = res.ok ? await res.json() : null;
+      if (data?.success && data.data.length > 0) {
+        setCategories(data.data);
+        if (!activeCategory) {
+          setActiveCategory(data.data[0].category_type);
+        }
       }
     } catch (error) {
-      console.error('加载数据失败:', error);
+      console.error('加载分类失败:', error);
+    }
+  }, [activeCategory]);
+
+  // 加载作品
+  const loadWorks = useCallback(async (category: string) => {
+    if (!category) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/works-by-category/${category}`);
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
+        // 加载所有文件的URL
+        const worksWithUrls = await Promise.all(
+          data.data.map(async (item: WorkItem) => ({
+            ...item,
+            url: await loadFileUrl(item.file_key),
+          }))
+        );
+        setWorks(worksWithUrls);
+        setCarouselIndex(0);
+      }
+    } catch (error) {
+      console.error('加载作品失败:', error);
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  useEffect(() => {
+    if (activeCategory) {
+      loadWorks(activeCategory);
+    }
+  }, [activeCategory, loadWorks]);
+
+  // 自动轮播
+  useEffect(() => {
+    if (isAutoPlaying && works.length > 1) {
+      autoPlayRef.current = setInterval(() => {
+        setCarouselIndex((prev) => (prev + 1) % works.length);
+      }, 4000);
+    }
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isAutoPlaying, works.length]);
+
+  // 手动切换时暂停自动播放
+  const handleManualNav = (direction: 'prev' | 'next') => {
+    setIsAutoPlaying(false);
+    if (direction === 'prev') {
+      setCarouselIndex((prev) => (prev - 1 + works.length) % works.length);
+    } else {
+      setCarouselIndex((prev) => (prev + 1) % works.length);
+    }
   };
 
-  const loadWorkItemsUrls = async (worksList: Work[]): Promise<Work[]> => {
-    const updatedWorks = await Promise.all(
-      worksList.map(async (work) => {
-        let coverImageUrl = '';
-        if (work.cover_image_key) {
-          try {
-            const res = await fetch('/api/file-url', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ key: work.cover_image_key }),
-            });
-            const data = await res.json();
-            if (data.success) coverImageUrl = data.data.url;
-          } catch (e) {
-            console.error('加载封面URL失败:', e);
-          }
-        }
-
-        const carouselItems: WorkItem[] = [];
-        const regularItems: WorkItem[] = [];
-
-        if (work.work_items && work.work_items.length > 0) {
-          for (const item of work.work_items) {
-            if (item.file_key) {
-              try {
-                const res = await fetch('/api/file-url', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ key: item.file_key }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                  const itemWithUrl = { ...item, url: data.data.url };
-                  if (item.is_carousel_item) {
-                    carouselItems.push(itemWithUrl);
-                  } else {
-                    regularItems.push(itemWithUrl);
-                  }
-                }
-              } catch (e) {
-                console.error('加载文件URL失败:', e);
-              }
-            }
-          }
-        }
-
-        return {
-          ...work,
-          coverImageUrl,
-          carouselItems,
-          work_items: regularItems,
-        };
-      })
-    );
-    return updatedWorks;
+  // 分类切换动画
+  const handleCategoryChange = (category: string) => {
+    if (category !== activeCategory) {
+      setActiveCategory(category);
+      setCarouselIndex(0);
+      setIsAutoPlaying(true);
+    }
   };
 
-  const filteredWorks = selectedCategory === 'all' 
-    ? works 
-    : works.filter(w => w.category === selectedCategory);
+  // 打开预览
+  const handleOpenPreview = (item: WorkItem) => {
+    setPreviewItem(item);
+    if (item.type === 'video') {
+      setIsPlaying(true);
+    }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // 关闭预览
+  const handleClosePreview = () => {
+    setPreviewItem(null);
+    setIsPlaying(false);
+  };
+
+  const currentWorks = works.filter(w => w.type === (activeCategory === 'ppt' ? 'pdf' : activeCategory === 'image' ? 'image' : 'video'));
+  const currentCategoryName = categories.find(c => c.category_type === activeCategory)?.display_name || '';
+
+  // 渲染卡片
+  const renderCard = (item: WorkItem) => {
+    if (activeCategory === 'image') {
+      return <ImageCard key={item.id} item={item} onClick={() => handleOpenPreview(item)} />;
+    } else if (activeCategory === 'video') {
+      return <VideoCard key={item.id} item={item} onClick={() => handleOpenPreview(item)} />;
+    } else {
+      return <PPTCard key={item.id} item={item} onClick={() => handleOpenPreview(item)} />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      {/* 顶部导航 */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div className="flex items-center gap-2">
-              <FolderOpen className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">作品集</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* 分类筛选 */}
-        {categories.length > 1 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* 顶部标签导航 */}
+      <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b shadow-sm">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-center gap-2 py-4">
             {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                  selectedCategory === cat
-                    ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.category_type)}
+                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 transform ${
+                  activeCategory === cat.category_type
+                    ? 'bg-primary text-primary-foreground shadow-md scale-105'
                     : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
                 }`}
               >
-                {cat === 'all' ? '全部' : cat}
+                {cat.display_name}
               </button>
             ))}
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* 作品数量统计 */}
-        <p className="text-sm text-muted-foreground mb-4">
-          共 {filteredWorks.length} 个作品
-        </p>
+      {/* 主内容区域 */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* 分类标题 */}
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-bold text-foreground">{currentCategoryName}</h2>
+        </div>
 
-        {/* 作品列表 */}
-        {filteredWorks.length === 0 ? (
-          <div className="text-center py-12">
-            <FolderOpen className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground">暂无作品</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+          </div>
+        ) : currentWorks.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <FileText className="h-8 w-8" />
+            </div>
+            <p>暂无{currentCategoryName}作品</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredWorks.map((work) => (
-              <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
-                {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                  <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
-                ) : work.coverImageUrl ? (
-                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
-                    {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                      <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                    ) : (
-                      <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
-                  </div>
-                ) : (
-                  <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:from-slate-800 flex items-center justify-center">
-                    <FileText className="h-12 w-12 text-muted-foreground/30" />
-                  </div>
-                )}
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg">{work.title}</h3>
-                    {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
-                  </div>
-                  {work.description && (
-                    <p 
-                      className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
-                      style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+          <>
+            {/* 横向轮播区域 */}
+            <div 
+              ref={carouselRef}
+              className="relative mb-8"
+              onMouseEnter={() => setIsAutoPlaying(false)}
+              onMouseLeave={() => works.length > 1 && setIsAutoPlaying(true)}
+            >
+              {/* 卡片容器 */}
+              <div className="overflow-hidden">
+                <div 
+                  className="flex gap-4 transition-transform duration-500 ease-out"
+                  style={{ 
+                    transform: `translateX(-${carouselIndex * (288 + 16)}px)`,
+                  }}
+                >
+                  {/* 左右各添加一个循环副本 */}
+                  {[...currentWorks, ...currentWorks, ...currentWorks].map((item, idx) => (
+                    <div
+                      key={`${item.id}-${idx}`}
+                      className="flex-shrink-0"
+                      style={{ width: '288px' }}
                     >
-                      {work.description}
-                    </p>
-                  )}
-                  {work.tags && work.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {work.tags.slice(0, 4).map((tag, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                      ))}
+                      {renderCard(item)}
                     </div>
-                  )}
-                  {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-3 border-t">
-                      {work.work_items.slice(0, 4).map((item) => (
-                        <button
-                          key={item.id}
-                          onClick={() => setPreviewItem(item)}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
-                        >
-                          {getFileIcon(item.type)}
-                          <span className="truncate max-w-[80px]">{item.title || item.type}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
+                  ))}
+                </div>
+              </div>
 
-      {/* 预览模态框 */}
-      {previewItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
-          <div className="relative max-w-5xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setPreviewItem(null)} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
-              <X className="h-5 w-5" />
-            </button>
-            <div className="flex flex-col items-center justify-center min-h-[300px]">
-              {previewItem.type === 'pdf' && previewItem.url ? (
-                <div className="w-full h-[80vh]">
-                  <PDFViewer url={previewItem.url} title={previewItem.title} />
-                </div>
-              ) : previewItem.type === 'video' && previewItem.url ? (
-                <video 
-                  src={previewItem.url} 
-                  controls 
-                  autoPlay 
-                  className="max-w-full max-h-[80vh] rounded-lg"
-                />
-              ) : previewItem.type === 'image' && previewItem.url ? (
-                <img 
-                  src={previewItem.url} 
-                  alt={previewItem.title || '作品预览'} 
-                  className="max-w-full max-h-[80vh] rounded-lg"
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-                  <p className="text-muted-foreground">无法预览此文件</p>
-                </div>
+              {/* 左右导航按钮 */}
+              {currentWorks.length > 1 && (
+                <>
+                  <button
+                    onClick={() => handleManualNav('prev')}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-200 opacity-0 hover:opacity-100 group-hover:opacity-100"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => handleManualNav('next')}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-200 opacity-0 hover:opacity-100 group-hover:opacity-100"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
               )}
             </div>
+
+            {/* 指示器 */}
+            {currentWorks.length > 1 && (
+              <div className="flex justify-center gap-2 mb-8">
+                {currentWorks.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setCarouselIndex(idx);
+                      setIsAutoPlaying(false);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      idx === carouselIndex 
+                        ? 'bg-primary w-6' 
+                        : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 网格展示（备用展示方式） */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentWorks.map((item) => (
+                <div key={item.id} className="aspect-[4/3]">
+                  {renderCard(item)}
+                </div>
+              ))}
+            </div>
+
+            {/* 移动端左右滑动提示 */}
+            <div className="md:hidden text-center text-sm text-muted-foreground mt-4">
+              <p>左右滑动查看更多</p>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 图片预览模态框 */}
+      {previewItem && activeCategory === 'image' && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={handleClosePreview}
+        >
+          <button
+            onClick={handleClosePreview}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
+          
+          {/* 左右导航 */}
+          {currentWorks.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleManualNav('prev'); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="h-6 w-6 text-white" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleManualNav('next'); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              >
+                <ChevronRight className="h-6 w-6 text-white" />
+              </button>
+            </>
+          )}
+          
+          <img
+            src={currentWorks[carouselIndex]?.url || previewItem.url}
+            alt={previewItem.title}
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+          
+          {/* 底部标题 */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full">
+            <p className="text-white text-sm">{currentWorks[carouselIndex]?.title}</p>
+          </div>
+        </div>
+      )}
+
+      {/* PPT/PDF 预览模态框 */}
+      {previewItem && (previewItem.type === 'pdf' || activeCategory === 'ppt') && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={handleClosePreview}
+        >
+          <div className="flex items-center justify-between p-4 bg-black/50">
+            <p className="text-white font-medium truncate px-4">{previewItem.title}</p>
+            <button
+              onClick={handleClosePreview}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+          </div>
+          <div 
+            className="flex-1 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {previewItem.url && (
+              <PDFViewer url={previewItem.url} />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 视频预览模态框 */}
+      {previewItem && previewItem.type === 'video' && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={handleClosePreview}
+        >
+          <div className="flex items-center justify-between p-4 bg-black/50">
+            <p className="text-white font-medium truncate px-4">{previewItem.title}</p>
+            <button
+              onClick={handleClosePreview}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+          </div>
+          <div 
+            className="flex-1 flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {previewItem.url && (
+              <video
+                src={previewItem.url}
+                controls
+                autoPlay
+                className="max-w-full max-h-full"
+              />
+            )}
           </div>
         </div>
       )}
