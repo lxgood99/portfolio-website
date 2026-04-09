@@ -669,7 +669,7 @@ export default function WorksPage() {
     } else if (item?.id) {
       // 如果是已保存的项，需要从服务器删除
       // 从服务器删除文件记录
-      fetch(`/api/works/items/${item.id}`, { method: 'DELETE' })
+      fetch(`/api/work-items/${item.id}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
