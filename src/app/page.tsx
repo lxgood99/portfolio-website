@@ -1191,23 +1191,20 @@ export default function HomePage() {
             {/* 电脑端：保持原有网格布局 */}
             <div className="hidden md:block">
               {/* 分类筛选标签 */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-sm text-muted-foreground font-medium whitespace-nowrap">筛选分类：</span>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                        selectedCategory === cat
-                          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105 ring-2 ring-primary/30'
-                          : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                      selectedCategory === cat
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105 ring-2 ring-primary/30'
+                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(selectedCategory === '全部' || selectedCategory === '图片' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
