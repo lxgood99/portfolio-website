@@ -1253,16 +1253,13 @@ export default function HomePage() {
                       style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
                       onClick={handleCardClick}
                     >
-                      {/* 封面图 */}
+                      {/* 封面图 - 禁止点击 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                        <div 
-                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden"
-                          onClick={handleCardClick}
-                        >
+                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
                           <img 
                             src={work.carouselItems[0].url} 
                             alt={work.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                           {work.carouselItems.length > 1 && (
@@ -1270,48 +1267,18 @@ export default function HomePage() {
                               +{work.carouselItems.length - 1}
                             </div>
                           )}
-                          {/* 覆盖层 - 查看按钮 */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                                <Eye className="h-6 w-6 text-slate-800" />
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       ) : work.coverImageUrl ? (
-                        <div 
-                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer"
-                          onClick={handleCardClick}
-                        >
+                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
                           {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                            <>
-                              <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                                  <Play className="h-6 w-6 text-slate-800 ml-1" />
-                                </div>
-                              </div>
-                            </>
+                            <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
                           ) : (
-                            <>
-                              <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                  <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                                    <Eye className="h-6 w-6 text-slate-800" />
-                                  </div>
-                                </div>
-                              </div>
-                            </>
+                            <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
                           )}
                         </div>
                       ) : (
-                        // 无封面时显示文件类型图标和点击提示
-                        <div 
-                          className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center relative cursor-pointer"
-                          onClick={handleCardClick}
-                        >
+                        // 无封面时显示文件类型图标
+                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center">
                           {/* 根据文件类型显示不同图标 */}
                           {(() => {
                             const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
@@ -1324,7 +1291,7 @@ export default function HomePage() {
                                   <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
                                     <Play className="h-8 w-8 text-red-600 ml-1" />
                                   </div>
-                                  <span className="mt-3 text-sm font-medium text-slate-600">点击播放视频</span>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
                                 </>
                               );
                             } else if (pdfItem) {
@@ -1333,7 +1300,7 @@ export default function HomePage() {
                                   <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
                                     <FileText className="h-8 w-8 text-blue-600" />
                                   </div>
-                                  <span className="mt-3 text-sm font-medium text-slate-600">点击查看PDF</span>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
                                 </>
                               );
                             } else if (pptItem) {
@@ -1342,14 +1309,14 @@ export default function HomePage() {
                                   <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
                                     <Presentation className="h-8 w-8 text-orange-600" />
                                   </div>
-                                  <span className="mt-3 text-sm font-medium text-slate-600">点击查看PPT</span>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
                                 </>
                               );
                             } else {
                               return (
                                 <>
                                   <FolderOpen className="h-12 w-12 text-slate-400" />
-                                  <span className="mt-3 text-sm font-medium text-slate-500">点击打开</span>
+                                  <span className="mt-3 text-sm font-medium text-slate-500">点击下方标题打开</span>
                                 </>
                               );
                             }
