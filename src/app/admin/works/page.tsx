@@ -379,7 +379,7 @@ export default function AdminWorksPage() {
     } else return;
 
     try {
-      await fetch('/api/work-categories/reorder', {
+      await fetch('/api/work-categories', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: newCats.map((c, i) => ({ id: c.id, sort_order: i })) }),
