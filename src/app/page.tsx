@@ -27,6 +27,10 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
   User,
   Wrench,
   FolderOpen,
@@ -1829,74 +1833,114 @@ export default function HomePage() {
 
       {/* 预览模态框 */}
       {previewItem && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
-          <div className="relative max-w-6xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-0 sm:p-4" onClick={() => setPreviewItem(null)}>
+          <div className="relative w-full h-full sm:max-w-6xl sm:max-h-[90vh] sm:w-full bg-white dark:bg-slate-900 sm:rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setPreviewItem(null)} className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
               <X className="h-5 w-5" />
             </button>
             
-            {/* 图片预览 - 支持左右滑动 */}
+            {/* 图片预览 - 改为竖向滑动 */}
             {previewItem.type === 'image' && previewItem.url && (
-              <div className="relative w-full h-[85vh] flex flex-col">
-                {/* 图片容器 - 支持触摸滑动 */}
+              <div className="relative w-full h-full flex flex-col">
+                {/* 图片容器 - 竖向滚动 */}
                 <div 
-                  className="flex-1 overflow-hidden relative"
-                  onTouchStart={(e) => {
-                    (e.currentTarget as any).touchStartX = e.touches[0].clientX;
-                  }}
-                  onTouchEnd={(e) => {
-                    const touchEndX = e.changedTouches[0].clientX;
-                    const touchStartX = (e.currentTarget as any).touchStartX;
-                    const diff = touchStartX - touchEndX;
-                    if (Math.abs(diff) > 50) {
-                      const images = previewItem.allImages || [previewItem];
-                      if (diff > 0 && previewImageIndex < images.length - 1) {
-                        setPreviewImageIndex(previewImageIndex + 1);
-                      } else if (diff < 0 && previewImageIndex > 0) {
-                        setPreviewImageIndex(previewImageIndex - 1);
-                      }
-                    }
-                  }}
+                  className="flex-1 overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
+                  style={{ scrollSnapType: 'y mandatory' }}
                 >
-                  <img 
-                    src={(previewItem.allImages && previewItem.allImages[previewImageIndex])?.url || previewItem.url} 
-                    alt={previewItem.title || '预览图片'} 
-                    className="w-full h-full object-contain" 
-                  />
-                  
-                  {/* 左右切换按钮 */}
+                  {/* 所有图片竖向排列 */}
+                  {(previewItem.allImages && previewItem.allImages.length > 0 ? previewItem.allImages : [previewItem]).map((img, idx) => (
+                    <div 
+                      key={idx}
+                      className="snap-start min-h-full flex items-center justify-center bg-black"
+                      onClick={(e) => {
+                        // 点击图片切换到该图片
+                        e.stopPropagation();
+                        setPreviewImageIndex(idx);
+                      }}
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.title || `图片 ${idx + 1}`} 
+                        className="max-w-full max-h-full object-contain" 
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* 底部导航栏 */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                  {/* 上下切换按钮 */}
                   {previewItem.allImages && previewItem.allImages.length > 1 && (
-                    <>
+                    <div className="flex items-center justify-center gap-8">
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setPreviewImageIndex(Math.max(0, previewImageIndex - 1)); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          const container = document.querySelector('.overflow-y-auto');
+                          if (container) container.scrollBy({ top: -container.clientHeight, behavior: 'smooth' });
+                        }}
                         disabled={previewImageIndex === 0}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
-                        <ChevronLeft className="h-6 w-6" />
+                        <ChevronUp className="h-6 w-6" />
                       </button>
+                      
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm">
+                        <span className="text-white text-sm font-medium">{previewImageIndex + 1}</span>
+                        <span className="text-white/60 text-sm">/</span>
+                        <span className="text-white text-sm">{previewItem.allImages.length}</span>
+                      </div>
+                      
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setPreviewImageIndex(Math.min(previewItem.allImages!.length - 1, previewImageIndex + 1)); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          const container = document.querySelector('.overflow-y-auto');
+                          if (container) container.scrollBy({ top: container.clientHeight, behavior: 'smooth' });
+                        }}
                         disabled={previewImageIndex >= previewItem.allImages!.length - 1}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
-                        <ChevronRight className="h-6 w-6" />
+                        <ChevronDown className="h-6 w-6" />
                       </button>
-                    </>
+                    </div>
+                  )}
+                  
+                  {/* 图片缩略图指示器 - 横向排列 */}
+                  {previewItem.allImages && previewItem.allImages.length > 1 && (
+                    <div className="flex justify-center gap-2 mt-3 overflow-x-auto pb-2 px-2">
+                      {previewItem.allImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const container = document.querySelector('.overflow-y-auto');
+                            if (container) {
+                              container.scrollTo({ top: idx * container.clientHeight, behavior: 'smooth' });
+                            }
+                            setPreviewImageIndex(idx);
+                          }}
+                          className={`shrink-0 w-2 h-2 rounded-full transition-all ${
+                            idx === previewImageIndex 
+                              ? 'bg-white scale-125' 
+                              : 'bg-white/40 hover:bg-white/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {previewItem.title && (
+                    <div className="text-center mt-2">
+                      <h3 className="text-white text-sm font-medium truncate">{previewItem.title}</h3>
+                    </div>
                   )}
                 </div>
                 
-                {/* 图片计数器和标题 */}
-                {previewItem.allImages && previewItem.allImages.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/60 text-white text-sm">
-                    {previewImageIndex + 1} / {previewItem.allImages.length}
-                  </div>
-                )}
-                
-                {previewItem.title && (
-                  <div className="p-4 border-t dark:border-slate-700">
-                    <h3 className="font-medium">{previewItem.title}</h3>
-                  </div>
-                )}
+                {/* 滑动提示 */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs flex items-center gap-1 animate-bounce">
+                  <ArrowUp className="h-3 w-3" />
+                  <span>上下滑动浏览</span>
+                  <ArrowDown className="h-3 w-3" />
+                </div>
               </div>
             )}
             
