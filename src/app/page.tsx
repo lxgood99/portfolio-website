@@ -120,6 +120,13 @@ interface WorkItem {
   is_carousel_item?: boolean;
 }
 
+type PreviewItemType = WorkItem & { allImages?: WorkItem[]; workId?: number; index?: number };
+
+// 扩展 HTMLElement 以支持 touchStartX 属性
+interface TouchableElement extends HTMLElement {
+  touchStartX?: number;
+}
+
 interface Work {
   id: number;
   title: string;
@@ -1240,9 +1247,9 @@ export default function HomePage() {
                         // 设置当前预览项
                         const previewData = {
                           ...firstPreview,
-                          allImages: allImages.length > 0 ? allImages : (firstPreview as any).allImages || [],
+                          allImages: allImages.length > 0 ? allImages : (firstPreview as PreviewItemType).allImages || [],
                         };
-                        setPreviewItem(previewData as any);
+                        setPreviewItem(previewData as PreviewItemType);
                       }
                     };
                     
@@ -1386,7 +1393,7 @@ export default function HomePage() {
                                   setPreviewItem({ 
                                     ...item, 
                                     allImages: work.work_items?.filter(i => i.type === 'image' && i.url) || [] 
-                                  } as any);
+                                  } as PreviewItemType);
                                 }}
                                 className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
                               >
@@ -1816,11 +1823,11 @@ export default function HomePage() {
                 <div 
                   className="flex-1 overflow-hidden relative"
                   onTouchStart={(e) => {
-                    (e.currentTarget as any).touchStartX = e.touches[0].clientX;
+                    (e.currentTarget as TouchableElement).touchStartX = e.touches[0].clientX;
                   }}
                   onTouchEnd={(e) => {
                     const touchEndX = e.changedTouches[0].clientX;
-                    const touchStartX = (e.currentTarget as any).touchStartX;
+                    const touchStartX = (e.currentTarget as TouchableElement).touchStartX ?? 0;
                     const diff = touchStartX - touchEndX;
                     if (Math.abs(diff) > 50) {
                       const images = previewItem.allImages || [previewItem];
