@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 import type { Work } from '@/storage/database/shared/schema';
 
-// GET - 获取所有作品
-export async function GET() {
+// GET - 获取所有作品，支持按分类筛选
+export async function GET(request: NextRequest) {
   try {
     const client = getSupabaseClient();
-    const { data, error } = await client
+    const { searchParams } = new URL(request.url);
+    const categoryId = searchParams.get('categoryId');
+    
+    let query = client
       .from('works')
-      .select('*, work_items(*)')
+      .select('*, work_items(*), category:work_categories(*)')
       .order('order', { ascending: true });
+    
+    if (categoryId && categoryId !== 'all') {
+      query = query.eq('category_id', parseInt(categoryId));
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`获取作品失败: ${error.message}`);

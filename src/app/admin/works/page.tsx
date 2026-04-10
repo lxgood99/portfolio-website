@@ -1,108 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// 文件项行组件
-function FileItemRow({ 
-  item, 
-  onRemove, 
-  onReselect,
-  isUploading 
-}: { 
-  item: {
-    type: string;
-    title: string;
-    file_key: string;
-    isUploading?: boolean;
-  }; 
-  onRemove: () => void;
-  onReselect: () => void;
-  isUploading: boolean;
-}) {
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return <FileText className="h-4 w-4" aria-hidden="true" />;
-      case 'image':
-        return <Image className="h-4 w-4" aria-hidden="true" />;
-      case 'video':
-        return <Video className="h-4 w-4" aria-hidden="true" />;
-      default:
-        return <FileText className="h-4 w-4" aria-hidden="true" />;
-    }
-  };
-
-  return (
-    <div className="flex items-start gap-2 p-3 border rounded-lg">
-      <div className="flex items-center gap-2">
-        {getFileIcon(item.type)}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className={item.isUploading ? 'bg-blue-50 border-blue-200' : ''}>
-            {item.type || '未上传'}
-          </Badge>
-          {item.title ? (
-            <span className={`text-sm truncate ${item.isUploading ? 'text-blue-500' : 'text-muted-foreground'}`}>
-              {item.title}
-              {item.isUploading && <span className="ml-1 animate-pulse">(上传中...)</span>}
-            </span>
-          ) : (
-            <span className="text-sm text-gray-400 animate-pulse">选择文件中...</span>
-          )}
-        </div>
-        {item.file_key && !item.isUploading && (
-          <span className="text-xs text-green-600 mt-1 block">已上传</span>
-        )}
-      </div>
-      <div className="flex items-center gap-1">
-        {item.file_key && !item.isUploading && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onReselect}
-            title="重新选择文件"
-          >
-            <Upload className="h-4 w-4" />
-          </Button>
-        )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onRemove}
-          disabled={item.isUploading}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Plus, GripVertical, Edit2, Trash2, Upload, X, FileText, Image, Video, ImageIcon, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import {
   DndContext,
@@ -117,1010 +15,424 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
+  useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, ArrowLeft, Plus, Pencil, Trash2, X, Upload } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import {
-  UploadProgressBar,
-  useUploadProgress,
-  validateFileSize,
-  formatFileSize,
-  uploadWithProgress,
-} from '@/components/UploadProgress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { validateFileSize, uploadWithProgress } from '@/components/UploadProgress';
 
-interface WorkItem {
-  id?: number;
-  type: string;
-  title: string;
-  file_key: string;
-  description?: string;
-  is_carousel_item?: boolean;
-  order: number;
+// 类型定义
+interface WorkCategory {
+  id: number;
+  name: string;
+  order_index: number;
 }
 
 interface Work {
   id: number;
   title: string;
-  description: string;
-  description_align?: string;
-  category: string;
-  tags: string[];
-  display_mode?: string;
+  subtitle?: string;
+  description?: string;
+  category_id?: number;
   cover_image_key?: string;
+  cover_image_url?: string;
   order: number;
-  work_items?: WorkItem[];
 }
 
-interface SortableItemProps {
-  work: Work;
-  onEdit: (work: Work) => void;
-  onDelete: (id: number) => void;
+// 拖拽图标组件
+function DragHandle({ id }: { id: number | string }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1">
+      <GripVertical className="w-5 h-5 text-muted-foreground" />
+    </div>
+  );
 }
 
-function SortableItem({ work, onEdit, onDelete }: SortableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: work.id });
+// 分类标签组件
+function CategoryTag({
+  category,
+  isSelected,
+  onClick,
+  onEdit,
+}: {
+  category: WorkCategory;
+  isSelected: boolean;
+  onClick: () => void;
+  onEdit: (name: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(category.name);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+  const handleSave = () => {
+    if (editName.trim()) onEdit(editName.trim());
+    setIsEditing(false);
   };
-
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return <FileText className="h-4 w-4" aria-hidden="true" />;
-      case 'image':
-        return <Image className="h-4 w-4" aria-hidden="true" />;
-      case 'video':
-        return <Video className="h-4 w-4" aria-hidden="true" />;
-      default:
-        return <FileText className="h-4 w-4" aria-hidden="true" />;
-    }
-  };
-
-  const getDisplayModeLabel = (mode?: string) => {
-    switch (mode) {
-      case 'carousel':
-        return '多图轮播';
-      case 'combined':
-        return '组合展示';
-      default:
-        return '单文件';
-    }
-  };
-
-  const carouselCount = work.work_items?.filter(item => item.is_carousel_item).length || 0;
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-start gap-3 bg-white dark:bg-slate-800 p-4 rounded-lg border shadow-sm">
-      <button {...attributes} {...listeners} className="mt-1 cursor-grab hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
-        <GripVertical className="h-5 w-5 text-muted-foreground" />
-      </button>
-      <div className="flex-1">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold">{work.title}</h3>
-              <Badge variant="outline" className="text-xs">{getDisplayModeLabel(work.display_mode)}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">{work.category}</p>
-            {work.tags && work.tags.length > 0 && (
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {work.tags.map((tag, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                ))}
-              </div>
-            )}
-            {work.display_mode === 'carousel' && carouselCount > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                轮播图片：{carouselCount} 张
-              </p>
-            )}
-            {work.work_items && work.work_items.length > 0 && work.display_mode !== 'carousel' && (
-              <div className="flex gap-2 mt-2">
-                {work.work_items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground">
-                    {getFileIcon(item.type)}
-                    <span>{item.type}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 px-4 py-2 rounded-full border transition-all text-sm font-medium
+        ${isSelected ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-300 hover:border-gray-500'}`}
+    >
+      {isEditing ? (
+        <input
+          type="text"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); else if (e.key === 'Escape') { setEditName(category.name); setIsEditing(false); } }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-20 bg-transparent outline-none text-center"
+          autoFocus
+        />
+      ) : (
+        <span onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>{category.name}</span>
+      )}
+      {!isEditing && (
+        <Pencil className="w-3 h-3 ml-1 opacity-50 hover:opacity-100" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} />
+      )}
+    </button>
+  );
+}
+
+// 可排序分类
+function SortableCategory({
+  category,
+  isSelected,
+  onClick,
+  onEdit,
+}: {
+  category: WorkCategory;
+  isSelected: boolean;
+  onClick: () => void;
+  onEdit: (name: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `cat-${category.id}` });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }} {...attributes} {...listeners}>
+      <CategoryTag category={category} isSelected={isSelected} onClick={onClick} onEdit={onEdit} />
+    </div>
+  );
+}
+
+// 作品卡片组件
+function WorkCard({
+  work,
+  onEdit,
+  onDelete,
+  onCoverUpload,
+}: {
+  work: Work;
+  onEdit: () => void;
+  onDelete: () => void;
+  onCoverUpload: (file: File) => void;
+}) {
+  return (
+    <div className="flex items-start gap-3 bg-gray-100 dark:bg-slate-800 p-4 rounded-lg touch-none">
+      <DragHandle id={work.id} />
+      
+      <label className="flex-shrink-0 flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors overflow-hidden">
+        {work.cover_image_url ? (
+          <img src={work.cover_image_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center text-gray-400">
+            <Plus className="w-5 h-5" />
+            <span className="text-xs mt-1">封面</span>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(work)}>
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(work.id)}>
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
-          </div>
-        </div>
-        {work.description && (
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{work.description}</p>
         )}
+        <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) onCoverUpload(f); }} className="hidden" />
+      </label>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-lg">{work.title || '未命名'}</h3>
+          {work.subtitle && <span className="text-sm text-gray-500">/ {work.subtitle}</span>}
+        </div>
+        <Textarea
+          value={work.description || ''}
+          placeholder="请输入文字备注"
+          className="mt-2 min-h-[60px] bg-white dark:bg-slate-700 resize-none text-sm"
+          readOnly
+        />
       </div>
+
+      <div className="flex gap-1">
+        <Button variant="ghost" size="icon" onClick={onEdit}><Pencil className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={onDelete}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+      </div>
+    </div>
+  );
+}
+
+// 可排序作品
+function SortableWork({
+  work,
+  onEdit,
+  onDelete,
+  onCoverUpload,
+}: {
+  work: Work;
+  onEdit: () => void;
+  onDelete: () => void;
+  onCoverUpload: (file: File) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: work.id });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }} {...attributes} {...listeners}>
+      <WorkCard work={work} onEdit={onEdit} onDelete={onDelete} onCoverUpload={onCoverUpload} />
     </div>
   );
 }
 
 export default function WorksPage() {
   const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
+  const [categories, setCategories] = useState<WorkCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [works, setWorks] = useState<Work[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingWork, setEditingWork] = useState<Work | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    description_align: 'left',
-    category: '',
-    tags: '',
-    display_mode: 'single',
-  });
-  const [coverImageKey, setCoverImageKey] = useState<string>('');
-  const [coverImageUrl, setCoverImageUrl] = useState<string>('');
-  const [carouselItems, setCarouselItems] = useState<Array<{
-    id?: number;
-    file_key: string;
-    title: string;
-    url?: string;
-  }>>([]);
-  const [workItems, setWorkItems] = useState<Array<{
-    id?: number;
-    tempId?: string; // 用于本地新建项的唯一ID
-    type: string;
-    title: string;
-    file_key: string;
-    isUploading?: boolean; // 标记是否正在上传
-  }>>([]);
-  const [uploadingTempId, setUploadingTempId] = useState<string | null>(null); // 当前正在上传的临时ID
-  const [uploadingType, setUploadingType] = useState<'cover' | 'carousel' | 'file' | null>(null);
-  
-  // 上传进度管理
-  const {
-    uploadState,
-    startUpload,
-    updateProgress,
-    uploadSuccess,
-    uploadError,
-    resetUpload,
-  } = useUploadProgress();
-  
-  // 文件大小验证错误提示
-  const [sizeValidationError, setSizeValidationError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ title: '', subtitle: '', description: '' });
+  const [coverImageKey, setCoverImageKey] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const sensors = useSensors(PointerSensor, KeyboardSensor.withCoordinates({
+    coordinateGetter: sortableKeyboardCoordinates,
+  }));
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadWorks();
+      loadCategories();
     }
   }, [isAuthenticated]);
 
-  const loadWorks = async () => {
+  useEffect(() => {
+    if (selectedCategoryId) loadWorks();
+  }, [selectedCategoryId]);
+
+  const loadCategories = async () => {
     try {
-      const res = await fetch('/api/works');
+      const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
-        setWorks(data.data);
+        setCategories(data.data);
+        if (data.data.length > 0 && !selectedCategoryId) setSelectedCategoryId(data.data[0].id);
       }
-    } catch (error) {
-      console.error('加载作品失败:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (e) { console.error('加载分类失败:', e); }
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const loadWorks = async () => {
+    setIsLoading(true);
+    try {
+      const url = selectedCategoryId ? `/api/works?categoryId=${selectedCategoryId}` : '/api/works';
+      const res = await fetch(url);
+      const data = res.ok ? await res.json() : null;
+      if (data?.success) {
+        const worksWithCovers = await Promise.all(data.data.map(async (w: Work) => {
+          let url = '';
+          if (w.cover_image_key) {
+            try {
+              const r = await fetch('/api/file-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: w.cover_image_key }) });
+              const d = await r.json();
+              url = d.success ? d.data.url : '';
+            } catch {}
+          }
+          return { ...w, cover_image_url: url };
+        }));
+        setWorks(worksWithCovers);
+      }
+    } catch (e) { console.error('加载作品失败:', e); }
+    finally { setIsLoading(false); }
+  };
+
+  // 分类排序
+  const handleCategoriesDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
-      const oldIndex = works.findIndex((w) => w.id === active.id);
-      const newIndex = works.findIndex((w) => w.id === over.id);
-      const newWorks = arrayMove(works, oldIndex, newIndex);
-      setWorks(newWorks);
-
-      const items = newWorks.map((work, index) => ({
-        id: work.id,
-        order: index,
-      }));
-
-      try {
-        await fetch('/api/works', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items }),
-        });
-      } catch (error) {
-        console.error('保存排序失败:', error);
-      }
+      const oldIdx = categories.findIndex((c) => `cat-${c.id}` === active.id);
+      const newIdx = categories.findIndex((c) => `cat-${c.id}` === over.id);
+      const newCats = arrayMove(categories, oldIdx, newIdx).map((c, i) => ({ ...c, order_index: i }));
+      setCategories(newCats);
+      await fetch('/api/work-categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: newCats.map((c) => ({ id: c.id, order_index: c.order_index })) }) });
     }
   };
 
-  const handleOpenDialog = async (work?: Work) => {
+  // 更新分类名称
+  const handleUpdateCategory = async (id: number, name: string) => {
+    await fetch('/api/work-categories', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, name }) });
+    setCategories(categories.map((c) => (c.id === id ? { ...c, name } : c)));
+  };
+
+  // 添加分类
+  const handleAddCategory = async () => {
+    const res = await fetch('/api/work-categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `新分类${categories.length + 1}` }) });
+    const data = await res.json();
+    if (data.success) setCategories([...categories, data.data]);
+  };
+
+  // 作品排序
+  const handleWorksDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIdx = works.findIndex((w) => w.id === active.id);
+      const newIdx = works.findIndex((w) => w.id === over.id);
+      const newWorks = arrayMove(works, oldIdx, newIdx).map((w, i) => ({ ...w, order: i }));
+      setWorks(newWorks);
+      await fetch('/api/works', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: newWorks.map((w) => ({ id: w.id, order: w.order })) }) });
+    }
+  };
+
+  // 封面上传
+  const handleCoverUpload = async (workId: number, file: File) => {
+    const valid = validateFileSize(file);
+    if (!valid.valid) { alert(valid.error); return; }
+    setIsUploading(true);
+    try {
+      const result = await uploadWithProgress(file, 'work', () => {});
+      if (result.success) {
+        await fetch(`/api/works/${workId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cover_image_key: result.data.key }) });
+        loadWorks();
+      }
+    } finally { setIsUploading(false); }
+  };
+
+  // 打开对话框
+  const handleOpenDialog = (work?: Work) => {
     if (work) {
       setEditingWork(work);
-      setFormData({
-        title: work.title ?? '',
-        description: work.description ?? '',
-        description_align: work.description_align ?? 'left',
-        category: work.category ?? '',
-        tags: work.tags?.join(', ') ?? '',
-        display_mode: work.display_mode ?? 'single',
-      });
-      setCoverImageKey(work.cover_image_key ?? '');
-      
-      // 加载封面图URL
-      if (work.cover_image_key) {
-        const url = await loadFileUrl(work.cover_image_key);
-        setCoverImageUrl(url);
-      } else {
-        setCoverImageUrl('');
-      }
-
-      // 分离轮播图片和普通文件
-      const carousels: typeof carouselItems = [];
-      const files: typeof workItems = [];
-      
-      work.work_items?.forEach(item => {
-        if (item.is_carousel_item) {
-          carousels.push({
-            id: item.id,
-            file_key: item.file_key,
-            title: item.title ?? '',
-          });
-        } else {
-          files.push({
-            id: item.id,
-            type: item.type ?? '',
-            title: item.title ?? '',
-            file_key: item.file_key,
-          });
-        }
-      });
-
-      // 加载轮播图片URL
-      const carouselWithUrls = await Promise.all(
-        carousels.map(async (item) => ({
-          ...item,
-          url: await loadFileUrl(item.file_key),
-        }))
-      );
-      
-      setCarouselItems(carouselWithUrls);
-      setWorkItems(files);
+      setFormData({ title: work.title || '', subtitle: work.subtitle || '', description: work.description || '' });
     } else {
       setEditingWork(null);
-      setFormData({
-        title: '',
-        description: '',
-        description_align: 'left',
-        category: '',
-        tags: '',
-        display_mode: 'single',
-      });
-      setCoverImageKey('');
-      setCoverImageUrl('');
-      setCarouselItems([]);
-      setWorkItems([]);
+      setFormData({ title: '', subtitle: '', description: '' });
     }
     setDialogOpen(true);
   };
 
-  const loadFileUrl = async (key: string): Promise<string> => {
-    try {
-      const res = await fetch('/api/file-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key }),
-      });
-      const data = await res.json();
-      return data.success ? data.data.url : '';
-    } catch {
-      return '';
-    }
-  };
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // 验证文件大小
-    const validation = validateFileSize(file);
-    if (!validation.valid) {
-      setSizeValidationError(validation.error || '文件大小超过限制');
-      return;
-    }
-    
-    // 清除之前的错误提示
-    setSizeValidationError(null);
-
-    setUploadingType('cover');
-    startUpload(file.name, formatFileSize(file.size));
-
-    try {
-      const result = await uploadWithProgress(file, 'work', updateProgress);
-      
-      if (result.success) {
-        setCoverImageKey(result.data.key);
-        setCoverImageUrl(result.data.url);
-        uploadSuccess();
-      } else {
-        uploadError(result.error || '上传失败');
-      }
-    } catch {
-      uploadError('上传失败，请重试');
-    } finally {
-      setUploadingType(null);
-    }
-  };
-
-  const handleCarouselUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    // 获取已存在的文件名集合，用于去重
-    const existingTitles = new Set(carouselItems.map(item => item.title));
-
-    // 过滤出新的文件（排除已存在的）
-    const newFiles: File[] = [];
-    for (let i = 0; i < files.length; i++) {
-      if (!existingTitles.has(files[i].name)) {
-        newFiles.push(files[i]);
-      }
-    }
-
-    if (newFiles.length === 0) {
-      setSizeValidationError('所选文件均已添加，请选择其他文件');
-      return;
-    }
-
-    // 验证所有文件大小
-    const invalidFiles: string[] = [];
-    for (let i = 0; i < newFiles.length; i++) {
-      const validation = validateFileSize(newFiles[i]);
-      if (!validation.valid) {
-        invalidFiles.push(`${newFiles[i].name}: ${validation.error}`);
-      }
-    }
-    
-    if (invalidFiles.length > 0) {
-      setSizeValidationError(invalidFiles.join('\n'));
-      return;
-    }
-    
-    // 清除之前的错误提示
-    setSizeValidationError(null);
-
-    setUploadingType('carousel');
-
-    try {
-      const newItems: typeof carouselItems = [];
-      const totalFiles = newFiles.length;
-      
-      for (let i = 0; i < newFiles.length; i++) {
-        const file = newFiles[i];
-        // 更新 UI 显示当前上传进度（显示第几个文件）
-        startUpload(`(${i + 1}/${totalFiles}) ${file.name}`, formatFileSize(file.size));
-        
-        const result = await uploadWithProgress(file, 'work', updateProgress);
-        
-        if (result.success) {
-          newItems.push({
-            file_key: result.data.key,
-            title: file.name,
-            url: result.data.url,
-          });
-        } else {
-          // 单个文件上传失败，继续上传其他文件
-          console.error(`上传 ${file.name} 失败:`, result.error);
-        }
-      }
-
-      if (newItems.length > 0) {
-        setCarouselItems([...carouselItems, ...newItems]);
-      }
-      uploadSuccess();
-    } catch {
-      uploadError('上传失败，请重试');
-    } finally {
-      setUploadingType(null);
-    }
-  };
-
-  // 旧的 handleFileUpload 函数已弃用，使用 handleFileUploadWithFile 替代
-
-  const handleAddCarouselItem = () => {
-    // 创建一个隐藏的文件输入框，使用 ref 来确保唯一性
-    let input = document.getElementById('carousel-file-input') as HTMLInputElement | null;
-    if (!input) {
-      input = document.createElement('input');
-      input.id = 'carousel-file-input';
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.multiple = true;
-      input.style.display = 'none';
-      document.body.appendChild(input);
-    }
-    // 清除之前的选择，避免累积
-    input.value = '';
-    input.onchange = (e) => handleCarouselUpload(e as unknown as React.ChangeEvent<HTMLInputElement>);
-    input.click();
-  };
-
-  const handleRemoveCarouselItem = (index: number) => {
-    const newItems = carouselItems.filter((_, i) => i !== index);
-    setCarouselItems(newItems);
-  };
-
-  // 处理文件上传（使用临时ID）
-  const handleFileUploadWithFile = async (file: File, tempId: string) => {
-    // 验证文件大小
-    const validation = validateFileSize(file);
-    if (!validation.valid) {
-      setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
-      setSizeValidationError(validation.error || '文件大小超过限制');
-      return;
-    }
-    
-    // 清除之前的错误提示
-    setSizeValidationError(null);
-
-    // 标记该项为上传中，并显示文件名
-    setWorkItems(prev => prev.map(item => 
-      item.tempId === tempId 
-        ? { ...item, title: file.name, isUploading: true }
-        : item
-    ));
-    setUploadingType('file');
-    startUpload(file.name, formatFileSize(file.size));
-
-    try {
-      const result = await uploadWithProgress(file, 'work', updateProgress);
-      
-      if (result.success) {
-        const fileType = file.type.startsWith('image/')
-          ? 'image'
-          : file.type === 'application/pdf' || file.type.includes('presentation') || file.type.includes('document')
-            ? 'pdf'
-            : file.type.startsWith('video/')
-              ? 'video'
-              : 'pdf';
-        
-        // 更新该项为已上传状态（使用函数式更新确保获取最新状态）
-        setWorkItems(prev => prev.map(item => 
-          item.tempId === tempId 
-            ? { ...item, type: fileType, title: file.name, file_key: result.data.key, isUploading: false }
-            : item
-        ));
-        uploadSuccess();
-      } else {
-        // 上传失败，移除该项
-        setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
-        uploadError(result.error || '上传失败');
-      }
-    } catch {
-      // 上传失败，移除该项
-      setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
-      uploadError('上传失败，请重试');
-    } finally {
-      setUploadingType(null);
-    }
-  };
-
-  // 添加文件项 - 打开文件选择器
-  const handleAddFileItem = () => {
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    // 先添加一个临时项，显示"选择文件中..."
-    setWorkItems(prev => [...prev, { tempId, type: 'pdf', title: '选择文件中...', file_key: '', isUploading: false }]);
-    
-    // 创建一个唯一的文件输入框
-    const inputId = `file-input-${tempId}`;
-    let input = document.getElementById(inputId) as HTMLInputElement | null;
-    if (!input) {
-      input = document.createElement('input');
-      input.id = inputId;
-      input.type = 'file';
-      input.accept = '.pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov,.avi';
-      input.style.display = 'none';
-      document.body.appendChild(input);
-    }
-    // 清除之前的选择
-    input.value = '';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        handleFileUploadWithFile(file, tempId);
-      } else {
-        // 用户取消选择，移除临时项（使用函数式更新）
-        setWorkItems(prev => prev.filter(item => item.tempId !== tempId));
-      }
-      // 清理 input
-      if (input && document.body.contains(input)) {
-        document.body.removeChild(input);
-      }
-    };
-    input.click();
-  };
-
-  
-
-  const handleRemoveFileItem = (index: number) => {
-    const item = workItems[index];
-    if (item?.tempId) {
-      // 如果是临时项，直接移除（使用函数式更新）
-      setWorkItems(prev => prev.filter((_, i) => i !== index));
-    } else if (item?.id) {
-      // 如果是已保存的项，需要从服务器删除
-      // 从服务器删除文件记录
-      fetch(`/api/work-items/${item.id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setWorkItems(prev => prev.filter((_, i) => i !== index));
-          } else {
-            alert('删除失败：' + data.error);
-          }
-        })
-        .catch(() => {
-          alert('删除失败，请重试');
-        });
-    }
-  };
-
+  // 保存
   const handleSave = async () => {
-    if (!formData.title.trim()) {
-      alert('请输入作品标题');
-      return;
-    }
-
-    // 检查是否有正在上传的文件
-    const pendingUploads = workItems.filter(item => item.isUploading || !item.file_key);
-    if (pendingUploads.length > 0) {
-      alert(`还有 ${pendingUploads.length} 个文件正在上传或未上传完成，请等待上传完成后再保存`);
-      return;
-    }
-
-    // 保存当前状态快照，避免闭包问题
-    const currentWorkItems = [...workItems];
-    const currentCarouselItems = [...carouselItems];
-    console.log(`[保存] 开始保存，普通文件: ${currentWorkItems.length} 个，轮播图片: ${currentCarouselItems.length} 张`);
-
-    const url = editingWork ? `/api/works/${editingWork.id}` : '/api/works';
-    const method = editingWork ? 'PUT' : 'POST';
-
-    const body = {
-      ...formData,
-      cover_image_key: coverImageKey || null,
-      tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-      order: editingWork ? editingWork.order : works.length,
-    };
-
+    if (!formData.title.trim()) { alert('请输入作品标题'); return; }
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const url = editingWork ? `/api/works/${editingWork.id}` : '/api/works';
+      const method = editingWork ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...formData, category_id: selectedCategoryId, order: editingWork ? editingWork.order : works.length }) });
       const data = await res.json();
-
-      if (data.success) {
-        const workId = data.data.id;
-
-        // 保存轮播图片
-        for (let i = 0; i < currentCarouselItems.length; i++) {
-          const item = currentCarouselItems[i];
-          if (!item.file_key) {
-            console.log(`[保存] 跳过轮播图片 ${i + 1}：file_key 为空`);
-            continue;
-          }
-
-          if (item.id) {
-            await fetch(`/api/work-items/${item.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'image',
-                title: item.title,
-                file_key: item.file_key,
-                is_carousel_item: true,
-                order: i,
-              }),
-            });
-          } else {
-            await fetch(`/api/works/${workId}/items`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'image',
-                title: item.title,
-                file_key: item.file_key,
-                is_carousel_item: true,
-                order: i,
-              }),
-            });
-          }
-        }
-
-        // 保存普通文件
-        let savedCount = 0;
-        for (let i = 0; i < currentWorkItems.length; i++) {
-          const item = currentWorkItems[i];
-          if (!item.file_key) {
-            console.log(`[保存] 跳过普通文件 ${i + 1}：file_key 为空`);
-            continue;
-          }
-
-          try {
-            if (item.id) {
-              await fetch(`/api/work-items/${item.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  type: item.type,
-                  title: item.title,
-                  file_key: item.file_key,
-                  is_carousel_item: false,
-                  order: i,
-                }),
-              });
-            } else {
-              await fetch(`/api/works/${workId}/items`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  type: item.type,
-                  title: item.title,
-                  file_key: item.file_key,
-                  is_carousel_item: false,
-                  order: i,
-                }),
-              });
-            }
-            savedCount++;
-          } catch (err) {
-            console.error(`[保存] 保存文件失败:`, item.title, err);
-          }
-        }
-        console.log(`[保存] 完成，成功保存 ${savedCount}/${currentWorkItems.length} 个文件`);
-
-        setDialogOpen(false);
-        loadWorks();
-      } else {
-        alert('保存失败：' + data.error);
-      }
-    } catch {
-      alert('保存失败，请重试');
-    }
+      if (data.success) { setDialogOpen(false); loadWorks(); }
+      else alert('保存失败：' + data.error);
+    } catch { alert('保存失败'); }
   };
 
+  // 删除
   const handleDelete = async (id: number) => {
-    if (!confirm('确定要删除这个作品吗？')) return;
-
-    try {
-      const res = await fetch(`/api/works/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        loadWorks();
-      } else {
-        alert('删除失败：' + data.error);
-      }
-    } catch {
-      alert('删除失败，请重试');
-    }
+    if (!confirm('确定要删除吗？')) return;
+    const res = await fetch(`/api/works/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) loadWorks();
+    else alert('删除失败');
   };
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <header className="bg-white dark:bg-slate-800 border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/admin/dashboard">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">作品集</h1>
-              <p className="text-sm text-muted-foreground">拖拽调整顺序</p>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" asChild><Link href="/admin/dashboard"><ArrowLeft className="h-5 w-5" /></Link></Button>
+              <div>
+                <h1 className="text-2xl font-bold">作品集</h1>
+                <p className="text-sm text-muted-foreground">拖拽调整顺序</p>
+              </div>
             </div>
+            <Button onClick={() => handleOpenDialog()}><Plus className="h-4 w-4 mr-2" />添加作品</Button>
           </div>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="h-4 w-4 mr-2" />
-            添加作品
-          </Button>
+
+          <div className="flex items-center justify-between gap-4">
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoriesDragEnd}>
+              <SortableContext items={categories.map((c) => `cat-${c.id}`)} strategy={horizontalListSortingStrategy}>
+                <div className="flex items-center gap-2">
+                  {categories.map((cat) => (
+                    <SortableCategory key={cat.id} category={cat} isSelected={selectedCategoryId === cat.id} onClick={() => setSelectedCategoryId(cat.id)} onEdit={(name) => handleUpdateCategory(cat.id, name)} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <Button variant="outline" size="sm" onClick={handleAddCategory}><Plus className="h-4 w-4 mr-1" />添加分类</Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {works.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <p>还没有作品，点击右上角按钮添加</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={works.map((w) => w.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-3">
-                {works.map((work) => (
-                  <SortableItem
-                    key={work.id}
-                    work={work}
-                    onEdit={handleOpenDialog}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleWorksDragEnd}>
+          <SortableContext items={works.map((w) => w.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-3">
+              {works.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground"><p>该分类下还没有作品</p></CardContent></Card>
+              ) : (
+                works.map((work) => (
+                  <SortableWork key={work.id} work={work} onEdit={() => handleOpenDialog(work)} onDelete={() => handleDelete(work.id)} onCoverUpload={(f) => handleCoverUpload(work.id, f)} />
+                ))
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        <div className="mt-8 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg text-sm text-muted-foreground">
+          <ul className="space-y-1">
+            <li>• 拖拽作品卡片可调整显示顺序</li>
+            <li>• 点击编辑按钮可修改作品标题、简介和分类</li>
+            <li>• 图片建议尺寸：1920x1080</li>
+            <li>• 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
+          </ul>
+        </div>
       </main>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingWork ? '编辑作品' : '添加作品'}</DialogTitle>
             <DialogDescription>填写作品信息</DialogDescription>
           </DialogHeader>
-          <div className="space-y-6">
-            {/* 基本信息 */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">作品标题 *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="作品标题"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">分类</Label>
-                  <Input
-                    id="category"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="如：PPT设计、视频剪辑"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="display_mode">展示模式</Label>
-                  <Select
-                    value={formData.display_mode}
-                    onValueChange={(value) => setFormData({ ...formData, display_mode: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">单文件/单图</SelectItem>
-                      <SelectItem value="carousel">多图轮播</SelectItem>
-                      <SelectItem value="combined">组合展示</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tags">标签（用逗号分隔）</Label>
-                <Input
-                  id="tags"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="如：React, TypeScript, 前端"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">作品描述</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="描述您的作品...（支持换行）"
-                  rows={3}
-                />
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground">对齐方式：</Label>
-                  <Select
-                    value={formData.description_align || 'left'}
-                    onValueChange={(value) => setFormData({ ...formData, description_align: value })}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="left">左对齐</SelectItem>
-                      <SelectItem value="center">居中</SelectItem>
-                      <SelectItem value="right">右对齐</SelectItem>
-                      <SelectItem value="justify">两端对齐</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">作品标题</label>
+              <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="如：PPT第一版" />
             </div>
-
-            {/* 封面图上传 */}
-            <div className="space-y-3">
-              <Label>封面图（可选，用于PDF/PPT等文件的卡片封面）</Label>
-              <div className="flex items-start gap-4">
-                {coverImageUrl ? (
-                  <div className="relative">
-                    <img
-                      src={coverImageUrl}
-                      alt="封面"
-                      className="w-32 h-24 object-cover rounded-lg border"
-                    />
-                    <button
-                      onClick={() => { setCoverImageKey(''); setCoverImageUrl(''); }}
-                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="w-32 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-slate-50 dark:bg-slate-800">
-                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleCoverUpload}
-                    className="hidden"
-                    id="cover-upload"
-                  />
-                  <label htmlFor="cover-upload" className="cursor-pointer">
-                    <Button variant="outline" size="sm" asChild disabled={uploadingType === 'cover'}>
-                      <span>
-                        <Upload className="h-4 w-4 mr-1" />
-                        {uploadingType === 'cover' ? '上传中...' : '上传封面'}
-                      </span>
-                    </Button>
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    建议尺寸 16:9，如 800x450 像素
-                  </p>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">副标题</label>
+              <Input value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} placeholder="如：PPT设计" />
             </div>
-
-            {/* 轮播图片（仅轮播模式显示） */}
-            {formData.display_mode === 'carousel' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>轮播图片</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddCarouselItem} disabled={uploadingType === 'carousel'}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    {uploadingType === 'carousel' ? '上传中...' : '添加图片'}
-                  </Button>
-                </div>
-                {carouselItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg">
-                    点击「添加图片」上传轮播图片（支持多选）
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-3 gap-3">
-                    {carouselItems.map((item, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={item.url}
-                          alt={item.title}
-                          className="w-full h-24 object-cover rounded-lg border"
-                        />
-                        <button
-                          onClick={() => handleRemoveCarouselItem(index)}
-                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 文件上传（非轮播模式显示） */}
-            {formData.display_mode !== 'carousel' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>文件（支持 PDF、图片、视频）</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddFileItem}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    添加文件
-                  </Button>
-                </div>
-                {workItems.map((item, index) => (
-                  <FileItemRow 
-                    key={item.tempId || item.id || index}
-                    item={item}
-                    onRemove={() => handleRemoveFileItem(index)}
-                    onReselect={() => handleAddFileItem()}
-                    isUploading={uploadingType === 'file' && (uploadingTempId === item.tempId || (item.tempId === undefined && index === 0))}
-                  />
-                ))}
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
-              <Button onClick={handleSave} disabled={uploadState.isUploading}>
-                {uploadState.isUploading ? '上传中...' : '保存'}
-              </Button>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">备注</label>
+              <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="请输入文字备注" className="min-h-[100px]" />
             </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
+            <Button onClick={handleSave} disabled={isUploading}>{isUploading ? '上传中...' : '保存'}</Button>
           </div>
         </DialogContent>
       </Dialog>
-      
-      {/* 文件大小验证错误提示 */}
-      {sizeValidationError && (
-        <div className="fixed bottom-4 left-4 z-50 w-96">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="whitespace-pre-wrap">
-              {sizeValidationError}
-            </AlertDescription>
-            <button
-              onClick={() => setSizeValidationError(null)}
-              className="absolute top-2 right-2 p-1 hover:bg-red-100 rounded"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Alert>
-        </div>
-      )}
-      
-      {/* 上传进度条 */}
-      {uploadState.isUploading && (
-        <UploadProgressBar
-          progress={uploadState.progress}
-          status={uploadState.status}
-          fileName={uploadState.fileName}
-          fileSize={uploadState.fileSize}
-          errorMessage={uploadState.errorMessage}
-          onClose={resetUpload}
-        />
-      )}
     </div>
   );
 }
