@@ -125,7 +125,7 @@ function WorkCard({
 export default function WorksPage() {
   const [mounted, setMounted] = useState(false);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<string>('image');
   const [works, setWorks] = useState<WorkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -137,38 +137,46 @@ export default function WorksPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef(0);
-  const categoriesLoadedRef = useRef(false);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 加载分类
-  const loadCategories = useCallback(async () => {
-    if (categoriesLoadedRef.current) return;
-    categoriesLoadedRef.current = true;
-    
-    try {
-      const res = await fetch('/api/work-categories');
-      const data = res.ok ? await res.json() : null;
-      if (data?.success) {
-        const visibleCats = data.data.filter((c: WorkCategory) => c.is_visible);
-        setCategories(visibleCats);
-        if (visibleCats.length > 0) {
-          // 优先选中图片分类，如果没有图片则选第一个
+  // 初始化加载
+  useEffect(() => {
+    if (!mounted || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
+    const initLoad = async () => {
+      try {
+        // 加载分类
+        const catRes = await fetch('/api/work-categories');
+        const catData = await catRes.json();
+        if (catData?.success) {
+          const visibleCats = catData.data.filter((c: WorkCategory) => c.is_visible);
+          setCategories(visibleCats);
+          
+          // 优先选中图片分类
           const imageCat = visibleCats.find((c: WorkCategory) => c.category_type === 'image');
           const defaultCat = imageCat || visibleCats[0];
-          setActiveCategory(defaultCat.category_type);
+          const targetCategory = defaultCat?.category_type || 'image';
+          setActiveCategory(targetCategory);
+          
+          // 加载作品
+          await loadWorksDirectly(targetCategory);
         }
+      } catch (error) {
+        console.error('初始化加载失败:', error);
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('加载分类失败:', error);
-      categoriesLoadedRef.current = false;
-    }
-  }, []);
+    };
 
-  // 加载作品
-  const loadWorks = useCallback(async (category: string) => {
+    initLoad();
+  }, [mounted]);
+
+  // 加载作品函数
+  const loadWorksDirectly = async (category: string) => {
     if (!category) return;
     setIsLoading(true);
     setIsTransitioning(true);
@@ -204,17 +212,7 @@ export default function WorksPage() {
       setIsLoading(false);
       setTimeout(() => setIsTransitioning(false), 300);
     }
-  }, []);
-
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
-
-  useEffect(() => {
-    if (activeCategory) {
-      loadWorks(activeCategory);
-    }
-  }, [activeCategory, loadWorks]);
+  };
 
   // 自动轮播
   useEffect(() => {
@@ -273,6 +271,7 @@ export default function WorksPage() {
   const handleCategoryChange = (category: string) => {
     if (category !== activeCategory && !isTransitioning) {
       setActiveCategory(category);
+      loadWorksDirectly(category);
     }
   };
 
