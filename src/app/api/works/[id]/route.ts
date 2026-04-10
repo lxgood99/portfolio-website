@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { S3Storage } from 'coze-coding-dev-sdk';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
+
+// 初始化对象存储
+const storage = new S3Storage({
+  endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+  accessKey: '',
+  secretKey: '',
+  bucketName: process.env.COZE_BUCKET_NAME,
+  region: 'cn-beijing',
+});
 
 // GET - 获取单个作品
 export async function GET(
@@ -52,7 +62,6 @@ export async function PATCH(
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.order !== undefined) updateData.order = body.order;
-    if (body.cover_key !== undefined) updateData.cover_key = body.cover_key;
 
     const { data, error } = await client
       .from('works')
@@ -84,7 +93,7 @@ export async function DELETE(
     const { id } = await params;
     const client = getSupabaseClient();
 
-    // 先获取作品文件
+    // 获取作品文件
     const { data: items } = await client
       .from('work_items')
       .select('file_key, cover_key')
@@ -94,18 +103,25 @@ export async function DELETE(
     if (items) {
       for (const item of items) {
         if (item.file_key) {
-          await client.storage.from('portfolio').remove([item.file_key]);
+          try {
+            await storage.deleteFile({ key: item.file_key });
+          } catch (e) {
+            console.error('删除存储文件失败:', e);
+          }
         }
         if (item.cover_key) {
-          await client.storage.from('portfolio').remove([item.cover_key]);
+          try {
+            await storage.deleteFile({ key: item.cover_key });
+          } catch (e) {
+            console.error('删除封面文件失败:', e);
+          }
         }
       }
     }
 
-    // 删除作品文件记录
+    // 删除数据库记录
     await client.from('work_items').delete().eq('work_id', id);
 
-    // 删除作品记录
     const { error } = await client
       .from('works')
       .delete()
