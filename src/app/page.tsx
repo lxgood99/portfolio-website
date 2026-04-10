@@ -123,7 +123,7 @@ interface Work {
   title: string;
   description: string;
   description_align?: string;
-  category: string;
+  category?: { id: number; name: string; order_index: number } | string;
   tags: string[];
   display_mode?: string;
   cover_image_key?: string;
@@ -148,6 +148,14 @@ interface ContactInfo {
   show_phone: boolean;
   show_wechat: boolean;
   wechatQrUrl?: string;
+}
+
+// 辅助函数：获取类别名称
+function getCategoryName(category: Work['category']): string {
+  if (typeof category === 'object' && category !== null) {
+    return category.name || '';
+  }
+  return category || '';
 }
 
 interface TimelineBreak {
@@ -555,7 +563,8 @@ export default function HomePage() {
         
         const cats = new Set<string>();
         worksWithUrls.forEach(w => {
-          if (w.category?.name) cats.add(w.category.name);
+          if (typeof w.category === 'object' && w.category?.name) cats.add(w.category.name);
+          else if (typeof w.category === 'string') cats.add(w.category);
         });
         setCategories(['all', ...Array.from(cats)]);
       }
@@ -1110,7 +1119,8 @@ export default function HomePage() {
             {/* 手机端：横向滚动布局 */}
             <div className="md:hidden space-y-6">
               {categories.map((cat) => {
-                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category?.name === cat);
+                const getCatName = (c: Work['category']) => typeof c === 'object' ? c?.name : c;
+                const categoryWorks = cat === 'all' ? works : works.filter(w => getCatName(w.category) === cat);
                 if (categoryWorks.length === 0) return null;
                 
                 return (
@@ -1164,9 +1174,7 @@ export default function HomePage() {
                             )}
                             <CardContent className="p-3">
                               <h4 className="font-medium text-sm truncate">{work.title}</h4>
-                              {work.category?.name && (
-                                <Badge variant="outline" className="text-xs mt-1">{work.category.name}</Badge>
-                              )}
+                              <Badge variant="outline" className="text-xs mt-1">{typeof work.category === 'object' ? work.category?.name : work.category}</Badge>
                             </CardContent>
                           </Card>
                         ))}
@@ -1208,7 +1216,7 @@ export default function HomePage() {
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(selectedCategory === 'all' ? works : works.filter(w => w.category?.name === selectedCategory)).map((work) => (
+                {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => (
                   <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                     {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                       <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
@@ -1229,7 +1237,7 @@ export default function HomePage() {
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-semibold text-lg">{work.title}</h3>
-                        {work.category?.name && <Badge variant="outline" className="text-xs shrink-0">{work.category.name}</Badge>}
+                        {getCategoryName(work.category) && <Badge variant="outline" className="text-xs shrink-0">{getCategoryName(work.category)}</Badge>}
                       </div>
                       {work.description && (
                         <p 
