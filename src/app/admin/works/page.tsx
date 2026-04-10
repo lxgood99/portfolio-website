@@ -463,7 +463,25 @@ export default function WorksPage() {
       formData.append('type', 'work');
       
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const result = await res.json();
+      
+      if (!res.ok) {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert(`上传失败：服务器返回错误 ${res.status}`);
+        return;
+      }
+      
+      let result;
+      try {
+        result = await res.json();
+      } catch {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert('上传失败：响应格式错误');
+        return;
+      }
       
       clearInterval(progressInterval);
       
@@ -513,7 +531,30 @@ export default function WorksPage() {
       fd.append('type', 'work');
       
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
-      const result = await res.json();
+      
+      // 检查响应状态
+      if (!res.ok) {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert(`上传失败：服务器返回错误 ${res.status}`);
+        return;
+      }
+      
+      // 尝试解析 JSON
+      let result;
+      try {
+        result = await res.json();
+      } catch (e) {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        const text = await res.text();
+        console.error('[WorksPage] JSON 解析失败:', text.substring(0, 200));
+        alert('上传失败：响应格式错误，请重试');
+        return;
+      }
+      
       console.log('[WorksPage] 上传响应:', result);
       
       clearInterval(progressInterval);
@@ -558,7 +599,25 @@ export default function WorksPage() {
       formData.append('type', 'work');
       
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const result = await res.json();
+      
+      if (!res.ok) {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert(`上传失败：服务器返回错误 ${res.status}`);
+        return;
+      }
+      
+      let result;
+      try {
+        result = await res.json();
+      } catch {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert('上传失败：响应格式错误');
+        return;
+      }
       
       clearInterval(progressInterval);
       

@@ -124,12 +124,20 @@ interface Work {
   description: string;
   description_align?: string;
   category?: { id: number; name: string; order_index: number } | string;
+  category_id?: number;
+  order: number;
   tags: string[];
   display_mode?: string;
   cover_image_key?: string;
   coverImageUrl?: string;
   work_items: WorkItem[];
   carouselItems?: WorkItem[];
+}
+
+interface WorkCategory {
+  id: number;
+  name: string;
+  order_index: number;
 }
 
 interface ModuleOrder {
@@ -462,7 +470,7 @@ export default function HomePage() {
       // 记录访问统计（使用设备指纹去重）
       recordVisit().catch(() => {});
 
-      const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes, timelineRes] = await Promise.all([
+      const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes, timelineRes, workCategoriesRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/self-introduction'),
         fetch('/api/self-intro-cards'),
@@ -474,6 +482,7 @@ export default function HomePage() {
         fetch('/api/module-orders'),
         fetch('/api/contact-info'),
         fetch('/api/timeline-items'),
+        fetch('/api/work-categories'),
       ]);
 
       const profileData = profileRes.ok ? await profileRes.json() : null;
@@ -482,6 +491,7 @@ export default function HomePage() {
       const eduData = eduRes.ok ? await eduRes.json() : null;
       const skillsData = skillsRes.ok ? await skillsRes.json() : null;
       const skillCategoriesData = skillCategoriesRes.ok ? await skillCategoriesRes.json() : null;
+      const workCategoriesData = workCategoriesRes.ok ? await workCategoriesRes.json() : null;
       const worksData = worksRes.ok ? await worksRes.json() : null;
       const moduleOrdersData = moduleOrdersRes.ok ? await moduleOrdersRes.json() : null;
 
@@ -559,14 +569,24 @@ export default function HomePage() {
       
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
-        setWorks(worksWithUrls);
+        // 按 order 字段排序
+        const sortedWorks = worksWithUrls.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setWorks(sortedWorks);
         
-        const cats = new Set<string>();
-        worksWithUrls.forEach(w => {
-          if (typeof w.category === 'object' && w.category?.name) cats.add(w.category.name);
-          else if (typeof w.category === 'string') cats.add(w.category);
-        });
-        setCategories(['all', ...Array.from(cats)]);
+        // 使用分类 API 的数据来设置分类列表（保证顺序）
+        if (workCategoriesData?.success && workCategoriesData.data) {
+          // 按 order_index 排序分类
+          const sortedCategories = (workCategoriesData.data as WorkCategory[]).sort((a, b) => a.order_index - b.order_index);
+          setCategories(['all', ...sortedCategories.map(c => c.name)]);
+        } else {
+          // 降级：从作品数据中提取分类
+          const cats = new Set<string>();
+          worksWithUrls.forEach(w => {
+            if (typeof w.category === 'object' && w.category?.name) cats.add(w.category.name);
+            else if (typeof w.category === 'string') cats.add(w.category);
+          });
+          setCategories(['all', ...Array.from(cats)]);
+        }
       }
 
       if (moduleOrdersData.success) {
