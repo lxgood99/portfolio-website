@@ -34,7 +34,8 @@ import {
   Presentation,
   Star,
   Bot,
-  Code2
+  Code2,
+  Play
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -1136,76 +1137,186 @@ export default function HomePage() {
               作品集
             </h2>
             
-            {/* 手机端：横向滚动布局 */}
-            <div className="md:hidden space-y-6">
-              {categories.map((cat) => {
-                const getCatName = (c: Work['category']) => typeof c === 'object' ? c?.name : c;
-                const categoryWorks = cat === 'all' ? works : works.filter(w => getCatName(w.category) === cat);
-                if (categoryWorks.length === 0) return null;
-                
-                return (
-                  <div key={cat} className="space-y-3">
-                    {/* 分类标题 + 滑动提示 */}
-                    <div className="flex items-center justify-between px-1">
-                      <h3 className="font-semibold text-base text-muted-foreground flex items-center gap-2">
-                        {cat === 'all' ? '全部作品' : cat}
-                        <ChevronRight className="h-4 w-4 text-primary" />
-                      </h3>
-                      <span className="text-xs text-muted-foreground">
-                        {categoryWorks.length} 个作品
-                      </span>
-                    </div>
-                    
-                    {/* 横向滚动容器 */}
-                    <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-                      <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
-                        {categoryWorks.map((work) => (
-                          <Card 
-                            key={work.id} 
-                            className="overflow-hidden hover:shadow-lg transition-all duration-300 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 shrink-0"
-                            style={{ width: 'calc(50vw - 28px)', maxWidth: '200px' }}
-                          >
-                            {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                                <img 
-                                  src={work.carouselItems[0].url} 
-                                  alt={work.title}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
-                                {work.carouselItems.length > 1 && (
-                                  <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/50 text-white text-xs">
-                                    +{work.carouselItems.length - 1}
-                                  </div>
-                                )}
+            {/* 分类标签切换 - 带动画 */}
+            {categories.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                      selectedCategory === cat
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                    }`}
+                  >
+                    {cat === 'all' ? '全部' : cat}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* 横向滚动卡片列表 - 统一布局 */}
+            <div className="relative">
+              {/* 横向滚动容器 - 支持触摸滑动和鼠标拖动 */}
+              <div 
+                className="overflow-x-auto scrollbar-thin snap-x snap-mandatory pb-4 -mx-4 px-4 cursor-grab active:cursor-grabbing"
+                style={{
+                  scrollBehavior: 'smooth',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+                onMouseDown={(e) => {
+                  const container = e.currentTarget;
+                  container.style.cursor = 'grabbing';
+                  container.style.userSelect = 'none';
+                }}
+                onMouseUp={(e) => {
+                  const container = e.currentTarget;
+                  container.style.cursor = 'grab';
+                  container.style.userSelect = '';
+                }}
+                onMouseLeave={(e) => {
+                  const container = e.currentTarget;
+                  container.style.cursor = 'grab';
+                  container.style.userSelect = '';
+                }}
+              >
+                <div className="flex gap-4" style={{ width: 'max-content' }}>
+                  {/* 填充左侧距离 */}
+                  <div className="shrink-0 w-1" />
+                  
+                  {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => (
+                    <Card 
+                      key={work.id} 
+                      className="overflow-hidden hover:shadow-xl transition-all duration-300 group snap-start shrink-0 bg-white dark:bg-slate-800"
+                      style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
+                    >
+                      {/* 封面图 */}
+                      {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                        <div 
+                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer"
+                          onClick={() => setPreviewItem(work.carouselItems![0])}
+                        >
+                          <img 
+                            src={work.carouselItems[0].url} 
+                            alt={work.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          {work.carouselItems.length > 1 && (
+                            <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/60 text-white text-xs">
+                              +{work.carouselItems.length - 1}
+                            </div>
+                          )}
+                        </div>
+                      ) : work.coverImageUrl ? (
+                        <div 
+                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden"
+                          onClick={() => {
+                            const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                            if (videoItem) setPreviewItem(videoItem);
+                            else if (work.coverImageUrl) {
+                              const previewItem = {
+                                id: work.id,
+                                type: 'image' as const,
+                                title: work.title,
+                                file_key: work.cover_image_key || '',
+                                url: work.coverImageUrl,
+                              };
+                              setPreviewItem(previewItem);
+                            }
+                          }}
+                        >
+                          {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                            <>
+                              <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                                  <Play className="h-6 w-6 text-slate-800 ml-1" />
+                                </div>
                               </div>
-                            ) : work.coverImageUrl ? (
-                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                                {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                                  <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
-                                ) : (
-                                  <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
-                                )}
-                              </div>
-                            ) : (
-                              <div className="h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                <FileText className="h-8 w-8 text-muted-foreground/30" />
-                              </div>
+                            </>
+                          ) : (
+                            <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                          <FileText className="h-12 w-12 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      
+                      {/* 卡片内容 */}
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-semibold text-base truncate flex-1">{work.title}</h3>
+                          {getCategoryName(work.category) && (
+                            <Badge variant="outline" className="text-xs shrink-0">{getCategoryName(work.category)}</Badge>
+                          )}
+                        </div>
+                        {work.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {work.description}
+                          </p>
+                        )}
+                        
+                        {/* 文件列表按钮 */}
+                        {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {work.work_items.slice(0, 3).map((item) => (
+                              <button
+                                key={item.id}
+                                onClick={() => setPreviewItem(item)}
+                                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
+                              >
+                                {getFileIcon(item.type)}
+                                <span className="truncate max-w-[60px]">{item.title || item.type}</span>
+                              </button>
+                            ))}
+                            {work.work_items.length > 3 && (
+                              <span className="px-2 py-1 text-xs text-muted-foreground">
+                                +{work.work_items.length - 3}个文件
+                              </span>
                             )}
-                            <CardContent className="p-3">
-                              <h4 className="font-medium text-sm truncate">{work.title}</h4>
-                              <Badge variant="outline" className="text-xs mt-1">{typeof work.category === 'object' ? work.category?.name : work.category}</Badge>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  {/* 填充右侧距离 */}
+                  <div className="shrink-0 w-1" />
+                </div>
+              </div>
               
-              {/* 查看更多作品按钮 */}
-              <div className="pt-4 text-center">
+              {/* 滚动提示箭头 - 仅在作品多时显示 */}
+              {works.length > 3 && (
+                <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-0 right-0 justify-between pointer-events-none px-2">
+                  <button 
+                    onClick={() => {
+                      const container = document.querySelector('.overflow-x-auto');
+                      if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
+                    }}
+                    className="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg flex items-center justify-center pointer-events-auto hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const container = document.querySelector('.overflow-x-auto');
+                      if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
+                    }}
+                    className="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg flex items-center justify-center pointer-events-auto hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* 查看更多作品按钮 */}
+            {works.length > 6 && (
+              <div className="pt-6 text-center">
                 <Link 
                   href="/works"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -1214,85 +1325,7 @@ export default function HomePage() {
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
-            </div>
-            
-            {/* 电脑端：保持原有网格布局 */}
-            <div className="hidden md:block">
-              {categories.length > 1 && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                        selectedCategory === cat
-                          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
-                          : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
-                      }`}
-                    >
-                      {cat === 'all' ? '全部' : cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => (
-                  <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
-                    {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                      <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
-                    ) : work.coverImageUrl ? (
-                      <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
-                        {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                          <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                        ) : (
-                          <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
-                      </div>
-                    ) : (
-                      <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                        <FileText className="h-12 w-12 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-lg">{work.title}</h3>
-                        {getCategoryName(work.category) && <Badge variant="outline" className="text-xs shrink-0">{getCategoryName(work.category)}</Badge>}
-                      </div>
-                      {work.description && (
-                        <p 
-                          className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
-                          style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                        >
-                          {work.description}
-                        </p>
-                      )}
-                      {work.tags && work.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {work.tags.slice(0, 4).map((tag, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                          ))}
-                        </div>
-                      )}
-                      {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-3 border-t">
-                          {work.work_items.slice(0, 4).map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => setPreviewItem(item)}
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
-                            >
-                              {getFileIcon(item.type)}
-                              <span className="truncate max-w-[80px]">{item.title || item.type}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            )}
           </section>
         ) : null;
 
