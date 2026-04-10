@@ -555,7 +555,7 @@ export default function HomePage() {
         
         const cats = new Set<string>();
         worksWithUrls.forEach(w => {
-          if (w.category) cats.add(w.category);
+          if (w.category?.name) cats.add(w.category.name);
         });
         setCategories(['all', ...Array.from(cats)]);
       }
@@ -1110,7 +1110,7 @@ export default function HomePage() {
             {/* 手机端：横向滚动布局 */}
             <div className="md:hidden space-y-6">
               {categories.map((cat) => {
-                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category === cat);
+                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category?.name === cat);
                 if (categoryWorks.length === 0) return null;
                 
                 return (
@@ -1164,8 +1164,8 @@ export default function HomePage() {
                             )}
                             <CardContent className="p-3">
                               <h4 className="font-medium text-sm truncate">{work.title}</h4>
-                              {work.category && (
-                                <Badge variant="outline" className="text-xs mt-1">{work.category}</Badge>
+                              {work.category?.name && (
+                                <Badge variant="outline" className="text-xs mt-1">{work.category.name}</Badge>
                               )}
                             </CardContent>
                           </Card>
@@ -1208,7 +1208,7 @@ export default function HomePage() {
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
+                {(selectedCategory === 'all' ? works : works.filter(w => w.category?.name === selectedCategory)).map((work) => (
                   <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                     {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                       <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
@@ -1229,7 +1229,7 @@ export default function HomePage() {
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-semibold text-lg">{work.title}</h3>
-                        {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
+                        {work.category?.name && <Badge variant="outline" className="text-xs shrink-0">{work.category.name}</Badge>}
                       </div>
                       {work.description && (
                         <p 
