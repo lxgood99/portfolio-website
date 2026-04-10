@@ -331,11 +331,13 @@ export default function AdminWorksPage() {
       formData.append('category', categoryType);
 
       const res = await fetch('/api/works', { method: 'POST', body: formData });
-      if (res.ok) {
+      const data = await res.json();
+      
+      if (data.success) {
         alert('上传成功！');
         loadData();
       } else {
-        alert('上传失败');
+        alert(data.error || '上传失败');
       }
     } catch (e) {
       console.error('上传失败', e);
