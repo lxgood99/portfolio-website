@@ -35,7 +35,8 @@ import {
   Star,
   Bot,
   Code2,
-  Play
+  Play,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -389,7 +390,8 @@ export default function HomePage() {
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
+  const [previewItem, setPreviewItem] = useState<(WorkItem & { allImages?: WorkItem[]; workId?: number; index?: number }) | null>(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -1185,18 +1187,75 @@ export default function HomePage() {
                   {/* 填充左侧距离 */}
                   <div className="shrink-0 w-1" />
                   
-                  {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => (
+                  {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => {
+                    // 获取作品的所有文件，用于预览导航
+                    const allImages = work.display_mode === 'carousel' 
+                      ? (work.carouselItems || [])
+                      : (work.work_items?.filter(item => item.type === 'image' && item.url) || []);
+                    
+                    // 确定点击卡片时打开哪个文件
+                    const getFirstPreviewItem = () => {
+                      // 优先视频
+                      const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                      if (videoItem) return { ...videoItem, workId: work.id, allImages };
+                      
+                      // 其次轮播图片
+                      if (work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0) {
+                        return { ...work.carouselItems[0], workId: work.id, allImages: work.carouselItems, index: 0 };
+                      }
+                      
+                      // 然后是封面图
+                      if (work.coverImageUrl) {
+                        const firstImage = allImages.length > 0 ? allImages[0] : null;
+                        return { 
+                          id: work.id, 
+                          type: 'image', 
+                          title: work.title, 
+                          file_key: work.cover_image_key || '',
+                          url: firstImage?.url || work.coverImageUrl,
+                          workId: work.id, 
+                          allImages: allImages.length > 0 ? allImages : [{ id: work.id, url: work.coverImageUrl, title: work.title, type: 'image' }],
+                          index: 0
+                        };
+                      }
+                      
+                      // 然后是 PDF
+                      const pdfItem = work.work_items?.find(item => (item.type === 'pdf' || item.type === 'ppt') && item.url);
+                      if (pdfItem) return { ...pdfItem, workId: work.id, allImages };
+                      
+                      // 最后是其他文件
+                      const otherItem = work.work_items?.find(item => item.url);
+                      if (otherItem) return { ...otherItem, workId: work.id, allImages };
+                      
+                      return null;
+                    };
+                    
+                    const firstPreview = getFirstPreviewItem();
+                    const hasFiles = work.coverImageUrl || (work.work_items && work.work_items.length > 0) || (work.carouselItems && work.carouselItems.length > 0);
+                    
+                    const handleCardClick = () => {
+                      if (firstPreview) {
+                        // 重置图片索引
+                        setPreviewImageIndex(0);
+                        // 设置当前预览项
+                        const previewData = {
+                          ...firstPreview,
+                          allImages: allImages.length > 0 ? allImages : (firstPreview as any).allImages || [],
+                        };
+                        setPreviewItem(previewData as any);
+                      }
+                    };
+                    
+                    return (
                     <Card 
                       key={work.id} 
-                      className="overflow-hidden hover:shadow-xl transition-all duration-300 group snap-start shrink-0 bg-white dark:bg-slate-800"
+                      className="overflow-hidden hover:shadow-xl transition-all duration-300 group snap-start shrink-0 bg-white dark:bg-slate-800 cursor-pointer"
                       style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
+                      onClick={handleCardClick}
                     >
                       {/* 封面图 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                        <div 
-                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer"
-                          onClick={() => setPreviewItem(work.carouselItems![0])}
-                        >
+                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
                           <img 
                             src={work.carouselItems[0].url} 
                             alt={work.title}
@@ -1208,41 +1267,51 @@ export default function HomePage() {
                               +{work.carouselItems.length - 1}
                             </div>
                           )}
+                          {/* 覆盖层 - 查看按钮 */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                <Eye className="h-6 w-6 text-slate-800" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ) : work.coverImageUrl ? (
-                        <div 
-                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden"
-                          onClick={() => {
-                            const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
-                            if (videoItem) setPreviewItem(videoItem);
-                            else if (work.coverImageUrl) {
-                              const previewItem = {
-                                id: work.id,
-                                type: 'image' as const,
-                                title: work.title,
-                                file_key: work.cover_image_key || '',
-                                url: work.coverImageUrl,
-                              };
-                              setPreviewItem(previewItem);
-                            }
-                          }}
-                        >
+                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
                           {work.work_items?.find(item => item.type === 'video' && item.url) ? (
                             <>
                               <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
                               <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
                                   <Play className="h-6 w-6 text-slate-800 ml-1" />
                                 </div>
                               </div>
                             </>
                           ) : (
-                            <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <>
+                              <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <Eye className="h-6 w-6 text-slate-800" />
+                                  </div>
+                                </div>
+                              </div>
+                            </>
                           )}
                         </div>
                       ) : (
-                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center relative">
                           <FileText className="h-12 w-12 text-muted-foreground/30" />
+                          <span className="text-xs text-muted-foreground/50 mt-2">点击查看</span>
+                          {/* 覆盖层 */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow-lg">
+                                <Eye className="h-5 w-5 text-slate-600" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                       
@@ -1260,13 +1329,16 @@ export default function HomePage() {
                           </p>
                         )}
                         
-                        {/* 文件列表按钮 */}
+                        {/* 文件列表 - 可点击查看 */}
                         {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {work.work_items.slice(0, 3).map((item) => (
                               <button
                                 key={item.id}
-                                onClick={() => setPreviewItem(item)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewItem({ ...item, allImages: work.work_items?.filter(i => i.type === 'image' && i.url) || [] } as any);
+                                }}
                                 className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
                               >
                                 {getFileIcon(item.type)}
@@ -1280,9 +1352,38 @@ export default function HomePage() {
                             )}
                           </div>
                         )}
+                        
+                        {/* 文件类型标识 */}
+                        {hasFiles && (
+                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {work.work_items?.find(item => item.type === 'video') && (
+                                <span className="flex items-center gap-1">
+                                  <Video className="h-3 w-3" /> 视频
+                                </span>
+                              )}
+                              {work.work_items?.find(item => item.type === 'pdf') && (
+                                <span className="flex items-center gap-1">
+                                  <FileText className="h-3 w-3" /> PDF
+                                </span>
+                              )}
+                              {work.work_items?.find(item => item.type === 'ppt') && (
+                                <span className="flex items-center gap-1">
+                                  <Presentation className="h-3 w-3" /> PPT
+                                </span>
+                              )}
+                              {work.work_items?.find(item => item.type === 'image') && (
+                                <span className="flex items-center gap-1">
+                                  <ImageIcon className="h-3 w-3" /> 图片
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
-                  ))}
+                  );
+                  })}
                   
                   {/* 填充右侧距离 */}
                   <div className="shrink-0 w-1" />
@@ -1681,78 +1782,123 @@ export default function HomePage() {
 
       {/* 预览模态框 */}
       {previewItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
-          <div className="relative max-w-5xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setPreviewItem(null)} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
+          <div className="relative max-w-6xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setPreviewItem(null)} className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
               <X className="h-5 w-5" />
             </button>
-            <div className="flex flex-col items-center justify-center min-h-[300px]">
-              {previewItem.type === 'image' && previewItem.url && (
-                <div className="w-full h-full flex items-center justify-center p-4">
-                  <img src={previewItem.url} alt={previewItem.title || '预览图片'} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-lg" />
+            
+            {/* 图片预览 - 支持左右滑动 */}
+            {previewItem.type === 'image' && previewItem.url && (
+              <div className="relative w-full h-[85vh] flex flex-col">
+                {/* 图片容器 - 支持触摸滑动 */}
+                <div 
+                  className="flex-1 overflow-hidden relative"
+                  onTouchStart={(e) => {
+                    (e.currentTarget as any).touchStartX = e.touches[0].clientX;
+                  }}
+                  onTouchEnd={(e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchStartX = (e.currentTarget as any).touchStartX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 50) {
+                      const images = previewItem.allImages || [previewItem];
+                      if (diff > 0 && previewImageIndex < images.length - 1) {
+                        setPreviewImageIndex(previewImageIndex + 1);
+                      } else if (diff < 0 && previewImageIndex > 0) {
+                        setPreviewImageIndex(previewImageIndex - 1);
+                      }
+                    }
+                  }}
+                >
+                  <img 
+                    src={(previewItem.allImages && previewItem.allImages[previewImageIndex])?.url || previewItem.url} 
+                    alt={previewItem.title || '预览图片'} 
+                    className="w-full h-full object-contain" 
+                  />
+                  
+                  {/* 左右切换按钮 */}
+                  {previewItem.allImages && previewItem.allImages.length > 1 && (
+                    <>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setPreviewImageIndex(Math.max(0, previewImageIndex - 1)); }}
+                        disabled={previewImageIndex === 0}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setPreviewImageIndex(Math.min(previewItem.allImages!.length - 1, previewImageIndex + 1)); }}
+                        disabled={previewImageIndex >= previewItem.allImages!.length - 1}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                    </>
+                  )}
                 </div>
-              )}
-              {previewItem.type === 'video' && previewItem.url && (
-                <div className="w-full bg-black flex items-center justify-center">
-                  <video src={previewItem.url} controls autoPlay className="max-w-full max-h-[80vh]" />
-                </div>
-              )}
-              {previewItem.type === 'pdf' && previewItem.url && (
-                <div className="w-full h-[80vh] relative">
-                  <PDFViewer url={previewItem.url} title={previewItem.title || 'PDF预览'} />
-                  <div className="absolute bottom-4 right-4 flex gap-2 z-20">
-                    <a 
-                      href={previewItem.url} 
-                      download={previewItem.title || 'document.pdf'}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-lg text-sm hover:bg-white dark:hover:bg-slate-800"
-                    >
-                      <Download className="h-4 w-4" />
-                      下载
-                    </a>
+                
+                {/* 图片计数器和标题 */}
+                {previewItem.allImages && previewItem.allImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/60 text-white text-sm">
+                    {previewImageIndex + 1} / {previewItem.allImages.length}
                   </div>
-                </div>
-              )}
-              {previewItem.type === 'ppt' && previewItem.url && (
-                <div className="flex flex-col items-center justify-center h-[80vh] p-8 text-center bg-gray-50 dark:bg-slate-800">
-                  <Presentation className="h-20 w-20 text-orange-500 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">{previewItem.title || 'PPT演示文稿'}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-                    PPT文件暂不支持在线预览，请下载后使用PowerPoint或其他演示软件打开查看
-                  </p>
-                  <div className="flex gap-3">
-                    <a 
-                      href={previewItem.url} 
-                      download={previewItem.title || 'presentation.pptx'}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                      <Download className="h-5 w-5" />
-                      下载PPT
-                    </a>
+                )}
+                
+                {previewItem.title && (
+                  <div className="p-4 border-t dark:border-slate-700">
+                    <h3 className="font-medium">{previewItem.title}</h3>
                   </div>
-                </div>
-              )}
-              {previewItem.type === 'other' && previewItem.url && (
-                <div className="flex flex-col items-center justify-center p-12 text-center">
-                  {getFileIcon(previewItem.type)}
-                  <h3 className="mt-4 text-lg font-semibold">{previewItem.title || '文件预览'}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">文件</p>
-                  <div className="mt-6 flex gap-3">
-                    <a href={previewItem.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                      <ExternalLink className="h-4 w-4" />新窗口打开
-                    </a>
-                    <a href={previewItem.url} download={previewItem.title} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                      <FileText className="h-4 w-4" />下载文件
-                    </a>
-                  </div>
-                </div>
-              )}
-              {!previewItem.url && (
-                <div className="flex flex-col items-center justify-center p-12 text-center">
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                  <p className="mt-4 text-muted-foreground">文件暂不可预览</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+            
+            {/* 视频预览 */}
+            {previewItem.type === 'video' && previewItem.url && (
+              <div className="w-full bg-black flex items-center justify-center">
+                <video 
+                  src={previewItem.url} 
+                  controls 
+                  autoPlay 
+                  className="max-w-full max-h-[85vh]" 
+                  controlsList="nodownload"
+                />
+              </div>
+            )}
+            
+            {/* PDF 预览 - 竖向滑动翻页 */}
+            {previewItem.type === 'pdf' && previewItem.url && (
+              <div className="w-full h-[85vh] relative overflow-hidden">
+                <PDFViewer url={previewItem.url} title={previewItem.title || 'PDF预览'} />
+              </div>
+            )}
+            
+            {/* PPT 预览 - 显示缩略图列表 */}
+            {previewItem.type === 'ppt' && previewItem.url && (
+              <div className="flex flex-col items-center justify-center h-[85vh] p-8 text-center bg-gray-50 dark:bg-slate-800 overflow-y-auto">
+                <Presentation className="h-20 w-20 text-orange-500 mb-4" />
+                <h3 className="text-xl font-semibold mb-2">{previewItem.title || 'PPT演示文稿'}</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+                  PPT文件暂不支持在线预览，请下载后使用PowerPoint或其他演示软件打开查看
+                </p>
+              </div>
+            )}
+            
+            {/* 其他文件 */}
+            {previewItem.type === 'other' && previewItem.url && (
+              <div className="flex flex-col items-center justify-center p-12 text-center">
+                {getFileIcon(previewItem.type)}
+                <h3 className="mt-4 text-lg font-semibold">{previewItem.title || '文件预览'}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">文件</p>
+              </div>
+            )}
+            
+            {!previewItem.url && (
+              <div className="flex flex-col items-center justify-center p-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground" />
+                <p className="mt-4 text-muted-foreground">文件暂不可预览</p>
+              </div>
+            )}
           </div>
         </div>
       )}
