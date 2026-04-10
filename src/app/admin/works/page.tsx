@@ -128,7 +128,7 @@ function CategoryTag({
         )}
         {!isEditing && (
           <Pencil 
-            className="w-3 h-3 ml-1 opacity-50 hover:opacity-100 transition-opacity" 
+            className="w-3 h-3 ml-1 opacity-50 hover:opacity-100 transition-opacity cursor-pointer" 
             onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} 
           />
         )}
@@ -136,7 +136,7 @@ function CategoryTag({
       {canDelete && (
         <button 
           onClick={(e) => { e.stopPropagation(); onDelete(); }} 
-          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
           title="删除分类"
         >
           <X className="w-4 h-4" />
@@ -146,7 +146,7 @@ function CategoryTag({
   );
 }
 
-// 可排序分类
+// 可排序分类 - 修复拖拽与点击事件冲突
 function SortableCategory({
   category,
   isSelected,
@@ -163,8 +163,29 @@ function SortableCategory({
   canDelete: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `cat-${category.id}` });
+  
+  // 拖拽手柄 - 只有拖拽手柄才触发拖拽
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', `cat-${category.id}`);
+  };
+  
   return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }} {...attributes} {...listeners}>
+    <div 
+      ref={setNodeRef} 
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
+      className="flex items-center"
+    >
+      {/* 拖拽手柄 - 单独处理，不使用 dnd-kit listeners */}
+      <div 
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 mr-1"
+        title="拖拽排序"
+      >
+        <GripVertical className="w-4 h-4 text-gray-400" />
+      </div>
+      
+      {/* 分类标签 - 正常响应点击 */}
       <CategoryTag 
         category={category} 
         isSelected={isSelected} 
