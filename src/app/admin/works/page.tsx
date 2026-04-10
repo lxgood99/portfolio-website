@@ -293,13 +293,16 @@ export default function WorksPage() {
   );
 
   const loadCategories = async () => {
+    console.log('[WorksPage] 加载分类...');
     try {
       const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
+      console.log('[WorksPage] 分类数据:', data);
       if (data?.success) {
         setCategories(data.data);
         // 默认选中第一个分类
         if (data.data.length > 0 && !selectedCategoryId) {
+          console.log('[WorksPage] 设置默认选中分类:', data.data[0].id);
           setSelectedCategoryId(data.data[0].id);
         }
       }
@@ -307,15 +310,18 @@ export default function WorksPage() {
   };
 
   const loadWorks = useCallback(async () => {
+    console.log('[WorksPage] loadWorks called, categoryId:', selectedCategoryId);
     if (!selectedCategoryId) return;
     setIsLoading(true);
     setShowContent(false); // 开始切换动画
     setTimeout(() => setShowContent(true), 50); // 触发淡入
     
     try {
+      console.log('[WorksPage] 加载作品, URL:', `/api/works?categoryId=${selectedCategoryId}`);
       const url = `/api/works?categoryId=${selectedCategoryId}`;
       const res = await fetch(url);
       const data = res.ok ? await res.json() : null;
+      console.log('[WorksPage] 作品数据:', data);
       if (data?.success) {
         const worksWithCovers = await Promise.all(data.data.map(async (w: Work) => {
           let url = '';
@@ -328,6 +334,7 @@ export default function WorksPage() {
           }
           return { ...w, cover_image_url: url };
         }));
+        console.log('[WorksPage] 设置作品数量:', worksWithCovers.length);
         setWorks(worksWithCovers);
       }
     } catch (e) { console.error('加载作品失败:', e); }
@@ -443,6 +450,7 @@ export default function WorksPage() {
   const handleDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    console.log('[WorksPage] handleDirectUpload called, file:', file.name, 'selectedCategoryId:', selectedCategoryId);
     if (!selectedCategoryId) { alert('请先选择分类'); return; }
     
     // 判断文件类型并验证大小
@@ -463,12 +471,14 @@ export default function WorksPage() {
         setUploadProgress(prev => Math.min(prev + 5, 90));
       }, 200);
       
+      console.log('[WorksPage] 开始上传文件:', file.name);
       const fd = new FormData();
       fd.append('file', file);
       fd.append('type', 'work');
       
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const result = await res.json();
+      console.log('[WorksPage] 上传响应:', result);
       
       clearInterval(progressInterval);
       
@@ -476,6 +486,7 @@ export default function WorksPage() {
         setUploadProgress(100);
         // 创建作品记录
         const fileName = file.name.replace(/\.[^/.]+$/, '');
+        console.log('[WorksPage] 创建作品记录:', { title: fileName, category_id: selectedCategoryId });
         await fetch('/api/works', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -543,10 +554,12 @@ export default function WorksPage() {
 
   // 保存
   const handleSave = async () => {
+    console.log('[WorksPage] handleSave called, editingWork:', editingWork, 'formData:', formData);
     if (!formData.title.trim()) { alert('请输入作品标题'); return; }
     try {
       const url = editingWork ? `/api/works/${editingWork.id}` : '/api/works';
       const method = editingWork ? 'PUT' : 'POST';
+      console.log('[WorksPage] 保存请求:', method, url, { ...formData, category_id: editCategoryId || selectedCategoryId });
       const body: Record<string, unknown> = { 
         ...formData, 
         category_id: editCategoryId || selectedCategoryId, 
@@ -557,12 +570,13 @@ export default function WorksPage() {
       }
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
+      console.log('[WorksPage] 保存响应:', data);
       if (data.success) { 
         setDialogOpen(false); 
         loadWorks(); 
       }
       else alert('保存失败：' + data.error);
-    } catch { alert('保存失败'); }
+    } catch (e) { console.error('保存失败:', e); alert('保存失败'); }
   };
 
   // 删除
@@ -606,9 +620,18 @@ export default function WorksPage() {
                       key={cat.id} 
                       category={cat} 
                       isSelected={selectedCategoryId === cat.id} 
-                      onClick={() => setSelectedCategoryId(cat.id)} 
-                      onEdit={(name) => handleUpdateCategory(cat.id, name)}
-                      onDelete={() => handleDeleteCategory(cat.id)}
+                      onClick={() => {
+                        console.log('[WorksPage] 分类点击:', cat.id, cat.name);
+                        setSelectedCategoryId(cat.id);
+                      }} 
+                      onEdit={(name) => {
+                        console.log('[WorksPage] 分类编辑:', cat.id, name);
+                        handleUpdateCategory(cat.id, name);
+                      }}
+                      onDelete={() => {
+                        console.log('[WorksPage] 分类删除:', cat.id);
+                        handleDeleteCategory(cat.id);
+                      }}
                       canDelete={categories.length > 1}
                     />
                   ))}
