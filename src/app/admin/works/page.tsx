@@ -75,10 +75,12 @@ function FileItemRow({
   item, 
   onRemove,
   onEdit,
+  dragHandleProps,
 }: { 
   item: WorkItem; 
   onRemove: () => void;
   onEdit: () => void;
+  dragHandleProps?: Record<string, unknown>;
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   
@@ -113,7 +115,12 @@ function FileItemRow({
 
   return (
     <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg group">
-      <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-3 flex-shrink-0" />
+      <div 
+        className="h-5 w-5 text-muted-foreground cursor-grab mt-3 flex-shrink-0" 
+        {...dragHandleProps}
+      >
+        <GripVertical className="h-5 w-5" />
+      </div>
       {displayUrl ? (
         <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
           {item.type === 'video' ? (
@@ -185,9 +192,17 @@ function SortableFileItem({ item, onRemove, onEdit }: { item: WorkItem; onRemove
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // 只将 listeners 传递给拖拽手柄，不传递给整个容器
+  const dragHandleProps = { ...attributes, ...listeners };
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <FileItemRow item={item} onRemove={onRemove} onEdit={onEdit} />
+    <div ref={setNodeRef} style={style}>
+      <FileItemRow 
+        item={item} 
+        onRemove={onRemove} 
+        onEdit={onEdit}
+        dragHandleProps={dragHandleProps}
+      />
     </div>
   );
 }
