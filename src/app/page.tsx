@@ -1841,19 +1841,27 @@ export default function HomePage() {
             
             {/* 图片预览 - 改为竖向滑动 */}
             {previewItem.type === 'image' && previewItem.url && (
-              <div className="relative w-full h-full flex flex-col">
-                {/* 图片容器 - 竖向滚动 */}
+              <div className="relative w-full h-full flex flex-col bg-black">
+                {/* 图片容器 - 竖向滚动，每页占满视口 */}
                 <div 
                   className="flex-1 overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
                   style={{ scrollSnapType: 'y mandatory' }}
+                  onScroll={(e) => {
+                    const container = e.currentTarget;
+                    const scrollTop = container.scrollTop;
+                    const pageHeight = container.clientHeight;
+                    const newIndex = Math.round(scrollTop / pageHeight);
+                    if (newIndex !== previewImageIndex) {
+                      setPreviewImageIndex(newIndex);
+                    }
+                  }}
                 >
-                  {/* 所有图片竖向排列 */}
+                  {/* 所有图片竖向排列，每张占满一屏 */}
                   {(previewItem.allImages && previewItem.allImages.length > 0 ? previewItem.allImages : [previewItem]).map((img, idx) => (
                     <div 
                       key={idx}
-                      className="snap-start min-h-full flex items-center justify-center bg-black"
+                      className="snap-start min-h-full min-h-screen flex items-center justify-center"
                       onClick={(e) => {
-                        // 点击图片切换到该图片
                         e.stopPropagation();
                         setPreviewImageIndex(idx);
                       }}
@@ -1868,9 +1876,9 @@ export default function HomePage() {
                 </div>
                 
                 {/* 底部导航栏 */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-                  {/* 上下切换按钮 */}
-                  {previewItem.allImages && previewItem.allImages.length > 1 && (
+                {previewItem.allImages && previewItem.allImages.length > 1 && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                    {/* 上下切换按钮 */}
                     <div className="flex items-center justify-center gap-8">
                       <button 
                         onClick={(e) => { 
@@ -1902,10 +1910,8 @@ export default function HomePage() {
                         <ChevronDown className="h-6 w-6" />
                       </button>
                     </div>
-                  )}
-                  
-                  {/* 图片缩略图指示器 - 横向排列 */}
-                  {previewItem.allImages && previewItem.allImages.length > 1 && (
+                    
+                    {/* 页面缩略图指示器 */}
                     <div className="flex justify-center gap-2 mt-3 overflow-x-auto pb-2 px-2">
                       {previewItem.allImages.map((_, idx) => (
                         <button
@@ -1926,21 +1932,23 @@ export default function HomePage() {
                         />
                       ))}
                     </div>
-                  )}
-                  
-                  {previewItem.title && (
-                    <div className="text-center mt-2">
-                      <h3 className="text-white text-sm font-medium truncate">{previewItem.title}</h3>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {/* 滑动提示 */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs flex items-center gap-1 animate-bounce">
-                  <ArrowUp className="h-3 w-3" />
-                  <span>上下滑动浏览</span>
-                  <ArrowDown className="h-3 w-3" />
-                </div>
+                {previewItem.allImages && previewItem.allImages.length > 1 && (
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs flex items-center gap-1 animate-bounce">
+                    <ArrowUp className="h-3 w-3" />
+                    <span>上下滑动浏览</span>
+                    <ArrowDown className="h-3 w-3" />
+                  </div>
+                )}
+                
+                {previewItem.title && (
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/50 text-white text-sm">
+                    {previewItem.title}
+                  </div>
+                )}
               </div>
             )}
             
