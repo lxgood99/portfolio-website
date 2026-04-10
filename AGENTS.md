@@ -159,3 +159,35 @@
 - 登录成功后设置 Cookie 和 localStorage
 - 使用 `window.location.href` 进行完整页面刷新，确保认证状态正确同步
 - 所有管理后台页面使用统一的 `useAdminAuth` Hook 进行认证检查
+
+
+## 开发日志
+
+### 2026-04-11 - 修复作品集文件预览功能
+
+**问题描述**：
+前端作品集页面中，上传的文件（PDF、视频等）无法点击打开预览。点击标题后无任何反应。
+
+**根本原因**：
+1. 作品文件存储在 `cover_image_key` 字段中，但代码未正确识别文件类型
+2. `getFirstPreviewItem` 函数未根据 `cover_image_key` 的文件扩展名判断文件类型
+3. 预览模态框的 fallback 条件会错误匹配 other 类型文件
+
+**修复内容**：
+1. 添加 `getFileTypeFromKey` 函数，根据文件扩展名检测文件类型（pdf/ppt/video/image/other）
+2. 在作品卡片渲染时计算 `coverFileType` 变量
+3. 修改 `getFirstPreviewItem` 函数，使用 `coverFileType` 作为预览项的 type
+4. 修复预览模态框的 fallback 条件，使用白名单检查类型
+
+**修改文件**：
+- `src/app/page.tsx`
+
+**技术细节**：
+- 文件类型检测逻辑：根据 `cover_image_key` 扩展名判断
+  - `.pdf` → `pdf`
+  - `.ppt/.pptx` → `ppt`
+  - `.mp4/.mov/.avi/.webm/.mkv` → `video`
+  - `.jpg/.jpeg/.png/.gif/.webp/.svg` → `image`
+  - 其他 → `other`
+- 预览优先级：视频 > 轮播图片 > 封面文件 > work_items 中的文件
+

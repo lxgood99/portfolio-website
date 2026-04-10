@@ -639,7 +639,9 @@ export default function HomePage() {
               body: JSON.stringify({ key: work.cover_image_key }),
             });
             const data = await res.json();
-            if (data.success) coverImageUrl = data.data.url;
+            if (data.success) {
+              coverImageUrl = data.data.url;
+            }
           } catch {}
         }
 
@@ -1198,6 +1200,20 @@ export default function HomePage() {
                   <div className="shrink-0 w-1" />
                   
                   {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => {
+                    // 从 cover_image_key 检测文件类型
+                    const getFileTypeFromKey = (key: string | undefined | null): string => {
+                      if (!key) return 'image';
+                      const ext = key.split('.').pop()?.toLowerCase() || '';
+                      if (ext === 'pdf') return 'pdf';
+                      if (['ppt', 'pptx'].includes(ext)) return 'ppt';
+                      if (['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(ext)) return 'video';
+                      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image';
+                      return 'other';
+                    };
+                    
+                    // 判断封面图的文件类型
+                    const coverFileType = getFileTypeFromKey(work.cover_image_key);
+                    
                     // 获取作品的所有文件，用于预览导航
                     const allImages = work.display_mode === 'carousel' 
                       ? (work.carouselItems || [])
@@ -1214,22 +1230,24 @@ export default function HomePage() {
                         return { ...work.carouselItems[0], workId: work.id, allImages: work.carouselItems, index: 0 };
                       }
                       
-                      // 然后是封面图
-                      if (work.coverImageUrl) {
-                        const firstImage = allImages.length > 0 ? allImages[0] : null;
-                        return { 
-                          id: work.id, 
-                          type: 'image', 
-                          title: work.title, 
-                          file_key: work.cover_image_key || '',
-                          url: firstImage?.url || work.coverImageUrl,
-                          workId: work.id, 
-                          allImages: allImages.length > 0 ? allImages : [{ id: work.id, url: work.coverImageUrl, title: work.title, type: 'image' }],
-                          index: 0
-                        };
+                      // 然后是封面文件（根据文件类型）- 优先使用 coverImageUrl
+                      if (work.cover_image_key) {
+                        const previewUrl = work.coverImageUrl || '';
+                        if (previewUrl) {
+                          return { 
+                            id: work.id, 
+                            type: coverFileType, 
+                            title: work.title, 
+                            file_key: work.cover_image_key,
+                            url: previewUrl,
+                            workId: work.id, 
+                            allImages: allImages.length > 0 ? allImages : [],
+                            index: 0
+                          };
+                        }
                       }
                       
-                      // 然后是 PDF
+                      // 然后是 work_items 中的 PDF
                       const pdfItem = work.work_items?.find(item => (item.type === 'pdf' || item.type === 'ppt') && item.url);
                       if (pdfItem) return { ...pdfItem, workId: work.id, allImages };
                       
@@ -1245,9 +1263,7 @@ export default function HomePage() {
                     
                     const handleCardClick = () => {
                       if (firstPreview) {
-                        // 重置图片索引
                         setPreviewImageIndex(0);
-                        // 设置当前预览项
                         const previewData = {
                           ...firstPreview,
                           allImages: allImages.length > 0 ? allImages : (firstPreview as any).allImages || [],
@@ -1280,7 +1296,7 @@ export default function HomePage() {
                         </div>
                       ) : work.coverImageUrl ? (
                         <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                          {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                          {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url) ? (
                             <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
                           ) : (
                             <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
@@ -1347,16 +1363,16 @@ export default function HomePage() {
                           <div className="flex items-start gap-2">
                             {/* 文件类型图标 */}
                             <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                              work.work_items?.find(item => item.type === 'video') ? 'bg-red-100 text-red-600' :
-                              work.work_items?.find(item => item.type === 'pdf') ? 'bg-blue-100 text-blue-600' :
-                              work.work_items?.find(item => item.type === 'ppt') ? 'bg-orange-100 text-orange-600' :
+                              coverFileType === 'video' || work.work_items?.find(item => item.type === 'video') ? 'bg-red-100 text-red-600' :
+                              coverFileType === 'pdf' || work.work_items?.find(item => item.type === 'pdf') ? 'bg-blue-100 text-blue-600' :
+                              coverFileType === 'ppt' || work.work_items?.find(item => item.type === 'ppt') ? 'bg-orange-100 text-orange-600' :
                               'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                             }`}>
-                              {work.work_items?.find(item => item.type === 'video') ? (
+                              {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video') ? (
                                 <Play className="h-4 w-4" />
-                              ) : work.work_items?.find(item => item.type === 'pdf') ? (
+                              ) : coverFileType === 'pdf' || work.work_items?.find(item => item.type === 'pdf') ? (
                                 <FileText className="h-4 w-4" />
-                              ) : work.work_items?.find(item => item.type === 'ppt') ? (
+                              ) : coverFileType === 'ppt' || work.work_items?.find(item => item.type === 'ppt') ? (
                                 <Presentation className="h-4 w-4" />
                               ) : (
                                 <FolderOpen className="h-4 w-4" />
@@ -1366,7 +1382,7 @@ export default function HomePage() {
                               <h3 className="font-semibold text-base leading-snug group-hover/title:text-primary transition-colors break-words">
                                 {work.title}
                               </h3>
-                              <div className="flex items-center gap-1 mt-1 text-xs text-primary opacity-0 group-hover/title:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-1 text-xs text-primary opacity-0 group-hover/title:opacity-100 transition-opacity">
                                 <Eye className="h-3 w-3" />
                                 <span>点击打开</span>
                               </div>
@@ -1924,10 +1940,12 @@ export default function HomePage() {
               </div>
             )}
             
-            {!previewItem.url && (
+            {/* 无URL或未知类型 */}
+            {!['image', 'video', 'pdf', 'ppt', 'other'].includes(previewItem.type || '') && (
               <div className="flex flex-col items-center justify-center p-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground" />
                 <p className="mt-4 text-muted-foreground">文件暂不可预览</p>
+                <p className="mt-2 text-xs text-muted-foreground">type: {previewItem.type || 'undefined'}, url: {previewItem.url ? '有' : '无'}</p>
               </div>
             )}
           </div>
