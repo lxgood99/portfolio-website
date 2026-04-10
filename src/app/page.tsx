@@ -1314,6 +1314,17 @@ export default function HomePage() {
               )}
             </div>
             
+            {/* 滑动提示文字 */}
+            <div className="mt-3 text-center text-sm text-muted-foreground/60 flex items-center justify-center gap-2">
+              <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span>可左右滑动观看</span>
+              <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            
             {/* 查看更多作品按钮 */}
             {works.length > 6 && (
               <div className="pt-6 text-center">
