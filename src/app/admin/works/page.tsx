@@ -212,9 +212,12 @@ export default function WorksPage() {
   const [coverImageKey, setCoverImageKey] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const sensors = useSensors(PointerSensor, KeyboardSensor.withCoordinates({
-    coordinateGetter: sortableKeyboardCoordinates,
-  }));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (isAuthenticated) {
