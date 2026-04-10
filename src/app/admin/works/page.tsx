@@ -211,9 +211,7 @@ function WorkCard({
   onCoverUpload: (file: File) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 bg-gray-100 dark:bg-slate-800 p-3 rounded-lg touch-none">
-      <DragHandle id={work.id} />
-      
+    <div className="flex items-center gap-3 bg-gray-100 dark:bg-slate-800 p-3 rounded-lg">
       {/* 封面 - 固定宽度 */}
       <label className="flex-shrink-0 relative w-16 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors overflow-hidden bg-white">
         {work.cover_image_url ? (
@@ -246,14 +244,14 @@ function WorkCard({
 
       {/* 按钮 - 固定宽度 */}
       <div className="flex-shrink-0 flex gap-1">
-        <Button variant="ghost" size="icon" onClick={onEdit} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8"><Trash2 className="h-4 w-4 text-red-500" /></Button>
+        <Button variant="ghost" size="icon" onClick={onEdit} className="h-8 w-8" title="编辑"><Pencil className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8" title="删除"><Trash2 className="h-4 w-4 text-red-500" /></Button>
       </div>
     </div>
   );
 }
 
-// 可排序作品
+// 可排序作品 - 修复拖拽与点击事件冲突
 function SortableWork({
   work,
   onEdit,
@@ -267,8 +265,25 @@ function SortableWork({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: work.id });
   return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }} {...attributes} {...listeners}>
-      <WorkCard work={work} onEdit={onEdit} onDelete={onDelete} onCoverUpload={onCoverUpload} />
+    <div 
+      ref={setNodeRef} 
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
+      className="flex items-center"
+    >
+      {/* 拖拽手柄 - 单独处理 */}
+      <div 
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 mr-1"
+        title="拖拽排序"
+      >
+        <GripVertical className="w-5 h-5 text-muted-foreground" />
+      </div>
+      
+      {/* 作品卡片 - 正常响应点击 */}
+      <div className="flex-1">
+        <WorkCard work={work} onEdit={onEdit} onDelete={onDelete} onCoverUpload={onCoverUpload} />
+      </div>
     </div>
   );
 }
