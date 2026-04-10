@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   DndContext,
@@ -20,7 +20,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, ArrowLeft, Plus, Pencil, Trash2, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { GripVertical, ArrowLeft, Plus, Pencil, Trash2, X, Upload, Image as ImageIcon, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,8 +39,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { validateFileSize, uploadWithProgress } from '@/components/UploadProgress';
+import { validateFileSize } from '@/components/UploadProgress';
 
 // 类型定义
 interface WorkCategory {
@@ -60,6 +61,13 @@ interface Work {
   order: number;
 }
 
+// 文件大小限制（字节）
+const FILE_LIMITS = {
+  image: 10 * 1024 * 1024,    // 10MB
+  video: 300 * 1024 * 1024,   // 300MB
+  document: 150 * 1024 * 1024, // 150MB
+};
+
 // 拖拽图标组件
 function DragHandle({ id }: { id: number | string }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -77,11 +85,15 @@ function CategoryTag({
   isSelected,
   onClick,
   onEdit,
+  onDelete,
+  canDelete,
 }: {
   category: WorkCategory;
   isSelected: boolean;
   onClick: () => void;
   onEdit: (name: string) => void;
+  onDelete: () => void;
+  canDelete: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(category.name);
@@ -92,31 +104,45 @@ function CategoryTag({
   };
 
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1 px-4 py-2 rounded-full border transition-all text-sm font-medium h-10
-        ${isSelected 
-          ? 'bg-black text-white border-black' 
-          : 'bg-white text-black border-gray-300 hover:border-gray-500'}`}
-    >
-      {isEditing ? (
-        <input
-          type="text"
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); else if (e.key === 'Escape') { setEditName(category.name); setIsEditing(false); } }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-20 bg-transparent outline-none text-center"
-          autoFocus
-        />
-      ) : (
-        <span onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>{category.name}</span>
+    <div className="flex items-center gap-1">
+      <button
+        onClick={onClick}
+        className={`flex items-center gap-1 px-4 py-2 rounded-full border transition-all duration-300 text-sm font-medium h-10
+          ${isSelected 
+            ? 'bg-black text-white border-black shadow-md transform scale-105' 
+            : 'bg-white text-black border-gray-300 hover:border-gray-500 hover:bg-gray-50'}`}
+      >
+        {isEditing ? (
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); else if (e.key === 'Escape') { setEditName(category.name); setIsEditing(false); } }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-20 bg-transparent outline-none text-center"
+            autoFocus
+          />
+        ) : (
+          <span onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>{category.name}</span>
+        )}
+        {!isEditing && (
+          <Pencil 
+            className="w-3 h-3 ml-1 opacity-50 hover:opacity-100 transition-opacity" 
+            onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} 
+          />
+        )}
+      </button>
+      {canDelete && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+          title="删除分类"
+        >
+          <X className="w-4 h-4" />
+        </button>
       )}
-      {!isEditing && (
-        <Pencil className="w-3 h-3 ml-1 opacity-50 hover:opacity-100" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} />
-      )}
-    </button>
+    </div>
   );
 }
 
@@ -126,16 +152,27 @@ function SortableCategory({
   isSelected,
   onClick,
   onEdit,
+  onDelete,
+  canDelete,
 }: {
   category: WorkCategory;
   isSelected: boolean;
   onClick: () => void;
   onEdit: (name: string) => void;
+  onDelete: () => void;
+  canDelete: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `cat-${category.id}` });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }} {...attributes} {...listeners}>
-      <CategoryTag category={category} isSelected={isSelected} onClick={onClick} onEdit={onEdit} />
+      <CategoryTag 
+        category={category} 
+        isSelected={isSelected} 
+        onClick={onClick} 
+        onEdit={onEdit} 
+        onDelete={onDelete}
+        canDelete={canDelete}
+      />
     </div>
   );
 }
@@ -215,6 +252,22 @@ function SortableWork({
   );
 }
 
+// 淡入动画组件
+function FadeInSection({ children, show, className = '' }: { children: React.ReactNode; show: boolean; className?: string }) {
+  return (
+    <div 
+      className={`transition-all duration-300 ease-in-out ${className}`}
+      style={{ 
+        opacity: show ? 1 : 0,
+        transform: show ? 'translateY(0)' : 'translateY(10px)',
+        pointerEvents: show ? 'auto' : 'none',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function WorksPage() {
   const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [categories, setCategories] = useState<WorkCategory[]>([]);
@@ -228,6 +281,9 @@ export default function WorksPage() {
   const [coverImageKey, setCoverImageKey] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showContent, setShowContent] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -250,9 +306,12 @@ export default function WorksPage() {
     } catch (e) { console.error('加载分类失败:', e); }
   };
 
-  const loadWorks = async () => {
+  const loadWorks = useCallback(async () => {
     if (!selectedCategoryId) return;
     setIsLoading(true);
+    setShowContent(false); // 开始切换动画
+    setTimeout(() => setShowContent(true), 50); // 触发淡入
+    
     try {
       const url = `/api/works?categoryId=${selectedCategoryId}`;
       const res = await fetch(url);
@@ -273,7 +332,7 @@ export default function WorksPage() {
       }
     } catch (e) { console.error('加载作品失败:', e); }
     finally { setIsLoading(false); }
-  };
+  }, [selectedCategoryId]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -287,6 +346,7 @@ export default function WorksPage() {
       loadWorks();
     } else {
       setWorks([]);
+      setShowContent(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategoryId]);
@@ -316,7 +376,6 @@ export default function WorksPage() {
     if (data.success) {
       const newCat = data.data;
       setCategories(prev => [...prev, newCat]);
-      // 自动选中新分类
       setSelectedCategoryId(newCat.id);
     }
   };
@@ -327,7 +386,6 @@ export default function WorksPage() {
     await fetch(`/api/work-categories/${id}`, { method: 'DELETE' });
     const newCategories = categories.filter(c => c.id !== id);
     setCategories(newCategories);
-    // 如果删除的是当前选中分类，选中第一个
     if (selectedCategoryId === id) {
       setSelectedCategoryId(newCategories.length > 0 ? newCategories[0].id : null);
     }
@@ -350,17 +408,91 @@ export default function WorksPage() {
     const valid = validateFileSize(file);
     if (!valid.valid) { alert(valid.error); return; }
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      const result = await uploadWithProgress(file, 'work', () => {});
+      // 模拟进度
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'work');
+      
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const result = await res.json();
+      
+      clearInterval(progressInterval);
+      
       if (result.success) {
+        setUploadProgress(100);
         await fetch(`/api/works/${workId}`, { 
           method: 'PUT', 
           headers: { 'Content-Type': 'application/json' }, 
           body: JSON.stringify({ cover_image_key: result.data.key }) 
         });
         loadWorks();
+      } else {
+        alert('上传失败：' + (result.error || '未知错误'));
       }
-    } finally { setIsUploading(false); }
+    } catch (e) { console.error('上传失败:', e); alert('上传失败'); }
+    finally { setIsUploading(false); setUploadProgress(0); }
+  };
+
+  // 直接上传作品文件
+  const handleDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!selectedCategoryId) { alert('请先选择分类'); return; }
+    
+    // 判断文件类型并验证大小
+    let limit = FILE_LIMITS.document;
+    if (file.type.startsWith('image/')) limit = FILE_LIMITS.image;
+    else if (file.type.startsWith('video/')) limit = FILE_LIMITS.video;
+    
+    if (file.size > limit) {
+      alert(`文件过大！${file.type.startsWith('image/') ? '图片' : file.type.startsWith('video/') ? '视频' : '文档'}最大${limit / 1024 / 1024}MB`);
+      return;
+    }
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 5, 90));
+      }, 200);
+      
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('type', 'work');
+      
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const result = await res.json();
+      
+      clearInterval(progressInterval);
+      
+      if (result.success) {
+        setUploadProgress(100);
+        // 创建作品记录
+        const fileName = file.name.replace(/\.[^/.]+$/, '');
+        await fetch('/api/works', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: fileName,
+            category_id: selectedCategoryId,
+            cover_image_key: result.data.key,
+            order: works.length,
+          })
+        });
+        loadWorks();
+        alert('上传成功！');
+      } else {
+        alert('上传失败：' + (result.error || '未知错误'));
+      }
+    } catch (e) { console.error('上传失败:', e); alert('上传失败'); }
+    finally { setIsUploading(false); setUploadProgress(0); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   // 对话框内封面上传
@@ -368,13 +500,27 @@ export default function WorksPage() {
     const valid = validateFileSize(file);
     if (!valid.valid) { alert(valid.error); return; }
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      const result = await uploadWithProgress(file, 'work', () => {});
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'work');
+      
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const result = await res.json();
+      
+      clearInterval(progressInterval);
+      
       if (result.success) {
+        setUploadProgress(100);
         setCoverImageKey(result.data.key);
         setCoverImageUrl(result.data.url);
       }
-    } finally { setIsUploading(false); }
+    } finally { setIsUploading(false); setUploadProgress(0); }
   };
 
   // 打开对话框
@@ -428,6 +574,9 @@ export default function WorksPage() {
     else alert('删除失败');
   };
 
+  // 获取当前选中的分类名称
+  const selectedCategoryName = categories.find(c => c.id === selectedCategoryId)?.name || '';
+
   if (authLoading || isLoading) {
     return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
@@ -443,10 +592,9 @@ export default function WorksPage() {
               <Button variant="ghost" size="icon" asChild><Link href="/admin/dashboard"><ArrowLeft className="h-5 w-5" /></Link></Button>
               <div>
                 <h1 className="text-2xl font-bold">作品集</h1>
-                <p className="text-sm text-muted-foreground">点击分类筛选，拖拽调整顺序</p>
+                <p className="text-sm text-muted-foreground">点击分类切换查看作品</p>
               </div>
             </div>
-            <Button onClick={() => handleOpenDialog()}><Plus className="h-4 w-4 mr-2" />添加作品</Button>
           </div>
 
           <div className="flex items-center justify-between gap-4">
@@ -454,68 +602,116 @@ export default function WorksPage() {
               <SortableContext items={categories.map((c) => `cat-${c.id}`)} strategy={horizontalListSortingStrategy}>
                 <div className="flex items-center gap-2 flex-wrap">
                   {categories.map((cat) => (
-                    <div key={cat.id} className="flex items-center gap-1">
-                      <SortableCategory 
-                        category={cat} 
-                        isSelected={selectedCategoryId === cat.id} 
-                        onClick={() => setSelectedCategoryId(cat.id)} 
-                        onEdit={(name) => handleUpdateCategory(cat.id, name)} 
-                      />
-                      {categories.length > 1 && (
-                        <button 
-                          onClick={() => handleDeleteCategory(cat.id)} 
-                          className="ml-1 p-1 text-gray-400 hover:text-red-500 transition-colors"
-                          title="删除分类"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
+                    <SortableCategory 
+                      key={cat.id} 
+                      category={cat} 
+                      isSelected={selectedCategoryId === cat.id} 
+                      onClick={() => setSelectedCategoryId(cat.id)} 
+                      onEdit={(name) => handleUpdateCategory(cat.id, name)}
+                      onDelete={() => handleDeleteCategory(cat.id)}
+                      canDelete={categories.length > 1}
+                    />
                   ))}
                 </div>
               </SortableContext>
             </DndContext>
-            <Button variant="outline" size="sm" onClick={handleAddCategory}><Plus className="h-4 w-4 mr-1" />添加分类</Button>
+            <Button variant="outline" size="sm" onClick={handleAddCategory}>
+              <Plus className="h-4 w-4 mr-1" />添加分类
+            </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleWorksDragEnd}>
-          <SortableContext items={works.map((w) => w.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
-              {works.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <p>该分类下还没有作品</p>
-                    <p className="text-sm mt-2">点击右上角「添加作品」开始创建</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                works.map((work) => (
-                  <SortableWork 
-                    key={work.id} 
-                    work={work} 
-                    onEdit={() => handleOpenDialog(work)} 
-                    onDelete={() => handleDelete(work.id)} 
-                    onCoverUpload={(f) => handleCoverUpload(work.id, f)} 
-                  />
-                ))
-              )}
-            </div>
-          </SortableContext>
-        </DndContext>
+        {/* 分类标题 */}
+        <FadeInSection show={showContent} className="mb-4">
+          <div className="flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold">{selectedCategoryName}</h2>
+            <span className="text-sm text-muted-foreground">({works.length} 个作品)</span>
+          </div>
+        </FadeInSection>
 
-        <div className="mt-8 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg text-sm text-muted-foreground">
-          <ul className="space-y-1">
-            <li>• 点击分类标签筛选作品</li>
-            <li>• 双击分类名称可编辑，双击拖拽手柄排序</li>
-            <li>• 拖拽作品卡片可调整显示顺序</li>
-            <li>• 点击封面可上传/替换</li>
-            <li>• 图片建议尺寸：1920x1080</li>
-            <li>• 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
-          </ul>
-        </div>
+        {/* 添加作品按钮 - 在分类作品列表上方 */}
+        <FadeInSection show={showContent} className="mb-4">
+          <div className="flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*,.pdf,.ppt,.pptx"
+              onChange={handleDirectUpload}
+              className="hidden"
+              disabled={isUploading}
+            />
+            <Button 
+              onClick={() => fileInputRef.current?.click()} 
+              disabled={isUploading || !selectedCategoryId}
+              className="gap-2"
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  上传中...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  添加作品
+                </>
+              )}
+            </Button>
+            {isUploading && (
+              <div className="flex-1 max-w-xs">
+                <Progress value={uploadProgress} className="h-2" />
+              </div>
+            )}
+          </div>
+        </FadeInSection>
+
+        {/* 作品列表 */}
+        <FadeInSection show={showContent}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleWorksDragEnd}>
+            <SortableContext items={works.map((w) => w.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                {works.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center text-muted-foreground">
+                      <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>该分类下还没有作品</p>
+                      <p className="text-sm mt-2">点击上方「添加作品」按钮上传文件</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  works.map((work) => (
+                    <SortableWork 
+                      key={work.id} 
+                      work={work} 
+                      onEdit={() => handleOpenDialog(work)} 
+                      onDelete={() => handleDelete(work.id)} 
+                      onCoverUpload={(f) => handleCoverUpload(work.id, f)} 
+                    />
+                  ))
+                )}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </FadeInSection>
+
+        {/* 使用说明 */}
+        <FadeInSection show={showContent}>
+          <div className="mt-8 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg text-sm text-muted-foreground">
+            <ul className="space-y-1">
+              <li>• 点击分类标签切换查看不同分类下的作品</li>
+              <li>• 点击铅笔图标可修改分类名称</li>
+              <li>• 拖拽分类标签可调整分类顺序</li>
+              <li>• 在当前分类作品列表上方点击「添加作品」上传文件，自动归属当前分类</li>
+              <li>• 拖拽作品卡片可调整显示顺序</li>
+              <li>• 点击封面可上传/替换作品封面</li>
+              <li>• 图片建议尺寸：1920x1080</li>
+              <li>• 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
+            </ul>
+          </div>
+        </FadeInSection>
       </main>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -556,7 +752,12 @@ export default function WorksPage() {
                     移除封面
                   </Button>
                 )}
-                {isUploading && <span className="text-sm text-muted-foreground">上传中...</span>}
+                {isUploading && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    <span className="text-sm text-muted-foreground">上传中...</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -605,7 +806,7 @@ export default function WorksPage() {
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
-            <Button onClick={handleSave} disabled={isUploading}>{isUploading ? '上传中...' : '保存'}</Button>
+            <Button onClick={handleSave} disabled={isUploading}>保存</Button>
           </div>
         </DialogContent>
       </Dialog>
