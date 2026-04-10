@@ -697,103 +697,6 @@ export default function HomePage() {
     }
   };
 
-  // 横向滚动作品组件 - 统一用于单分类和分组展示
-  const HorizontalScrollWorks = ({ works }: { works: Work[] }) => {
-    if (works.length === 0) {
-      return (
-        <div className="text-center text-muted-foreground py-8">
-          暂无作品
-        </div>
-      );
-    }
-    
-    return (
-      <div className="relative">
-        {/* 横向滚动容器 */}
-        <div className="overflow-x-auto scrollbar-thin -mx-4 px-4 pb-4 snap-x snap-mandatory">
-          <div className="flex gap-4" style={{ width: 'max-content' }}>
-            {works.map((work) => (
-              <div 
-                key={work.id} 
-                className="snap-start shrink-0"
-                style={{ width: 'calc(50vw - 16px)', maxWidth: '280px' }}
-              >
-                <Card 
-                  className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 h-full cursor-pointer"
-                  onClick={() => {
-                    // 点击卡片打开预览
-                    if (work.work_items && work.work_items.length > 0) {
-                      setPreviewItem(work.work_items[0]);
-                    } else if (work.coverImageUrl) {
-                      const previewItem: WorkItem = { 
-                        id: -1, 
-                        type: 'image', 
-                        file_key: work.cover_image_key || '', 
-                        title: work.title, 
-                        url: work.coverImageUrl 
-                      };
-                      setPreviewItem(previewItem);
-                    }
-                  }}
-                >
-                  {/* 封面图 */}
-                  {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                    <div className="relative h-36 sm:h-44 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                      <img 
-                        src={work.carouselItems[0].url} 
-                        alt={work.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      {work.carouselItems.length > 1 && (
-                        <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/60 text-white text-xs font-medium">
-                          {work.carouselItems.length} 张
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  ) : work.coverImageUrl ? (
-                    <div className="relative h-36 sm:h-44 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                      {work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                        <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                      ) : (
-                        <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  ) : (
-                    <div className="h-36 sm:h-44 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                      <FileText className="h-10 w-10 text-muted-foreground/30" />
-                    </div>
-                  )}
-                  
-                  {/* 卡片内容 */}
-                  <CardContent className="p-3 sm:p-4">
-                    <h4 className="font-semibold text-sm sm:text-base truncate mb-1">{work.title}</h4>
-                    <div className="flex items-center gap-2">
-                      {getCategoryName(work.category) && (
-                        <Badge variant="outline" className="text-xs">{getCategoryName(work.category)}</Badge>
-                      )}
-                      {work.work_items && work.work_items.length > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          {work.work_items.length} 个文件
-                        </span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* 滚动指示器 - 左右渐变 */}
-        <div className="absolute left-0 top-0 bottom-4 w-8 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-transparent pointer-events-none opacity-0" />
-        <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-slate-50 dark:from-slate-900 to-transparent pointer-events-none opacity-0" />
-      </div>
-    );
-  };
-
   // 根据模块排序渲染
   const renderModule = (moduleName: string) => {
     const moduleOrder = moduleOrders.find(m => m.module_name === moduleName);
@@ -1233,76 +1136,162 @@ export default function HomePage() {
               作品集
             </h2>
             
-            {/* 分类切换标签 */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                    selectedCategory === cat
-                      ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
-                      : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
-                  }`}
+            {/* 手机端：横向滚动布局 */}
+            <div className="md:hidden space-y-6">
+              {categories.map((cat) => {
+                const getCatName = (c: Work['category']) => typeof c === 'object' ? c?.name : c;
+                const categoryWorks = cat === 'all' ? works : works.filter(w => getCatName(w.category) === cat);
+                if (categoryWorks.length === 0) return null;
+                
+                return (
+                  <div key={cat} className="space-y-3">
+                    {/* 分类标题 + 滑动提示 */}
+                    <div className="flex items-center justify-between px-1">
+                      <h3 className="font-semibold text-base text-muted-foreground flex items-center gap-2">
+                        {cat === 'all' ? '全部作品' : cat}
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                      </h3>
+                      <span className="text-xs text-muted-foreground">
+                        {categoryWorks.length} 个作品
+                      </span>
+                    </div>
+                    
+                    {/* 横向滚动容器 */}
+                    <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+                      <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+                        {categoryWorks.map((work) => (
+                          <Card 
+                            key={work.id} 
+                            className="overflow-hidden hover:shadow-lg transition-all duration-300 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 shrink-0"
+                            style={{ width: 'calc(50vw - 28px)', maxWidth: '200px' }}
+                          >
+                            {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                                <img 
+                                  src={work.carouselItems[0].url} 
+                                  alt={work.title}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                                {work.carouselItems.length > 1 && (
+                                  <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/50 text-white text-xs">
+                                    +{work.carouselItems.length - 1}
+                                  </div>
+                                )}
+                              </div>
+                            ) : work.coverImageUrl ? (
+                              <div className="relative h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                                {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                                  <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
+                                ) : (
+                                  <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
+                                )}
+                              </div>
+                            ) : (
+                              <div className="h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                                <FileText className="h-8 w-8 text-muted-foreground/30" />
+                              </div>
+                            )}
+                            <CardContent className="p-3">
+                              <h4 className="font-medium text-sm truncate">{work.title}</h4>
+                              <Badge variant="outline" className="text-xs mt-1">{typeof work.category === 'object' ? work.category?.name : work.category}</Badge>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* 查看更多作品按钮 */}
+              <div className="pt-4 text-center">
+                <Link 
+                  href="/works"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
                 >
-                  {cat === 'all' ? '全部' : cat}
-                </button>
-              ))}
+                  查看更多作品
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
             
-            {/* 作品内容区域 - 带淡入淡出动画 */}
-            <div 
-              className="transition-all duration-300 ease-in-out"
-              style={{ 
-                opacity: 1,
-                transform: 'translateY(0)',
-              }}
-            >
-              {/* 单分类页面：只显示该分类作品，横向滚动 */}
-              {selectedCategory !== 'all' && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 px-1">
-                    <span className="text-primary font-medium">{selectedCategory}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({works.filter(w => getCategoryName(w.category) === selectedCategory).length} 个作品)
-                    </span>
-                  </div>
-                  <HorizontalScrollWorks works={works.filter(w => getCategoryName(w.category) === selectedCategory)} />
+            {/* 电脑端：保持原有网格布局 */}
+            <div className="hidden md:block">
+              {categories.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                        selectedCategory === cat
+                          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                          : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                      }`}
+                    >
+                      {cat === 'all' ? '全部' : cat}
+                    </button>
+                  ))}
                 </div>
               )}
-              
-              {/* 全部页面：按分类纵向分组，每组内横向滚动 */}
-              {selectedCategory === 'all' && (
-                <div className="space-y-8">
-                  {categories.filter(cat => cat !== 'all').map((cat) => {
-                    const categoryWorks = works.filter(w => getCategoryName(w.category) === cat);
-                    if (categoryWorks.length === 0) return null;
-                    return (
-                      <div key={cat} className="space-y-4">
-                        {/* 分组标题 */}
-                        <div className="flex items-center gap-2 px-1 border-l-4 border-primary pl-3">
-                          <h3 className="font-semibold text-lg">{cat}</h3>
-                          <span className="text-xs text-muted-foreground">
-                            ({categoryWorks.length} 个作品)
-                          </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(selectedCategory === 'all' ? works : works.filter(w => getCategoryName(w.category) === selectedCategory)).map((work) => (
+                  <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+                    {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                      <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
+                    ) : work.coverImageUrl ? (
+                      <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
+                        {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                          <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
+                        ) : (
+                          <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{work.title}</h3>
+                        {getCategoryName(work.category) && <Badge variant="outline" className="text-xs shrink-0">{getCategoryName(work.category)}</Badge>}
+                      </div>
+                      {work.description && (
+                        <p 
+                          className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
+                          style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                        >
+                          {work.description}
+                        </p>
+                      )}
+                      {work.tags && work.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {work.tags.slice(0, 4).map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                          ))}
                         </div>
-                        {/* 分组内横向滚动 */}
-                        <HorizontalScrollWorks works={categoryWorks} />
-                      </div>
-                    );
-                  })}
-                  
-                  {/* 如果有未分类的作品 */}
-                  {works.filter(w => !getCategoryName(w.category) || !categories.slice(1).includes(getCategoryName(w.category))).length > 0 && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 px-1 border-l-4 border-muted pl-3">
-                        <h3 className="font-semibold text-lg text-muted-foreground">未分类</h3>
-                      </div>
-                      <HorizontalScrollWorks works={works.filter(w => !getCategoryName(w.category) || !categories.slice(1).includes(getCategoryName(w.category)))} />
-                    </div>
-                  )}
-                </div>
-              )}
+                      )}
+                      {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-3 border-t">
+                          {work.work_items.slice(0, 4).map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => setPreviewItem(item)}
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
+                            >
+                              {getFileIcon(item.type)}
+                              <span className="truncate max-w-[80px]">{item.title || item.type}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </section>
         ) : null;
