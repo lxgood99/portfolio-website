@@ -1255,7 +1255,10 @@ export default function HomePage() {
                     >
                       {/* 封面图 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                        <div 
+                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden"
+                          onClick={handleCardClick}
+                        >
                           <img 
                             src={work.carouselItems[0].url} 
                             alt={work.title}
@@ -1277,11 +1280,14 @@ export default function HomePage() {
                           </div>
                         </div>
                       ) : work.coverImageUrl ? (
-                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                        <div 
+                          className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer"
+                          onClick={handleCardClick}
+                        >
                           {work.work_items?.find(item => item.type === 'video' && item.url) ? (
                             <>
                               <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
                                   <Play className="h-6 w-6 text-slate-800 ml-1" />
                                 </div>
@@ -1301,28 +1307,100 @@ export default function HomePage() {
                           )}
                         </div>
                       ) : (
-                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center relative">
-                          <FileText className="h-12 w-12 text-muted-foreground/30" />
-                          <span className="text-xs text-muted-foreground/50 mt-2">点击查看</span>
-                          {/* 覆盖层 */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow-lg">
-                                <Eye className="h-5 w-5 text-slate-600" />
-                              </div>
-                            </div>
-                          </div>
+                        // 无封面时显示文件类型图标和点击提示
+                        <div 
+                          className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center relative cursor-pointer"
+                          onClick={handleCardClick}
+                        >
+                          {/* 根据文件类型显示不同图标 */}
+                          {(() => {
+                            const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                            const pdfItem = work.work_items?.find(item => item.type === 'pdf' && item.url);
+                            const pptItem = work.work_items?.find(item => item.type === 'ppt' && item.url);
+                            
+                            if (videoItem) {
+                              return (
+                                <>
+                                  <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                                    <Play className="h-8 w-8 text-red-600 ml-1" />
+                                  </div>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击播放视频</span>
+                                </>
+                              );
+                            } else if (pdfItem) {
+                              return (
+                                <>
+                                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <FileText className="h-8 w-8 text-blue-600" />
+                                  </div>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击查看PDF</span>
+                                </>
+                              );
+                            } else if (pptItem) {
+                              return (
+                                <>
+                                  <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <Presentation className="h-8 w-8 text-orange-600" />
+                                  </div>
+                                  <span className="mt-3 text-sm font-medium text-slate-600">点击查看PPT</span>
+                                </>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  <FolderOpen className="h-12 w-12 text-slate-400" />
+                                  <span className="mt-3 text-sm font-medium text-slate-500">点击打开</span>
+                                </>
+                              );
+                            }
+                          })()}
                         </div>
                       )}
                       
                       {/* 卡片内容 */}
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-semibold text-base truncate flex-1">{work.title}</h3>
-                          {getCategoryName(work.category) && (
-                            <Badge variant="outline" className="text-xs shrink-0">{getCategoryName(work.category)}</Badge>
-                          )}
-                        </div>
+                        {/* 标题区域 - 可点击打开 */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCardClick();
+                          }}
+                          className="w-full text-left group/title mb-2 cursor-pointer"
+                        >
+                          <div className="flex items-start gap-2">
+                            {/* 文件类型图标 */}
+                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                              work.work_items?.find(item => item.type === 'video') ? 'bg-red-100 text-red-600' :
+                              work.work_items?.find(item => item.type === 'pdf') ? 'bg-blue-100 text-blue-600' :
+                              work.work_items?.find(item => item.type === 'ppt') ? 'bg-orange-100 text-orange-600' :
+                              'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                            }`}>
+                              {work.work_items?.find(item => item.type === 'video') ? (
+                                <Play className="h-4 w-4" />
+                              ) : work.work_items?.find(item => item.type === 'pdf') ? (
+                                <FileText className="h-4 w-4" />
+                              ) : work.work_items?.find(item => item.type === 'ppt') ? (
+                                <Presentation className="h-4 w-4" />
+                              ) : (
+                                <FolderOpen className="h-4 w-4" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-base leading-snug group-hover/title:text-primary transition-colors break-words">
+                                {work.title}
+                              </h3>
+                              <div className="flex items-center gap-1 mt-1 text-xs text-primary opacity-0 group-hover/title:opacity-100 transition-opacity">
+                                <Eye className="h-3 w-3" />
+                                <span>点击打开</span>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        
+                        {getCategoryName(work.category) && (
+                          <Badge variant="outline" className="text-xs mb-2">{getCategoryName(work.category)}</Badge>
+                        )}
+                        
                         {work.description && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                             {work.description}
@@ -1337,7 +1415,11 @@ export default function HomePage() {
                                 key={item.id}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setPreviewItem({ ...item, allImages: work.work_items?.filter(i => i.type === 'image' && i.url) || [] } as any);
+                                  setPreviewImageIndex(0);
+                                  setPreviewItem({ 
+                                    ...item, 
+                                    allImages: work.work_items?.filter(i => i.type === 'image' && i.url) || [] 
+                                  } as any);
                                 }}
                                 className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
                               >
@@ -1352,37 +1434,9 @@ export default function HomePage() {
                             )}
                           </div>
                         )}
-                        
-                        {/* 文件类型标识 */}
-                        {hasFiles && (
-                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              {work.work_items?.find(item => item.type === 'video') && (
-                                <span className="flex items-center gap-1">
-                                  <Video className="h-3 w-3" /> 视频
-                                </span>
-                              )}
-                              {work.work_items?.find(item => item.type === 'pdf') && (
-                                <span className="flex items-center gap-1">
-                                  <FileText className="h-3 w-3" /> PDF
-                                </span>
-                              )}
-                              {work.work_items?.find(item => item.type === 'ppt') && (
-                                <span className="flex items-center gap-1">
-                                  <Presentation className="h-3 w-3" /> PPT
-                                </span>
-                              )}
-                              {work.work_items?.find(item => item.type === 'image') && (
-                                <span className="flex items-center gap-1">
-                                  <ImageIcon className="h-3 w-3" /> 图片
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
-                  );
+                    );
                   })}
                   
                   {/* 填充右侧距离 */}
