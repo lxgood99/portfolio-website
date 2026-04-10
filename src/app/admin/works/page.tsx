@@ -145,22 +145,21 @@ function FileItemRow({
         )}
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
-        {item.id && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onEdit}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            title="编辑封面和备注"
-          >
-            <Edit2 className="h-4 w-4 text-blue-500" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onEdit}
+          className="opacity-100 hover:opacity-80 transition-opacity"
+          title="编辑封面和备注"
+        >
+          <Edit2 className="h-4 w-4 text-blue-500" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={onRemove}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          className="opacity-100 hover:opacity-80 transition-opacity"
+          title="删除作品"
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
