@@ -3,8 +3,7 @@ import { S3Storage } from 'coze-coding-dev-sdk';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 
 // 配置路由选项
-export const runtime = 'nodejs';
-export const maxDuration = 300; // 5分钟超时，支持大文件上传
+export const dynamic = 'force-dynamic';
 
 // 初始化对象存储
 const storage = new S3Storage({

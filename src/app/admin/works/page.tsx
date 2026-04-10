@@ -330,8 +330,22 @@ export default function AdminWorksPage() {
       formData.append('title', file.name.replace(/\.[^.]+$/, ''));
       formData.append('category', categoryType);
 
-      const res = await fetch('/api/works', { method: 'POST', body: formData });
-      const data = await res.json();
+      const res = await fetch('/api/works', { 
+        method: 'POST', 
+        body: formData,
+        signal: AbortSignal.timeout(300000) // 5分钟超时
+      });
+      
+      // 确保响应是JSON
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error('响应不是JSON:', text.substring(0, 200));
+        alert('上传失败：服务器响应格式错误');
+        return;
+      }
       
       if (data.success) {
         alert('上传成功！');
@@ -341,7 +355,11 @@ export default function AdminWorksPage() {
       }
     } catch (e) {
       console.error('上传失败', e);
-      alert('上传失败');
+      if (e instanceof Error && e.name === 'TimeoutError') {
+        alert('上传超时，请重试');
+      } else {
+        alert('上传失败，请重试');
+      }
     }
   };
 
