@@ -197,6 +197,7 @@ export default function WorksAdminPage() {
   useAdminAuth();
   const { startUpload, updateProgress, uploadSuccess, uploadError } = useUpload();
   
+  const [mounted, setMounted] = useState(false);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [works, setWorks] = useState<WorkItem[]>([]);
@@ -218,6 +219,10 @@ export default function WorksAdminPage() {
   const [workSummary, setWorkSummary] = useState('');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -226,19 +231,22 @@ export default function WorksAdminPage() {
   );
 
   // 加载分类
-  const loadCategories = useCallback(async (setDefaultCategory: boolean = true) => {
+  const loadCategories = useCallback(async () => {
+    setIsLoading(true);
     try {
       const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         setCategories(data.data);
         // 默认设置第一个分类
-        if (setDefaultCategory && data.data.length > 0) {
+        if (data.data.length > 0) {
           setActiveCategory(data.data[0].category_type);
         }
       }
     } catch (error) {
       console.error('加载分类失败:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -253,22 +261,24 @@ export default function WorksAdminPage() {
       }
       const data = await res.json();
       if (data?.success) {
-        setWorks(data.data.map((item: WorkItem & { type: string }) => ({
+        setWorks(data.data.map((item: WorkItem) => ({
           ...item,
           type: item.type === 'pdf' ? 'ppt' : item.type, // 兼容旧数据
         })));
       }
     } catch (error) {
       console.error('加载作品失败:', error);
-      setWorks([]); // 确保出错时清空列表，而不是留下旧数据
+      setWorks([]); // 确保出错时清空列表
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    if (mounted) {
+      loadCategories();
+    }
+  }, [mounted, loadCategories]);
 
   useEffect(() => {
     if (activeCategory) {
@@ -611,6 +621,15 @@ export default function WorksAdminPage() {
     }
   };
 
+  // 显示加载状态
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
@@ -622,7 +641,14 @@ export default function WorksAdminPage() {
           </Button>
         </div>
 
-        {/* 分类标签 */}
+        {/* 加载状态 */}
+        {isLoading && categories.length === 0 && (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        )}
+
+
         <div className="mb-6">
           <div className="flex items-center gap-2 flex-wrap">
             {categories.map((cat) => (
@@ -718,7 +744,7 @@ export default function WorksAdminPage() {
                 </div>
               </SortableContext>
             </DndContext>
-          )}
+              )}
         </div>
 
         {/* 说明 */}
@@ -726,7 +752,7 @@ export default function WorksAdminPage() {
           <h3 className="font-medium mb-2">使用说明</h3>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>• 拖拽文件可以调整顺序</li>
-            <li>• 点击分类右上角的图标可以修改分类名称</li>
+            <li>• 点击作品卡片的编辑按钮可以修改封面和简介</li>
             <li>• 图片建议尺寸：1920x1080</li>
             <li>• 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
           </ul>

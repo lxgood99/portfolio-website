@@ -38,7 +38,7 @@ interface Category {
 }
 
 export default function CategoriesPage() {
-  const isAuthenticated = useAdminAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -47,6 +47,11 @@ export default function CategoriesPage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 加载分类
   const loadCategories = useCallback(async () => {
@@ -65,10 +70,10 @@ export default function CategoriesPage() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (mounted && isAuthenticated) {
       loadCategories();
     }
-  }, [isAuthenticated, loadCategories]);
+  }, [mounted, isAuthenticated, loadCategories]);
 
   // 移动分类
   const moveCategory = async (index: number, direction: 'up' | 'down') => {
@@ -214,8 +219,13 @@ export default function CategoriesPage() {
     return <Layers className="h-4 w-4" />;
   };
 
-  if (!isAuthenticated) {
-    return null;
+  // 显示加载状态
+  if (!mounted || authLoading || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
   }
 
   return (

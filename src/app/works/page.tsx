@@ -123,6 +123,7 @@ function WorkCard({
 }
 
 export default function WorksPage() {
+  const [mounted, setMounted] = useState(false);
   const [categories, setCategories] = useState<WorkCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [works, setWorks] = useState<WorkItem[]>([]);
@@ -136,23 +137,32 @@ export default function WorksPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef(0);
+  const categoriesLoadedRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 加载分类
   const loadCategories = useCallback(async () => {
+    if (categoriesLoadedRef.current) return;
+    categoriesLoadedRef.current = true;
+    
     try {
       const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         const visibleCats = data.data.filter((c: WorkCategory) => c.is_visible);
         setCategories(visibleCats);
-        if (visibleCats.length > 0 && !activeCategory) {
+        if (visibleCats.length > 0) {
           setActiveCategory(visibleCats[0].category_type);
         }
       }
     } catch (error) {
       console.error('加载分类失败:', error);
+      categoriesLoadedRef.current = false;
     }
-  }, [activeCategory]);
+  }, []);
 
   // 加载作品
   const loadWorks = useCallback(async (category: string) => {
@@ -300,6 +310,17 @@ export default function WorksPage() {
   };
 
   const currentCategoryName = categories.find(c => c.category_type === activeCategory)?.display_name || '作品';
+
+  // 加载状态
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">

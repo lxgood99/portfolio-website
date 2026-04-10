@@ -95,7 +95,7 @@ export async function uploadWithProgress(
           const percentComplete = Math.round((event.loaded / event.total) * 100);
           try {
             onProgress(percentComplete);
-          } catch (e) {
+          } catch {
             // 忽略 progress 回调错误
           }
         }
@@ -133,7 +133,7 @@ export async function uploadWithProgress(
       // 发送请求
       xhr.open('POST', '/api/upload', true);
       xhr.send(formData);
-    } catch (error) {
+    } catch {
       resolve({ success: false, error: '上传初始化失败' });
     }
   });
