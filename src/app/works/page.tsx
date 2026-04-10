@@ -155,7 +155,10 @@ export default function WorksPage() {
         const visibleCats = data.data.filter((c: WorkCategory) => c.is_visible);
         setCategories(visibleCats);
         if (visibleCats.length > 0) {
-          setActiveCategory(visibleCats[0].category_type);
+          // 优先选中图片分类，如果没有图片则选第一个
+          const imageCat = visibleCats.find((c: WorkCategory) => c.category_type === 'image');
+          const defaultCat = imageCat || visibleCats[0];
+          setActiveCategory(defaultCat.category_type);
         }
       }
     } catch (error) {

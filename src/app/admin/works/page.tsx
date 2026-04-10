@@ -252,9 +252,11 @@ export default function WorksAdminPage() {
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         setCategories(data.data);
-        // 默认设置第一个分类
+        // 优先选中图片分类，如果没有图片则选第一个
         if (data.data.length > 0) {
-          setActiveCategory(data.data[0].category_type);
+          const imageCat = data.data.find((c: WorkCategory) => c.category_type === 'image');
+          const defaultCat = imageCat || data.data[0];
+          setActiveCategory(defaultCat.category_type);
         }
       }
     } catch (error) {
