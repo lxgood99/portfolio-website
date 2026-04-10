@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
-import type { Work } from '@/storage/database/shared/schema';
 
 // GET - 获取单个作品
 export async function GET(
@@ -10,18 +9,24 @@ export async function GET(
   try {
     const { id } = await params;
     const client = getSupabaseClient();
-
-    const { data, error } = await client
+    
+    const { data: work, error } = await client
       .from('works')
-      .select('*, work_items(*)')
-      .eq('id', parseInt(id))
+      .select('*')
+      .eq('id', id)
       .single();
 
     if (error) {
       throw new Error(`获取作品失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as Work });
+    const { data: items } = await client
+      .from('work_items')
+      .select('*')
+      .eq('work_id', id)
+      .order('order', { ascending: true });
+
+    return NextResponse.json({ success: true, data: { ...work, items } });
   } catch (error) {
     console.error('获取作品错误:', error);
     return NextResponse.json(
@@ -31,8 +36,8 @@ export async function GET(
   }
 }
 
-// PUT - 更新作品
-export async function PUT(
+// PATCH - 更新作品
+export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -41,13 +46,18 @@ export async function PUT(
     const body = await request.json();
     const client = getSupabaseClient();
 
+    const updateData: Record<string, unknown> = {};
+    
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.order !== undefined) updateData.order = body.order;
+    if (body.cover_key !== undefined) updateData.cover_key = body.cover_key;
+
     const { data, error } = await client
       .from('works')
-      .update({
-        ...body,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', parseInt(id))
+      .update(updateData)
+      .eq('id', id)
       .select()
       .single();
 
@@ -55,7 +65,7 @@ export async function PUT(
       throw new Error(`更新作品失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as Work });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('更新作品错误:', error);
     return NextResponse.json(
@@ -74,10 +84,32 @@ export async function DELETE(
     const { id } = await params;
     const client = getSupabaseClient();
 
+    // 先获取作品文件
+    const { data: items } = await client
+      .from('work_items')
+      .select('file_key, cover_key')
+      .eq('work_id', id);
+
+    // 删除存储文件
+    if (items) {
+      for (const item of items) {
+        if (item.file_key) {
+          await client.storage.from('portfolio').remove([item.file_key]);
+        }
+        if (item.cover_key) {
+          await client.storage.from('portfolio').remove([item.cover_key]);
+        }
+      }
+    }
+
+    // 删除作品文件记录
+    await client.from('work_items').delete().eq('work_id', id);
+
+    // 删除作品记录
     const { error } = await client
       .from('works')
       .delete()
-      .eq('id', parseInt(id));
+      .eq('id', id);
 
     if (error) {
       throw new Error(`删除作品失败: ${error.message}`);
