@@ -1,59 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Storage } from 'coze-coding-dev-sdk';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
-
-// 配置路由选项
-export const dynamic = 'force-dynamic';
-
-// 初始化对象存储
-const storage = new S3Storage({
-  endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-  accessKey: '',
-  secretKey: '',
-  bucketName: process.env.COZE_BUCKET_NAME,
-  region: 'cn-beijing',
-});
-
-// 文件大小限制（字节）
-const FILE_SIZE_LIMITS = {
-  image: 10 * 1024 * 1024,
-  video: 300 * 1024 * 1024,
-  other: 150 * 1024 * 1024,
-};
-
-// 格式化文件大小
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-}
+import type { Work } from '@/storage/database/shared/schema';
 
 // GET - 获取所有作品
 export async function GET() {
   try {
     const client = getSupabaseClient();
-    
-    const { data: works, error: worksError } = await client
+    const { data, error } = await client
       .from('works')
-      .select('*')
+      .select('*, work_items(*)')
       .order('order', { ascending: true });
 
-    if (worksError) {
-      throw new Error(`获取作品失败: ${worksError.message}`);
+    if (error) {
+      throw new Error(`获取作品失败: ${error.message}`);
     }
 
-    const { data: items } = await client
-      .from('work_items')
-      .select('*')
-      .order('order', { ascending: true });
-
-    const worksWithItems = works.map(work => ({
-      ...work,
-      items: (items || []).filter(item => item.work_id === work.id),
-    }));
-
-    return NextResponse.json({ success: true, data: worksWithItems });
+    return NextResponse.json({ success: true, data: data as Work[] });
   } catch (error) {
     console.error('获取作品错误:', error);
     return NextResponse.json(
@@ -66,96 +28,50 @@ export async function GET() {
 // POST - 创建作品
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json();
     const client = getSupabaseClient();
-    const formData = await request.formData();
-    
-    const file = formData.get('file') as File;
-    const title = formData.get('title') as string;
-    const category = formData.get('category') as string;
-    
-    if (!file || !title || !category) {
-      return NextResponse.json(
-        { success: false, error: '缺少必要参数' },
-        { status: 400 }
-      );
-    }
 
-    // 检查文件大小
-    let limit = FILE_SIZE_LIMITS.other;
-    if (file.type.startsWith('image/')) {
-      limit = FILE_SIZE_LIMITS.image;
-    } else if (file.type.startsWith('video/')) {
-      limit = FILE_SIZE_LIMITS.video;
-    }
-    
-    if (file.size > limit) {
-      return NextResponse.json(
-        { success: false, error: `文件过大：${formatFileSize(file.size)}，最大允许 ${formatFileSize(limit)}` },
-        { status: 413 }
-      );
-    }
-
-    // 上传文件到对象存储
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const fileName = `work/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-
-    const fileKey = await storage.uploadFile({
-      fileContent: buffer,
-      fileName: fileName,
-      contentType: file.type,
-    });
-
-    // 获取文件URL
-    const url = await storage.generatePresignedUrl({
-      key: fileKey,
-      expireTime: 86400 * 30,
-    });
-
-    // 确定文件类型
-    let fileType = 'image';
-    if (file.type.startsWith('video/')) {
-      fileType = 'video';
-    } else if (file.type.includes('pdf') || file.type.includes('ppt')) {
-      fileType = 'pdf';
-    }
-
-    // 创建作品记录
-    const { data: work, error: workError } = await client
+    const { data, error } = await client
       .from('works')
-      .insert({
-        title,
-        description: '',
-        category,
-        order: 0,
-      })
+      .insert(body)
       .select()
       .single();
 
-    if (workError) {
-      throw new Error(`创建作品失败: ${workError.message}`);
+    if (error) {
+      throw new Error(`创建作品失败: ${error.message}`);
     }
 
-    // 创建作品文件记录
-    const { error: itemError } = await client
-      .from('work_items')
-      .insert({
-        work_id: work.id,
-        type: fileType,
-        title: file.name,
-        file_key: fileKey,
-        summary: '',
-        order: 0,
-        category,
-      });
-
-    if (itemError) {
-      throw new Error(`创建作品文件失败: ${itemError.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: { ...work, url, file_key: fileKey } });
+    return NextResponse.json({ success: true, data: data as Work });
   } catch (error) {
     console.error('创建作品错误:', error);
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - 批量更新排序
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { items } = body as { items: Array<{ id: number; order: number }> };
+    const client = getSupabaseClient();
+
+    for (const item of items) {
+      const { error } = await client
+        .from('works')
+        .update({ order: item.order, updated_at: new Date().toISOString() })
+        .eq('id', item.id);
+
+      if (error) {
+        throw new Error(`更新排序失败: ${error.message}`);
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('更新排序错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

@@ -373,8 +373,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [categories] = useState<string[]>(['图片', 'PPT/PDF', '视频']);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [categories, setCategories] = useState<string[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeSkillCategory, setActiveSkillCategory] = useState<string>('办公软件');
 
@@ -553,8 +553,11 @@ export default function HomePage() {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
         setWorks(worksWithUrls);
         
-        // 从作品数据中提取分类，但不需要添加 'all' 选项
-        // 分类已经在 useState 中设置了默认值 ['图片', 'PPT/PDF', '视频']
+        const cats = new Set<string>();
+        worksWithUrls.forEach(w => {
+          if (w.category) cats.add(w.category);
+        });
+        setCategories(['all', ...Array.from(cats)]);
       }
 
       if (moduleOrdersData.success) {
@@ -1107,15 +1110,15 @@ export default function HomePage() {
             {/* 手机端：横向滚动布局 */}
             <div className="md:hidden space-y-6">
               {categories.map((cat) => {
-                const categoryWorks = works.filter(w => w.category === cat || (cat === '图片' && !w.category));
+                const categoryWorks = cat === 'all' ? works : works.filter(w => w.category === cat);
                 if (categoryWorks.length === 0) return null;
                 
                 return (
                   <div key={cat} className="space-y-3">
-                    {/* 分类标题 */}
+                    {/* 分类标题 + 滑动提示 */}
                     <div className="flex items-center justify-between px-1">
                       <h3 className="font-semibold text-base text-muted-foreground flex items-center gap-2">
-                        {cat}
+                        {cat === 'all' ? '全部作品' : cat}
                         <ChevronRight className="h-4 w-4 text-primary" />
                       </h3>
                       <span className="text-xs text-muted-foreground">
@@ -1187,27 +1190,25 @@ export default function HomePage() {
             
             {/* 电脑端：保持原有网格布局 */}
             <div className="hidden md:block">
-              {/* 分类筛选标签 */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                      selectedCategory === cat
-                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105 ring-2 ring-primary/30'
-                        : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              {categories.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                        selectedCategory === cat
+                          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                          : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                      }`}
+                    >
+                      {cat === 'all' ? '全部' : cat}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(!selectedCategory 
-                  ? works 
-                  : works.filter(w => w.category === selectedCategory)
-                ).map((work) => (
+                {(selectedCategory === 'all' ? works : works.filter(w => w.category === selectedCategory)).map((work) => (
                   <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
                     {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                       <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />

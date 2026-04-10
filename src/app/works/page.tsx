@@ -1,17 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  X, 
-  ZoomIn,
-  Image as ImageIcon,
-  Video,
-  Play,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { FolderOpen, FileText, ArrowLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { X } from 'lucide-react';
+import { PDFViewer } from '@/components/PDFViewer';
 
 interface WorkItem {
   id: number;
@@ -19,320 +15,359 @@ interface WorkItem {
   title: string;
   file_key: string;
   url?: string;
-  summary?: string;
+  description?: string;
+  is_carousel_item?: boolean;
   order: number;
-  category: string;
 }
 
 interface Work {
   id: number;
   title: string;
   description: string;
+  description_align?: string;
   category: string;
+  tags: string[];
+  display_mode?: string;
+  cover_image_key?: string;
+  coverImageUrl?: string;
   order: number;
-  items: WorkItem[];
+  work_items?: WorkItem[];
+  carouselItems?: WorkItem[];
 }
 
-interface Category {
-  id: number;
-  category_type: string;
-  display_name: string;
-  sort_order: number;
-  is_visible: boolean;
-}
-
-export default function WorksPage() {
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [allWorks, setAllWorks] = useState<Work[]>([]);
-  const [displayWorks, setDisplayWorks] = useState<Work[]>([]);
-  const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
+// 作品集轮播组件
+function WorkCarousel({ images }: { images: WorkItem[]; onImageClick: (item: WorkItem) => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [carouselReady, setCarouselReady] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
-  const initialized = useRef(false);
+  const touchStartX = useRef(0);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
 
-  // 加载数据
-  useEffect(() => {
-    if (!mounted || initialized.current) return;
-    initialized.current = true;
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
 
-    async function init() {
-      setLoading(true);
-      try {
-        const [catRes, workRes] = await Promise.all([
-          fetch('/api/work-categories'),
-          fetch('/api/works'),
-        ]);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
 
-        const catData = await catRes.json();
-        const workData = await workRes.json();
-
-        if (catData.success && catData.data) {
-          const sorted = catData.data
-            .filter((c: Category) => c.is_visible)
-            .sort((a: Category, b: Category) => a.sort_order - b.sort_order);
-          setCategories(sorted);
-        }
-
-        if (workData.success && workData.data) {
-          setAllWorks(workData.data);
-        }
-      } catch (e) {
-        console.error('加载失败', e);
-      } finally {
-        setLoading(false);
-      }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) handleNext();
+      else handlePrev();
     }
+  };
 
-    init();
-  }, [mounted]);
+  const currentImage = images[currentIndex];
 
-  // 根据分类过滤并加载URL
+  return (
+    <div 
+      className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {currentImage?.url && (
+        <img 
+          src={currentImage.url} 
+          alt={currentImage.title || '作品图片'} 
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      )}
+      
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  idx === currentIndex ? 'bg-white w-4' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function getFileIcon(type: string) {
+  switch (type) {
+    case 'pdf':
+      return <FileText className="h-4 w-4" />;
+    case 'image':
+      return <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>;
+    case 'video':
+      return <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+    default:
+      return <FileText className="h-4 w-4" />;
+  }
+}
+
+export default function WorksListPage() {
+  const [works, setWorks] = useState<Work[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewItem, setPreviewItem] = useState<WorkItem | null>(null);
+
   useEffect(() => {
-    if (!mounted || categories.length === 0) return;
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // loadData 在组件生命周期内不会变化
 
-    const cat = categories[activeIndex];
-    if (!cat) return;
+  const loadData = async () => {
+    try {
+      const worksRes = await fetch('/api/works');
+      const worksData = worksRes.ok ? await worksRes.json() : null;
 
-    const filtered = allWorks.filter((w: Work) =>
-      w.items && w.items.some((item: WorkItem) => item.category === cat.category_type)
-    );
+      if (worksData.success && worksData.data) {
+        const worksWithUrls = await loadWorkItemsUrls(worksData.data);
+        setWorks(worksWithUrls);
+        
+        const cats = new Set<string>();
+        worksWithUrls.forEach(w => {
+          if (w.category) cats.add(w.category);
+        });
+        setCategories(['all', ...Array.from(cats)]);
+      }
+    } catch (error) {
+      console.error('加载数据失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // 加载URL
-    const loadUrls = async () => {
-      setDisplayWorks([]);
-      for (const work of filtered) {
-        for (const item of work.items) {
-          if (!item.url && item.file_key) {
-            try {
-              const res = await fetch('/api/file-url', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key: item.file_key }),
-              });
-              const data = await res.json();
-              if (data.success) {
-                item.url = data.data.url;
-              }
-            } catch {}
+  const loadWorkItemsUrls = async (worksList: Work[]): Promise<Work[]> => {
+    const updatedWorks = await Promise.all(
+      worksList.map(async (work) => {
+        let coverImageUrl = '';
+        if (work.cover_image_key) {
+          try {
+            const res = await fetch('/api/file-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: work.cover_image_key }),
+            });
+            const data = await res.json();
+            if (data.success) coverImageUrl = data.data.url;
+          } catch (e) {
+            console.error('加载封面URL失败:', e);
           }
         }
-      }
-      setDisplayWorks(filtered.sort((a: Work, b: Work) => a.order - b.order));
-      setCurrentIndex(0);
-      setCarouselReady(false);
-      setTimeout(() => setCarouselReady(true), 100);
-    };
 
-    loadUrls();
-  }, [mounted, categories, activeIndex, allWorks]);
+        const carouselItems: WorkItem[] = [];
+        const regularItems: WorkItem[] = [];
 
-  // 自动轮播
-  useEffect(() => {
-    if (carouselReady && displayWorks.length > 1) {
-      autoPlayRef.current = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % displayWorks.length);
-      }, 5000);
-    }
-    return () => {
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    };
-  }, [carouselReady, displayWorks.length]);
+        if (work.work_items && work.work_items.length > 0) {
+          for (const item of work.work_items) {
+            if (item.file_key) {
+              try {
+                const res = await fetch('/api/file-url', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ key: item.file_key }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                  const itemWithUrl = { ...item, url: data.data.url };
+                  if (item.is_carousel_item) {
+                    carouselItems.push(itemWithUrl);
+                  } else {
+                    regularItems.push(itemWithUrl);
+                  }
+                }
+              } catch (e) {
+                console.error('加载文件URL失败:', e);
+              }
+            }
+          }
+        }
 
-  // 滚动到当前卡片
-  useEffect(() => {
-    if (scrollRef.current && carouselReady && displayWorks.length > 0) {
-      const cardWidth = 296;
-      scrollRef.current.scrollTo({ left: currentIndex * cardWidth, behavior: 'smooth' });
-    }
-  }, [currentIndex, carouselReady, displayWorks.length]);
-
-  const handleTabChange = (index: number) => {
-    if (index === activeIndex) return;
-    setActiveIndex(index);
-    setCurrentIndex(0);
+        return {
+          ...work,
+          coverImageUrl,
+          carouselItems,
+          work_items: regularItems,
+        };
+      })
+    );
+    return updatedWorks;
   };
 
-  const handlePreview = (item: WorkItem, index: number) => {
-    setPreviewItem(item);
-    setCurrentIndex(index);
-  };
+  const filteredWorks = selectedCategory === 'all' 
+    ? works 
+    : works.filter(w => w.category === selectedCategory);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'image': return <ImageIcon className="h-8 w-8 text-green-500" />;
-      case 'video': return <Play className="h-8 w-8 text-purple-500" />;
-      default: return <FileText className="h-8 w-8 text-orange-500" />;
-    }
-  };
-
-  if (!mounted) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  const currentCat = categories[activeIndex];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-slate-800 dark:text-white mb-8">
-          作品集
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      {/* 顶部导航 */}
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+            <div className="flex items-center gap-2">
+              <FolderOpen className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">作品集</h1>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        {/* 分类标签 */}
-        {categories.length > 0 && (
-          <div className="flex justify-center gap-3 mb-10 flex-wrap">
-            {categories.map((cat, idx) => (
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* 分类筛选 */}
+        {categories.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {categories.map((cat) => (
               <button
-                key={cat.id}
-                onClick={() => handleTabChange(idx)}
-                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  idx === activeIndex
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 -translate-y-0.5'
-                    : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 hover:-translate-y-0.5'
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                  selectedCategory === cat
+                    ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md scale-105'
+                    : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
                 }`}
               >
-                {cat.display_name}
+                {cat === 'all' ? '全部' : cat}
               </button>
             ))}
           </div>
         )}
 
-        {/* 内容区 */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-            <p className="text-slate-500">加载中...</p>
-          </div>
-        ) : displayWorks.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-              <ImageIcon className="h-10 w-10 text-slate-400" />
-            </div>
-            <p className="text-slate-500 dark:text-slate-400">
-              {currentCat ? `暂无${currentCat.display_name}作品` : '暂无作品'}
-            </p>
+        {/* 作品数量统计 */}
+        <p className="text-sm text-muted-foreground mb-4">
+          共 {filteredWorks.length} 个作品
+        </p>
+
+        {/* 作品列表 */}
+        {filteredWorks.length === 0 ? (
+          <div className="text-center py-12">
+            <FolderOpen className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground">暂无作品</p>
           </div>
         ) : (
-          <div className="relative">
-            {/* 横向滚动 */}
-            <div 
-              ref={scrollRef}
-              className="flex gap-5 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#94a3b8 transparent' }}
-            >
-              {displayWorks.map((work, idx) => {
-                const firstItem = work.items[0];
-                return (
-                  <div
-                    key={work.id}
-                    className="flex-shrink-0 w-[280px] snap-start cursor-pointer group"
-                    onClick={() => firstItem && handlePreview(firstItem, idx)}
-                  >
-                    <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full">
-                      <div className="aspect-[4/3] relative overflow-hidden bg-slate-100 dark:bg-slate-700">
-                        {firstItem?.url ? (
-                          <img 
-                            src={firstItem.url} 
-                            alt={work.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center">
-                            {firstItem ? getTypeIcon(firstItem.type) : <ImageIcon className="h-10 w-10 text-slate-400" />}
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                          <ZoomIn className="h-9 w-9 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-medium text-slate-800 dark:text-white truncate">
-                          {work.title || '未命名作品'}
-                        </h3>
-                        {work.description && (
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                            {work.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredWorks.map((work) => (
+              <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+                {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
+                  <WorkCarousel images={work.carouselItems} onImageClick={(item) => setPreviewItem(item)} />
+                ) : work.coverImageUrl ? (
+                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 cursor-pointer overflow-hidden">
+                    {work.work_items?.find(item => item.type === 'video' && item.url) ? (
+                      <video src={work.coverImageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
+                    ) : (
+                      <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300" />
                   </div>
-                );
-              })}
-            </div>
-
-            {/* 导航按钮 */}
-            {displayWorks.length > 1 && (
-              <>
-                <button
-                  onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayWorks.length - 1)}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white dark:bg-slate-700 rounded-full p-2.5 shadow-lg hover:shadow-xl transition-shadow z-10"
-                >
-                  <ChevronLeft className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                </button>
-                <button
-                  onClick={() => setCurrentIndex(p => p < displayWorks.length - 1 ? p + 1 : 0)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white dark:bg-slate-700 rounded-full p-2.5 shadow-lg hover:shadow-xl transition-shadow z-10"
-                >
-                  <ChevronRight className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* 指示器 */}
-        {displayWorks.length > 1 && (
-          <div className="flex justify-center gap-2 mt-5">
-            {displayWorks.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentIndex(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === currentIndex ? 'bg-blue-500 w-6' : 'bg-slate-300 dark:bg-slate-600 w-2'
-                }`}
-              />
+                ) : (
+                  <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:from-slate-800 flex items-center justify-center">
+                    <FileText className="h-12 w-12 text-muted-foreground/30" />
+                  </div>
+                )}
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-lg">{work.title}</h3>
+                    {work.category && <Badge variant="outline" className="text-xs shrink-0">{work.category}</Badge>}
+                  </div>
+                  {work.description && (
+                    <p 
+                      className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap"
+                      style={{ textAlign: (work.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
+                    >
+                      {work.description}
+                    </p>
+                  )}
+                  {work.tags && work.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {work.tags.slice(0, 4).map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  {work.display_mode !== 'carousel' && work.work_items && work.work_items.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-3 border-t">
+                      {work.work_items.slice(0, 4).map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setPreviewItem(item)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
+                        >
+                          {getFileIcon(item.type)}
+                          <span className="truncate max-w-[80px]">{item.title || item.type}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
-      </div>
+      </main>
 
-      {/* 预览 */}
+      {/* 预览模态框 */}
       {previewItem && (
-        <div 
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-          onClick={() => setPreviewItem(null)}
-        >
-          <button
-            onClick={() => setPreviewItem(null)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-          >
-            <X className="h-8 w-8" />
-          </button>
-          <div onClick={e => e.stopPropagation()}>
-            {previewItem.type === 'image' && (
-              <img src={previewItem.url} alt="" className="max-w-full max-h-[90vh] object-contain rounded-lg" />
-            )}
-            {previewItem.type === 'video' && (
-              <video src={previewItem.url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg" />
-            )}
-            {(previewItem.type === 'pdf' || previewItem.type === 'ppt') && (
-              <iframe src={previewItem.url} className="w-full max-w-4xl h-[90vh] rounded-lg bg-white" />
-            )}
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
+          <div className="relative max-w-5xl max-h-[90vh] w-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setPreviewItem(null)} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              {previewItem.type === 'pdf' && previewItem.url ? (
+                <div className="w-full h-[80vh]">
+                  <PDFViewer url={previewItem.url} title={previewItem.title} />
+                </div>
+              ) : previewItem.type === 'video' && previewItem.url ? (
+                <video 
+                  src={previewItem.url} 
+                  controls 
+                  autoPlay 
+                  className="max-w-full max-h-[80vh] rounded-lg"
+                />
+              ) : previewItem.type === 'image' && previewItem.url ? (
+                <img 
+                  src={previewItem.url} 
+                  alt={previewItem.title || '作品预览'} 
+                  className="max-w-full max-h-[80vh] rounded-lg"
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
+                  <p className="text-muted-foreground">无法预览此文件</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
