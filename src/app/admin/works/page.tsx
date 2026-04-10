@@ -500,13 +500,13 @@ export default function AdminWorksPage() {
 
         {/* 使用说明 */}
         <div className="mt-16 mb-8 px-6 py-5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-          <div className="text-center">
-            <p className="text-base font-medium text-slate-800 dark:text-white mb-3">使用说明</p>
+          <div>
+            <p className="text-base font-bold text-slate-800 dark:text-white mb-3">使用说明</p>
             <ul className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
-              <li>拖拽作品卡片可调整显示顺序</li>
-              <li>点击编辑按钮可修改作品标题、简介和分类</li>
-              <li>图片建议尺寸：1920x1080</li>
-              <li>图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
+              <li>• 拖拽作品卡片可调整显示顺序</li>
+              <li>• 点击编辑按钮可修改作品标题、简介和分类</li>
+              <li>• 图片建议尺寸：1920x1080</li>
+              <li>• 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB</li>
             </ul>
           </div>
         </div>
