@@ -14,10 +14,8 @@ const nextConfig: NextConfig = {
     ],
   },
   // API route body 大小限制（支持最大 500MB 文件上传）
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
-    },
+  experimental: {
+    largePageDataBytes: 500 * 1024 * 1024, // 500MB
   },
 };
 

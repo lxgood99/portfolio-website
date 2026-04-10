@@ -4,6 +4,10 @@ import { S3Storage } from 'coze-coding-dev-sdk';
 // 配置路由选项
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5分钟超时，支持大文件上传
+export const dynamic = 'force-dynamic'; // 禁用缓存，确保每次请求都处理
+
+// 允许较大的请求体大小（500MB）
+export const preferredRegion = 'auto';
 
 // 文件大小限制配置（单位：字节）
 const FILE_SIZE_LIMITS = {
