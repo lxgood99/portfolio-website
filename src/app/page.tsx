@@ -1230,6 +1230,11 @@ export default function HomePage() {
                     // 判断封面图的文件类型
                     const coverFileType = getFileTypeFromKey(work.cover_image_key);
                     
+                    // 判断作品是否有上传的文件（PDF/视频/其他非图片文件）
+                    const hasUploadedFiles = work.work_items?.some(item => 
+                      ['pdf', 'ppt', 'video', 'other'].includes(item.type)
+                    ) || ['pdf', 'ppt', 'video', 'other'].includes(coverFileType);
+                    
                     // 获取作品的所有文件，用于预览导航
                     const allImages = work.display_mode === 'carousel' 
                       ? (work.carouselItems || [])
@@ -1237,39 +1242,40 @@ export default function HomePage() {
                     
                     // 确定点击卡片时打开哪个文件
                     const getFirstPreviewItem = () => {
-                      // 优先视频
-                      const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
-                      if (videoItem) return { ...videoItem, workId: work.id, allImages };
+                      // 如果有上传的文件，优先打开文件（视频 > PDF/PPT > 其他文件）
+                      if (hasUploadedFiles) {
+                        // 优先视频
+                        const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                        if (videoItem) return { ...videoItem, workId: work.id, allImages };
+                        
+                        // 然后是 PDF/PPT
+                        const docItem = work.work_items?.find(item => ['pdf', 'ppt'].includes(item.type) && item.url);
+                        if (docItem) return { ...docItem, workId: work.id, allImages };
+                        
+                        // 然后是其他文件
+                        const otherItem = work.work_items?.find(item => ['other'].includes(item.type) && item.url);
+                        if (otherItem) return { ...otherItem, workId: work.id, allImages };
+                      }
                       
-                      // 其次轮播图片
+                      // 没有上传的文件时，打开轮播图片或封面
+                      // 轮播图片优先
                       if (work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0) {
                         return { ...work.carouselItems[0], workId: work.id, allImages: work.carouselItems, index: 0 };
                       }
                       
-                      // 然后是封面文件（根据文件类型）- 优先使用 coverImageUrl
-                      if (work.cover_image_key) {
-                        const previewUrl = work.coverImageUrl || '';
-                        if (previewUrl) {
-                          return { 
-                            id: work.id, 
-                            type: coverFileType, 
-                            title: work.title, 
-                            file_key: work.cover_image_key,
-                            url: previewUrl,
-                            workId: work.id, 
-                            allImages: allImages.length > 0 ? allImages : [],
-                            index: 0
-                          };
-                        }
+                      // 然后是封面图片
+                      if (work.cover_image_key && work.coverImageUrl) {
+                        return { 
+                          id: work.id, 
+                          type: 'image', 
+                          title: work.title, 
+                          file_key: work.cover_image_key,
+                          url: work.coverImageUrl,
+                          workId: work.id, 
+                          allImages: allImages.length > 0 ? allImages : [],
+                          index: 0
+                        };
                       }
-                      
-                      // 然后是 work_items 中的 PDF
-                      const pdfItem = work.work_items?.find(item => (item.type === 'pdf' || item.type === 'ppt') && item.url);
-                      if (pdfItem) return { ...pdfItem, workId: work.id, allImages };
-                      
-                      // 最后是其他文件
-                      const otherItem = work.work_items?.find(item => item.url);
-                      if (otherItem) return { ...otherItem, workId: work.id, allImages };
                       
                       return null;
                     };
@@ -1295,9 +1301,12 @@ export default function HomePage() {
                       style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
                       onClick={handleCardClick}
                     >
-                      {/* 封面图 - 禁止点击 */}
+                      {/* 封面图 - 根据是否有文件决定是否可点击 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
-                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                        <div 
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
+                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                        >
                           <img 
                             src={work.carouselItems[0].url} 
                             alt={work.title}
@@ -1309,13 +1318,32 @@ export default function HomePage() {
                               +{work.carouselItems.length - 1}
                             </div>
                           )}
+                          {/* 有上传文件时显示遮罩提示 */}
+                          {hasUploadedFiles && (
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center transition-colors">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                                点击下方标题打开文件
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : work.coverImageUrl ? (
-                        <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                        <div 
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
+                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                        >
                           {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url) ? (
                             <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
                           ) : (
                             <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
+                          )}
+                          {/* 有上传文件时显示遮罩提示 */}
+                          {hasUploadedFiles && (
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center transition-colors">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                                点击下方标题打开文件
+                              </div>
+                            </div>
                           )}
                         </div>
                       ) : (
