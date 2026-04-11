@@ -525,12 +525,13 @@ export default function WorksPage() {
         setUploadProgress(prev => Math.min(prev + 5, 90));
       }, 200);
       
-      console.log('[WorksPage] 开始上传文件:', file.name);
+      console.log('[WorksPage] 开始上传文件:', file.name, '大小:', file.size, '类型:', file.type);
       const fd = new FormData();
       fd.append('file', file);
       fd.append('type', 'work');
       
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      console.log('[WorksPage] 上传响应状态:', res.status);
       
       // 检查响应状态
       if (!res.ok) {
@@ -563,8 +564,8 @@ export default function WorksPage() {
         setUploadProgress(100);
         // 创建作品记录
         const fileName = file.name.replace(/\.[^/.]+$/, '');
-        console.log('[WorksPage] 创建作品记录:', { title: fileName, category_id: selectedCategoryId });
-        await fetch('/api/works', {
+        console.log('[WorksPage] 上传成功，开始创建作品记录:', { title: fileName, category_id: selectedCategoryId, cover_key: result.data.key });
+        const createRes = await fetch('/api/works', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -574,9 +575,17 @@ export default function WorksPage() {
             order: works.length,
           })
         });
+        console.log('[WorksPage] 创建作品响应:', createRes.status);
+        const createData = await createRes.json();
+        console.log('[WorksPage] 创建作品结果:', createData);
+        if (!createRes.ok) {
+          alert('作品创建失败：' + (createData.error || '未知错误'));
+          return;
+        }
         loadWorks();
         alert('上传成功！');
       } else {
+        console.error('[WorksPage] 上传失败:', result);
         alert('上传失败：' + (result.error || '未知错误'));
       }
     } catch (e) { console.error('上传失败:', e); alert('上传失败'); }
