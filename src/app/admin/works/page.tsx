@@ -20,7 +20,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, ArrowLeft, Plus, Pencil, Trash2, X, Upload, Image as ImageIcon, FolderOpen } from 'lucide-react';
+import { GripVertical, ArrowLeft, Plus, Pencil, Trash2, X, Upload, Image as ImageIcon, FolderOpen, FileText, Presentation, Film, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -59,6 +59,13 @@ interface Work {
   cover_image_key?: string;
   cover_image_url?: string;
   order: number;
+  work_items?: Array<{
+    id: number;
+    file_key: string;
+    url?: string;
+    title?: string;
+    type: string;
+  }>;
 }
 
 // 文件大小限制（字节）
@@ -319,7 +326,9 @@ export default function WorksPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showContent, setShowContent] = useState(false);
+  const [workFiles, setWorkFiles] = useState<Array<{ id?: number; file_key: string; url: string; name: string; type: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef2 = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -638,6 +647,70 @@ export default function WorksPage() {
     } finally { setIsUploading(false); setUploadProgress(0); }
   };
 
+  // 上传作品文件（PDF/视频等）
+  const handleFileUpload = async (file: File) => {
+    const valid = validateFileSize(file);
+    if (!valid.valid) { alert(valid.error); return; }
+    setIsUploading(true);
+    setUploadProgress(0);
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'work');
+      
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      
+      if (!res.ok) {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert(`上传失败：服务器返回错误 ${res.status}`);
+        return;
+      }
+      
+      let result;
+      try {
+        result = await res.json();
+      } catch {
+        clearInterval(progressInterval);
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert('上传失败：响应格式错误');
+        return;
+      }
+      
+      clearInterval(progressInterval);
+      
+      if (result.success) {
+        setUploadProgress(100);
+        // 判断文件类型
+        const ext = result.data.name.split('.').pop()?.toLowerCase() || '';
+        let fileType = 'other';
+        if (['pdf'].includes(ext)) fileType = 'pdf';
+        else if (['ppt', 'pptx'].includes(ext)) fileType = 'ppt';
+        else if (['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(ext)) fileType = 'video';
+        else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) fileType = 'image';
+        
+        const newFile = {
+          file_key: result.data.key,
+          url: result.data.url,
+          name: result.data.name,
+          type: fileType,
+        };
+        setWorkFiles(prev => [...prev, newFile]);
+      }
+    } finally { setIsUploading(false); setUploadProgress(0); }
+  };
+
+  // 删除作品文件
+  const handleRemoveFile = (index: number) => {
+    setWorkFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   // 打开对话框
   const handleOpenDialog = (work?: Work) => {
     if (work) {
@@ -646,6 +719,18 @@ export default function WorksPage() {
       setEditCategoryId(work.category_id || selectedCategoryId);
       setCoverImageKey(work.cover_image_key || '');
       setCoverImageUrl(work.cover_image_url || '');
+      // 加载已有文件
+      if (work.work_items && work.work_items.length > 0) {
+        setWorkFiles(work.work_items.map(item => ({
+          id: item.id,
+          file_key: item.file_key || '',
+          url: item.url || '',
+          name: item.title || '',
+          type: item.type || 'other',
+        })));
+      } else {
+        setWorkFiles([]);
+      }
     } else {
       setEditingWork(null);
       setFormData({ title: '', subtitle: '', description: '' });
@@ -676,6 +761,26 @@ export default function WorksPage() {
       const data = await res.json();
       console.log('[WorksPage] 保存响应:', data);
       if (data.success) { 
+        const workId = data.data?.id || editingWork?.id;
+        
+        // 保存文件到 work_items
+        if (workId && workFiles.length > 0) {
+          for (const file of workFiles) {
+            if (!file.id) { // 只有新添加的文件才保存
+              await fetch('/api/work-items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  work_id: workId,
+                  file_key: file.file_key,
+                  title: file.name,
+                  type: file.type,
+                }),
+              });
+            }
+          }
+        }
+        
         setDialogOpen(false); 
         loadWorks(); 
       }
@@ -929,6 +1034,50 @@ export default function WorksPage() {
                 placeholder="请输入作品描述或备注" 
                 className="min-h-[80px] resize-none" 
               />
+            </div>
+
+            {/* 作品文件上传 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">作品文件（PDF/视频等）</label>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => fileInputRef2.current?.click()}
+                  disabled={isUploading}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> 添加文件
+                </Button>
+                <input 
+                  ref={fileInputRef2}
+                  type="file" 
+                  accept=".pdf,.ppt,.pptx,.mp4,.mov,.avi,.webm,.mkv"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ''; }} 
+                  className="hidden" 
+                />
+              </div>
+              {workFiles.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {workFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800 rounded">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        {file.type === 'pdf' && <FileText className="w-4 h-4 text-red-500 shrink-0" />}
+                        {file.type === 'ppt' && <Presentation className="w-4 h-4 text-orange-500 shrink-0" />}
+                        {file.type === 'video' && <Film className="w-4 h-4 text-blue-500 shrink-0" />}
+                        {file.type === 'image' && <ImageIcon className="w-4 h-4 text-green-500 shrink-0" />}
+                        {file.type === 'other' && <File className="w-4 h-4 text-gray-500 shrink-0" />}
+                        <span className="text-sm truncate">{file.name}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleRemoveFile(index)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                上传文件后，点击标题即可打开预览
+              </p>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4">
