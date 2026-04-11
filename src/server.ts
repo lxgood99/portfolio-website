@@ -10,41 +10,9 @@ const port = parseInt(process.env.PORT || '5000', 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-// Track content length for large requests
-async function checkBodySize(req: IncomingMessage): Promise<{ allowed: boolean; error?: string }> {
-  return new Promise((resolve) => {
-    if (!req.headers['content-length']) {
-      resolve({ allowed: true });
-      return;
-    }
-    
-    const contentLength = parseInt(req.headers['content-length'] as string, 10);
-    const maxSize = 500 * 1024 * 1024; // 500MB
-    
-    if (contentLength > maxSize) {
-      resolve({ 
-        allowed: false, 
-        error: `Request body too large: ${contentLength} bytes (max: ${maxSize})` 
-      });
-    } else {
-      resolve({ allowed: true });
-    }
-  });
-}
-
 app.prepare().then(() => {
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     try {
-      // Check body size for POST/PUT requests
-      if (['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
-        const check = await checkBodySize(req);
-        if (!check.allowed) {
-          res.writeHead(413, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: check.error }));
-          return;
-        }
-      }
-      
       const parsedUrl = parse(req.url!, true);
       await handle(req, res, parsedUrl);
     } catch (err) {
@@ -55,12 +23,14 @@ app.prepare().then(() => {
   });
   
   // Configure server for large uploads
-  server.maxHeadersSize = 100 * 1024; // 100KB headers
-  server.headersTimeout = 120 * 1000; // 120 seconds timeout
+  server.maxHeadersSize = 8 * 1024 * 1024; // 8MB headers (increased for large uploads)
+  server.timeout = 300 * 1000; // 5 minutes timeout
   
-  server.once('error', (err) => {
-    console.error('Server error:', err);
-    process.exit(1);
+  server.on('clientError', (err, socket) => {
+    console.error('Client error:', err.message);
+    if (socket.writable) {
+      socket.end('HTTP/1.1 413 Payload Too Large\r\n\r\n');
+    }
   });
   
   server.listen(port, () => {
