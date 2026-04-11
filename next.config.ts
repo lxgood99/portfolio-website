@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
   experimental: {
     largePageDataBytes: 500 * 1024 * 1024, // 500MB
   },
+  // 增加 API 路由的 body 大小限制
+  api: {
+    bodyParser: {
+      sizeLimit: '500mb',
+    },
+  },
 };
 
 export default nextConfig;
