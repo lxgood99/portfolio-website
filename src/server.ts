@@ -27,7 +27,7 @@ app.prepare().then(() => {
     }
   });
 
-  server.maxHeadersSize = 16 * 1024 * 1024;
+  (server as any).maxHeadersSize = 16 * 1024 * 1024;
   server.timeout = 600 * 1000;
 
   server.listen(port, () => {
