@@ -576,8 +576,20 @@ export default function HomePage() {
       
       if (worksData.success && worksData.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
-        // 按 order 字段排序
-        const sortedWorks = worksWithUrls.sort((a, b) => (a.order || 0) - (b.order || 0));
+        
+        // 按分类顺序 + 作品 order 排序
+        let sortedWorks = worksWithUrls;
+        if (workCategoriesData?.success && workCategoriesData.data) {
+          const categoryOrder = new Map((workCategoriesData.data as WorkCategory[]).map((c, i) => [c.id, i]));
+          sortedWorks = worksWithUrls.sort((a, b) => {
+            const orderA = categoryOrder.get(a.category_id ?? 0) ?? 999;
+            const orderB = categoryOrder.get(b.category_id ?? 0) ?? 999;
+            if (orderA !== orderB) return orderA - orderB;
+            return (a.order || 0) - (b.order || 0);
+          });
+        } else {
+          sortedWorks = worksWithUrls.sort((a, b) => (a.order || 0) - (b.order || 0));
+        }
         setWorks(sortedWorks);
         
         // 使用分类 API 的数据来设置分类列表（保证顺序）

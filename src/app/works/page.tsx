@@ -176,7 +176,7 @@ export default function WorksPage() {
 
   useEffect(() => {
     loadWorks();
-  }, [selectedCategoryId]);
+  }, [selectedCategoryId, categories]);
 
   const loadCategories = async () => {
     try {
@@ -194,7 +194,21 @@ export default function WorksPage() {
       const res = await fetch(url);
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
-        const worksWithUrls = await Promise.all(data.data.map(async (w: Work) => {
+        // 按分类顺序排序（分类顺序优先，然后是作品自己的 order）
+        const sortedWorks = [...data.data].sort((a: Work, b: Work) => {
+          // 如果有分类，按分类顺序排
+          if (a.category_id && b.category_id && selectedCategoryId === 'all') {
+            const catA = categories.find(c => c.id === a.category_id);
+            const catB = categories.find(c => c.id === b.category_id);
+            const orderA = catA?.order_index ?? 999;
+            const orderB = catB?.order_index ?? 999;
+            if (orderA !== orderB) return orderA - orderB;
+          }
+          // 同分类内按作品自己的 order 排
+          return (a.order || 0) - (b.order || 0);
+        });
+        
+        const worksWithUrls = await Promise.all(sortedWorks.map(async (w: Work) => {
           let coverUrl = '';
           if (w.cover_image_key) {
             try {
