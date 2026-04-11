@@ -1233,37 +1233,59 @@ export default function HomePage() {
                     // 判断作品是否有上传的文件（PDF/视频/其他非图片文件）
                     const hasUploadedFiles = work.work_items?.some(item => 
                       ['pdf', 'ppt', 'video', 'other'].includes(item.type)
-                    ) || ['pdf', 'ppt', 'video', 'other'].includes(coverFileType);
+                    ) || ['pdf', 'ppt', 'video'].includes(coverFileType);
                     
                     // 获取作品的所有文件，用于预览导航
                     const allImages = work.display_mode === 'carousel' 
                       ? (work.carouselItems || [])
                       : (work.work_items?.filter(item => item.type === 'image' && item.url) || []);
                     
-                    // 确定点击卡片时打开哪个文件
-                    const getFirstPreviewItem = () => {
-                      // 如果有上传的文件，优先打开文件（视频 > PDF/PPT > 其他文件）
-                      if (hasUploadedFiles) {
+                    // 确定点击标题时打开哪个文件
+                    const getPreviewItem = () => {
+                      // 优先：封面文件本身是非图片类型（PDF/PPT/视频）
+                      if (['pdf', 'ppt', 'video'].includes(coverFileType)) {
+                        return { 
+                          id: work.id, 
+                          type: coverFileType, 
+                          title: work.title, 
+                          file_key: work.cover_image_key,
+                          url: work.coverImageUrl,
+                          workId: work.id, 
+                          allImages: [],
+                          index: 0
+                        };
+                      }
+                      
+                      // 其次：work_items 中的文件
+                      if (work.work_items && work.work_items.length > 0) {
                         // 优先视频
-                        const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                        const videoItem = work.work_items.find(item => item.type === 'video' && item.url);
                         if (videoItem) return { ...videoItem, workId: work.id, allImages };
                         
                         // 然后是 PDF/PPT
-                        const docItem = work.work_items?.find(item => ['pdf', 'ppt'].includes(item.type) && item.url);
+                        const docItem = work.work_items.find(item => ['pdf', 'ppt'].includes(item.type) && item.url);
                         if (docItem) return { ...docItem, workId: work.id, allImages };
                         
                         // 然后是其他文件
-                        const otherItem = work.work_items?.find(item => ['other'].includes(item.type) && item.url);
+                        const otherItem = work.work_items.find(item => ['other'].includes(item.type) && item.url);
                         if (otherItem) return { ...otherItem, workId: work.id, allImages };
+                        
+                        // 最后是轮播图片或封面图片
+                        if (work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0) {
+                          return { ...work.carouselItems[0], workId: work.id, allImages: work.carouselItems, index: 0 };
+                        }
+                        
+                        // 图片
+                        const imageItem = work.work_items.find(item => item.type === 'image' && item.url);
+                        if (imageItem) return { ...imageItem, workId: work.id, allImages };
                       }
                       
-                      // 没有上传的文件时，打开轮播图片或封面
-                      // 轮播图片优先
+                      // 然后：轮播图片
                       if (work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0) {
                         return { ...work.carouselItems[0], workId: work.id, allImages: work.carouselItems, index: 0 };
                       }
                       
-                      // 然后是封面图片
+                      // 最后：封面图片
                       if (work.cover_image_key && work.coverImageUrl) {
                         return { 
                           id: work.id, 
@@ -1272,7 +1294,7 @@ export default function HomePage() {
                           file_key: work.cover_image_key,
                           url: work.coverImageUrl,
                           workId: work.id, 
-                          allImages: allImages.length > 0 ? allImages : [],
+                          allImages: [],
                           index: 0
                         };
                       }
@@ -1280,17 +1302,14 @@ export default function HomePage() {
                       return null;
                     };
                     
-                    const firstPreview = getFirstPreviewItem();
-                    const hasFiles = work.coverImageUrl || (work.work_items && work.work_items.length > 0) || (work.carouselItems && work.carouselItems.length > 0);
+                    const previewItem = getPreviewItem();
                     
-                    const handleCardClick = () => {
-                      if (firstPreview) {
+                    // 点击标题打开预览
+                    const handleTitleClick = (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      if (previewItem) {
                         setPreviewImageIndex(0);
-                        const previewData = {
-                          ...firstPreview,
-                          allImages: allImages.length > 0 ? allImages : (firstPreview as any).allImages || [],
-                        };
-                        setPreviewItem(previewData as any);
+                        setPreviewItem(previewItem as any);
                       }
                     };
                     
@@ -1299,7 +1318,7 @@ export default function HomePage() {
                       key={work.id} 
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 group snap-start shrink-0 bg-white dark:bg-slate-800 cursor-pointer"
                       style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
-                      onClick={handleCardClick}
+                      onClick={hasUploadedFiles ? undefined : handleTitleClick}
                     >
                       {/* 封面图 - 根据是否有文件决定是否可点击 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
@@ -1396,12 +1415,9 @@ export default function HomePage() {
                       
                       {/* 卡片内容 */}
                       <CardContent className="p-4">
-                        {/* 标题区域 - 可点击打开 */}
+                        {/* 标题区域 - 始终可点击打开 */}
                         <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCardClick();
-                          }}
+                          onClick={handleTitleClick}
                           className="w-full text-left group/title mb-2 cursor-pointer"
                         >
                           <div className="flex items-start gap-2">
