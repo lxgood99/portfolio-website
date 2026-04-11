@@ -14,20 +14,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check content-length header
+    // Get content-length to check size
     const contentLength = request.headers.get('content-length');
     if (contentLength) {
       const size = parseInt(contentLength, 10);
-      const maxSize = 500 * 1024 * 1024; // 500MB
-      if (size > maxSize) {
-        return NextResponse.json(
-          { success: false, error: `File too large. Maximum size is 500MB.` },
-          { status: 413 }
-        );
-      }
+      console.log(`[Upload] Content-Length: ${size} bytes (${Math.round(size / 1024 / 1024)}MB)`);
     }
 
-    // Read form data
+    // Read file as blob, then convert to buffer
+    // This approach works better with Next.js body handling
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const type = formData.get('type') as string || 'general';
@@ -39,22 +34,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[Upload] File: ${file.name}, Size: ${file.size} bytes`);
+
     // Validate file size
     const maxSize = 500 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: `File too large. Maximum size is 500MB.` },
-        { status: 400 }
-      );
-    }
-
-    // Validate file type
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    const allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'mp4', 'webm', 'mov', 'avi', 'ppt', 'pptx', 'txt', 'json', 'xml'];
-    
-    if (!allowedExts.includes(ext)) {
-      return NextResponse.json(
-        { success: false, error: `File type not allowed. Allowed types: ${allowedExts.join(', ')}` },
+        { success: false, error: `File too large. Maximum: ${maxSize / 1024 / 1024}MB` },
         { status: 400 }
       );
     }
@@ -63,15 +49,16 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const uniqueId = Math.random().toString(36).slice(2, 10);
     const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50);
+    const ext = safeFileName.split('.').pop()?.toLowerCase() || '';
     const key = `${type}/${timestamp}_${safeFileName}_${uniqueId}.${ext}`;
 
-    console.log(`[Upload] Processing file: ${file.name}, size: ${file.size} bytes`);
+    console.log(`[Upload] Uploading to: ${key}`);
 
-    // Convert file to buffer
+    // Convert file to buffer using arrayBuffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    console.log(`[Upload] Buffer created, size: ${buffer.length} bytes`);
+    console.log(`[Upload] Buffer ready: ${buffer.length} bytes`);
 
     // Upload to S3
     const uploadedKey = await storage.uploadFile({
@@ -80,9 +67,9 @@ export async function POST(request: NextRequest) {
       contentType: file.type || 'application/octet-stream',
     });
 
-    console.log(`[Upload] File uploaded to S3: ${uploadedKey}`);
+    console.log(`[Upload] Uploaded: ${uploadedKey}`);
 
-    // Generate presigned URL
+    // Generate URL
     const url = await storage.generatePresignedUrl({
       key: uploadedKey,
       expireTime: 86400 * 365,
@@ -103,7 +90,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Upload] Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error') },
+      { success: false, error: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown') },
       { status: 500 }
     );
   }
