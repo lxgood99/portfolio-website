@@ -658,11 +658,11 @@ export default function WorksPage() {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
       
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'work');
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('type', 'work');
       
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/upload', { method: 'POST', body: uploadFormData });
       
       if (!res.ok) {
         clearInterval(progressInterval);
@@ -702,6 +702,15 @@ export default function WorksPage() {
           type: fileType,
         };
         setWorkFiles(prev => [...prev, newFile]);
+        
+        // 如果标题为空，自动填入文件名（去除扩展名）
+        const fileNameWithoutExt = result.data.name.replace(/\.[^/.]+$/, '');
+        setFormData(prev => {
+          if (!prev.title || prev.title.trim() === '') {
+            return { ...prev, title: fileNameWithoutExt };
+          }
+          return prev;
+        });
       }
     } finally { setIsUploading(false); setUploadProgress(0); }
   };
@@ -867,36 +876,27 @@ export default function WorksPage() {
         {/* 添加作品按钮 - 在分类作品列表上方 */}
         <FadeInSection show={showContent} className="mb-4">
           <div className="flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,video/*,.pdf,.ppt,.pptx"
-              onChange={handleDirectUpload}
-              className="hidden"
-              disabled={isUploading}
-            />
             <Button 
-              onClick={() => fileInputRef.current?.click()} 
-              disabled={isUploading || !selectedCategoryId}
+              onClick={() => {
+                if (!selectedCategoryId) {
+                  alert('请先选择一个分类');
+                  return;
+                }
+                // 直接打开空白编辑对话框
+                setEditingWork(null);
+                setFormData({ title: '', subtitle: '', description: '' });
+                setEditCategoryId(selectedCategoryId);
+                setCoverImageKey('');
+                setCoverImageUrl('');
+                setWorkFiles([]);
+                setDialogOpen(true);
+              }} 
+              disabled={!selectedCategoryId}
               className="gap-2"
             >
-              {isUploading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  上传中...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  添加作品
-                </>
-              )}
+              <Plus className="h-4 w-4" />
+              添加作品
             </Button>
-            {isUploading && (
-              <div className="flex-1 max-w-xs">
-                <Progress value={uploadProgress} className="h-2" />
-              </div>
-            )}
           </div>
         </FadeInSection>
 
