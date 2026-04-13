@@ -1191,6 +1191,7 @@ export default function HomePage() {
               {/* 横向滚动容器 - 支持触摸滑动和鼠标拖动 */}
               <div 
                 className="overflow-x-auto scrollbar-thin snap-x snap-mandatory pb-4 -mx-4 px-4 cursor-grab active:cursor-grabbing"
+                data-works-container
                 style={{
                   scrollBehavior: 'smooth',
                   WebkitOverflowScrolling: 'touch',
@@ -1499,10 +1500,10 @@ export default function HomePage() {
               
               {/* 滚动提示箭头 - 仅在作品多时显示 */}
               {works.length > 3 && (
-                <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-0 right-0 justify-between pointer-events-none px-2">
+                <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-0 right-0 justify-between pointer-events-none px-2 z-10">
                   <button 
                     onClick={() => {
-                      const container = document.querySelector('.overflow-x-auto');
+                      const container = document.querySelector('[data-works-container]');
                       if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
                     }}
                     className="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg flex items-center justify-center pointer-events-auto hover:bg-white dark:hover:bg-slate-800 transition-colors"
@@ -1511,7 +1512,7 @@ export default function HomePage() {
                   </button>
                   <button 
                     onClick={() => {
-                      const container = document.querySelector('.overflow-x-auto');
+                      const container = document.querySelector('[data-works-container]');
                       if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
                     }}
                     className="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg flex items-center justify-center pointer-events-auto hover:bg-white dark:hover:bg-slate-800 transition-colors"
