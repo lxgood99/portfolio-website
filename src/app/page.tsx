@@ -1375,50 +1375,81 @@ export default function HomePage() {
                           )}
                         </div>
                       ) : (
-                        // 无封面时显示文件类型图标
-                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center">
-                          {/* 根据文件类型显示不同图标 */}
+                        // 无封面图片时
+                        <div 
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
+                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                        >
+                          {/* 有视频文件时：电脑端用video标签，移动端尝试显示首帧 */}
                           {(() => {
                             const videoItem = work.work_items?.find(item => item.type === 'video' && item.url);
+                            // 检查封面是否是视频文件（coverFileType === 'video' 且 coverImageUrl 存在）
+                            const coverIsVideo = coverFileType === 'video' && work.coverImageUrl;
+                            
+                            if (videoItem || coverIsVideo) {
+                              const videoUrl = videoItem?.url || work.coverImageUrl;
+                              return (
+                                <>
+                                  {/* 电脑端：video标签显示视频首帧 */}
+                                  <video 
+                                    src={videoUrl} 
+                                    className="w-full h-full object-cover hidden md:block" 
+                                    muted 
+                                    playsInline 
+                                    preload="metadata"
+                                  />
+                                  {/* 移动端：显示灰色背景+播放图标 */}
+                                  <div className="w-full h-full md:hidden bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">
+                                    <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
+                                      <Play className="h-8 w-8 text-white ml-1" />
+                                    </div>
+                                  </div>
+                                </>
+                              );
+                            }
+                            
+                            // 有PDF/PPT文件时显示图标
                             const pdfItem = work.work_items?.find(item => item.type === 'pdf' && item.url);
                             const pptItem = work.work_items?.find(item => item.type === 'ppt' && item.url);
                             
-                            if (videoItem) {
+                            if (pdfItem) {
                               return (
-                                <>
-                                  <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-                                    <Play className="h-8 w-8 text-red-600 ml-1" />
-                                  </div>
-                                  <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
-                                </>
-                              );
-                            } else if (pdfItem) {
-                              return (
-                                <>
+                                <div className="w-full h-full flex flex-col items-center justify-center">
                                   <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
                                     <FileText className="h-8 w-8 text-blue-600" />
                                   </div>
                                   <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
-                                </>
+                                </div>
                               );
-                            } else if (pptItem) {
+                            }
+                            
+                            if (pptItem) {
                               return (
-                                <>
+                                <div className="w-full h-full flex flex-col items-center justify-center">
                                   <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
                                     <Presentation className="h-8 w-8 text-orange-600" />
                                   </div>
                                   <span className="mt-3 text-sm font-medium text-slate-600">点击下方标题打开</span>
-                                </>
-                              );
-                            } else {
-                              return (
-                                <>
-                                  <FolderOpen className="h-12 w-12 text-slate-400" />
-                                  <span className="mt-3 text-sm font-medium text-slate-500">点击下方标题打开</span>
-                                </>
+                                </div>
                               );
                             }
+                            
+                            // 默认：文件夹图标
+                            return (
+                              <div className="w-full h-full flex flex-col items-center justify-center">
+                                <FolderOpen className="h-12 w-12 text-slate-400" />
+                                <span className="mt-3 text-sm font-medium text-slate-500">点击下方标题打开</span>
+                              </div>
+                            );
                           })()}
+                          {/* 有上传文件时显示遮罩提示 */}
+                          {hasUploadedFiles && (
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center transition-colors">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                                点击下方标题打开文件
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       
