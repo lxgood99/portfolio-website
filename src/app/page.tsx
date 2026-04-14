@@ -765,16 +765,17 @@ export default function HomePage() {
                             <span>{card.title}</span>
                           </h3>
                         )}
-                        {/* 小卡片正文 - 支持富文本渲染 */}
+                        {/* 小卡片正文 - 支持富文本渲染 + 两端对齐 */}
                         <RichTextContent 
                           html={card.content} 
+                          textAlign="justify"
                           className="text-sm sm:text-base text-muted-foreground [&>p]:leading-relaxed [&>p]:my-1 [&>strong]:font-semibold [&>em]:italic" 
                         />
                       </div>
                     ))}
                   </div>
                 ) : selfIntroduction?.content ? (
-                  <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                  <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed text-justify">
                     {selfIntroduction.content}
                   </div>
                 ) : (
@@ -859,26 +860,17 @@ export default function HomePage() {
                     {exp.description && (
                       <div className="mt-5 text-muted-foreground">
                         {exp.description.includes('<') && exp.description.includes('>') ? (
-                          // 富文本内容
-                          <RichTextContent html={exp.description} />
+                          // 富文本内容 - 两端对齐
+                          <RichTextContent html={exp.description} textAlign="justify" className="[&>p]:leading-relaxed" />
                         ) : (
-                          // 普通文本，手机端段落间距增加 + 两端对齐
-                          <div className="sm:hidden space-y-2">
+                          // 普通文本，段落间距增加 + 两端对齐
+                          <div className="space-y-2">
                             {exp.description.split('\n').map((line, idx) => (
-                              <p key={idx} className="whitespace-pre-wrap text-justify">
+                              <p key={idx} className="whitespace-pre-wrap text-justify leading-relaxed">
                                 {line}
                               </p>
                             ))}
                           </div>
-                        )}
-                        {/* 电脑端普通文本 */}
-                        {!exp.description.includes('<') && !exp.description.includes('>') && (
-                          <p 
-                            className="hidden sm:block whitespace-pre-wrap"
-                            style={{ textAlign: (exp.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                          >
-                            {exp.description}
-                          </p>
                         )}
                       </div>
                     )}
@@ -976,21 +968,14 @@ export default function HomePage() {
                     </div>
                     {edu.description && (
                       <>
-                        {/* 手机端：段落间距增加 + 两端对齐 */}
-                        <div className="sm:hidden mt-5 text-muted-foreground space-y-2">
+                        {/* 教育描述 - 段落间距增加 + 两端对齐 */}
+                        <div className="mt-5 text-muted-foreground space-y-2">
                           {edu.description.split('\n').map((line, idx) => (
-                            <p key={idx} className="whitespace-pre-wrap text-justify">
+                            <p key={idx} className="whitespace-pre-wrap text-justify leading-relaxed">
                               {line}
                             </p>
                           ))}
                         </div>
-                        {/* 电脑端：原有样式 */}
-                        <p 
-                          className="hidden sm:block mt-5 text-muted-foreground whitespace-pre-wrap"
-                          style={{ textAlign: (edu.description_align || 'left') as 'left' | 'center' | 'right' | 'justify' }}
-                        >
-                          {edu.description}
-                        </p>
                       </>
                     )}
                   </CardContent>
@@ -1352,8 +1337,17 @@ export default function HomePage() {
                           className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
                           onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
                         >
-                          {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url) ? (
-                            <video src={work.coverImageUrl} className="w-full h-full object-cover" muted playsInline />
+                          {/* 视频作品：显示封面图片 + 播放图标 */}
+                          {(coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url)) ? (
+                            <>
+                              <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
+                              {/* 播放图标遮罩 */}
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+                                <div className="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center">
+                                  <Play className="h-7 w-7 text-white ml-1" />
+                                </div>
+                              </div>
+                            </>
                           ) : (
                             <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
                           )}
