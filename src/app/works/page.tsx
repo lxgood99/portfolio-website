@@ -127,13 +127,38 @@ function WorkCard({
     >
       {/* 封面图 */}
       <div className="relative aspect-[4/3] bg-gray-100 dark:bg-slate-700 overflow-hidden">
-        {work.cover_image_url || firstItem?.url ? (
+        {work.cover_image_url ? (
+          // 有封面图片时正常显示
           <img
-            src={work.cover_image_url || firstItem?.url}
+            src={work.cover_image_url}
+            alt={work.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : firstItem?.type === 'video' && firstItem?.url ? (
+          // 视频文件：电脑端显示首帧，移动端显示播放图标
+          <>
+            <video
+              src={firstItem.url}
+              className="w-full h-full object-cover hidden md:block"
+              muted
+              playsInline
+              preload="metadata"
+            />
+            <div className="w-full h-full md:hidden bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center">
+                <Video className="w-7 h-7 text-white" />
+              </div>
+            </div>
+          </>
+        ) : firstItem?.url ? (
+          // 其他文件（图片等）
+          <img
+            src={firstItem.url}
             alt={work.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
+          // 无任何文件时显示默认图标
           <div className="w-full h-full flex items-center justify-center text-gray-400">
             <FileText className="w-12 h-12" />
           </div>
