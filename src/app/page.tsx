@@ -1337,12 +1337,26 @@ export default function HomePage() {
                           className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
                           onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
                         >
-                          {/* 视频作品：显示封面图片 + 播放图标 */}
-                          {(coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url)) ? (
+                          {/* 视频作品：电脑端用video标签显示首帧，移动端用图片+播放图标 */}
+                          {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url) ? (
                             <>
-                              <img src={work.coverImageUrl} alt={work.title} className="w-full h-full object-cover" loading="lazy" />
-                              {/* 播放图标遮罩 */}
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+                              {/* 电脑端：video标签会在加载时显示视频首帧 */}
+                              <video 
+                                src={work.coverImageUrl} 
+                                className="w-full h-full object-cover hidden md:block" 
+                                muted 
+                                playsInline 
+                                preload="metadata"
+                              />
+                              {/* 移动端：显示封面图片 + 播放图标 */}
+                              <img 
+                                src={work.coverImageUrl} 
+                                alt={work.title} 
+                                className="w-full h-full object-cover md:hidden" 
+                                loading="lazy" 
+                              />
+                              {/* 播放图标遮罩 - 移动端显示 */}
+                              <div className="absolute inset-0 md:hidden flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
                                 <div className="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center">
                                   <Play className="h-7 w-7 text-white ml-1" />
                                 </div>
