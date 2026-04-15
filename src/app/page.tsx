@@ -393,6 +393,7 @@ export default function HomePage() {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
   
   const [previewItem, setPreviewItem] = useState<(WorkItem & { allImages?: WorkItem[]; workId?: number; index?: number }) | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
@@ -468,6 +469,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // loadData 在组件生命周期内不会变化
@@ -1924,7 +1926,7 @@ export default function HomePage() {
       </main>
 
       <footer className="py-8 text-center text-sm text-muted-foreground border-t">
-        <p>© {new Date().getFullYear()} {profile?.name || '个人作品集'}. All rights reserved.</p>
+        <p>© {currentYear} {profile?.name || '个人作品集'}. All rights reserved.</p>
       </footer>
 
       {/* 预览模态框 */}

@@ -430,6 +430,41 @@ POST 接口测试：
 
 ---
 
+### 2026-04-15 (下午) - 移动端稳定性修复
+
+**问题描述**：
+1. 后台调整模块顺序后，手机端模块顺序不同步/错乱
+2. 手机端进入后只有一部分信息，下面内容消失
+3. 移动端代码不稳定
+
+**根本原因**：
+1. **Hydration 不匹配**：`page.tsx` 中 `new Date().getFullYear()` 在 JSX 中直接使用，可能导致 SSR/CSR 不一致
+2. **useEffect 无限循环**：`works/page.tsx` 中 useEffect 依赖 `categories`，而 `loadWorks` 也使用 `categories`，可能导致无限重新加载
+
+**修复内容**：
+
+1. **修复 Hydration 问题**：
+   - 在 `page.tsx` 中添加 `currentYear` 状态
+   - 使用 `useEffect` 在客户端挂载后设置 `currentYear`
+   - Footer 中使用 `currentYear` 替代 `new Date().getFullYear()`
+
+2. **修复 useEffect 依赖问题**：
+   - 在 `works/page.tsx` 中添加 `categoriesLoaded` 状态
+   - `loadWorks` 只在 `categoriesLoaded` 为 true 时执行
+   - 避免因 categories 引用变化导致的无限循环
+
+**修改文件**：
+- `src/app/page.tsx` - 添加 currentYear 状态修复 Hydration
+- `src/app/works/page.tsx` - 修复 useEffect 依赖循环
+
+**测试验证**：
+- TypeScript 检查通过
+- ESLint 检查通过（仅警告）
+- API 接口正常
+- 服务运行正常
+
+---
+
 ### 部署注意事项
 
 1. **数据库同步**：部署时勾选需要同步的数据库表

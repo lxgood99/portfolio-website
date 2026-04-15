@@ -194,20 +194,26 @@ export default function WorksPage() {
   const [previewItem, setPreviewItem] = useState<(WorkItem & { allItems?: WorkItem[] }) | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
 
   useEffect(() => {
     loadCategories();
   }, []);
 
   useEffect(() => {
-    loadWorks();
-  }, [selectedCategoryId, categories]);
+    if (categoriesLoaded) {
+      loadWorks();
+    }
+  }, [selectedCategoryId, categoriesLoaded]);
 
   const loadCategories = async () => {
     try {
       const res = await fetch('/api/work-categories');
       const data = res.ok ? await res.json() : null;
-      if (data?.success) setCategories(data.data);
+      if (data?.success) {
+        setCategories(data.data);
+        setCategoriesLoaded(true);
+      }
     } catch (e) { console.error('加载分类失败:', e); }
   };
 
