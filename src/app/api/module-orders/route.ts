@@ -15,7 +15,11 @@ export async function GET() {
       throw new Error(`获取模块排序失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as ModuleOrder[] });
+    const response = NextResponse.json({ success: true, data: data as ModuleOrder[] });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   } catch (error) {
     console.error('获取模块排序错误:', error);
     return NextResponse.json(

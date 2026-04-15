@@ -480,18 +480,18 @@ export default function HomePage() {
       recordVisit().catch(() => {});
 
       const [profileRes, selfIntroRes, selfIntroCardsRes, expRes, eduRes, skillsRes, skillCategoriesRes, worksRes, moduleOrdersRes, contactRes, timelineRes, workCategoriesRes] = await Promise.all([
-        fetch('/api/profile'),
-        fetch('/api/self-introduction'),
-        fetch('/api/self-intro-cards'),
-        fetch('/api/work-experiences'),
-        fetch('/api/educations'),
-        fetch('/api/skills'),
-        fetch('/api/skill-categories'),
-        fetch('/api/works'),
-        fetch('/api/module-orders'),
-        fetch('/api/contact-info'),
-        fetch('/api/timeline-items'),
-        fetch('/api/work-categories'),
+        fetch('/api/profile', { cache: 'no-store' }),
+        fetch('/api/self-introduction', { cache: 'no-store' }),
+        fetch('/api/self-intro-cards', { cache: 'no-store' }),
+        fetch('/api/work-experiences', { cache: 'no-store' }),
+        fetch('/api/educations', { cache: 'no-store' }),
+        fetch('/api/skills', { cache: 'no-store' }),
+        fetch('/api/skill-categories', { cache: 'no-store' }),
+        fetch('/api/works', { cache: 'no-store' }),
+        fetch('/api/module-orders', { cache: 'no-store' }),
+        fetch('/api/contact-info', { cache: 'no-store' }),
+        fetch('/api/timeline-items', { cache: 'no-store' }),
+        fetch('/api/work-categories', { cache: 'no-store' }),
       ]);
 
       const profileData = profileRes.ok ? await profileRes.json() : null;

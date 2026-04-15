@@ -24,7 +24,11 @@ export async function GET(request: NextRequest) {
       throw new Error(`获取作品失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as Work[] });
+    const response = NextResponse.json({ success: true, data: data as Work[] });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   } catch (error) {
     console.error('获取作品错误:', error);
     return NextResponse.json(
