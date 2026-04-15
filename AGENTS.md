@@ -465,6 +465,53 @@ POST 接口测试：
 
 ---
 
+### 2026-04-15 (下午) - 移动端稳定性全面修复
+
+**问题描述**：
+1. 后台调整模块顺序后，电脑端和移动端顺序都会错乱
+2. 手机端内容更新不及时，显示旧版本数据
+3. 手机端进入后只有一部分信息，下面内容消失
+4. 作品上传后在不同设备上显示不同步
+
+**根本原因**：
+1. **浏览器缓存**：`fetch` 请求没有禁用缓存，导致返回旧数据
+2. **Hydration 不匹配**：`page.tsx` 中 `new Date().getFullYear()` 在 JSX 直接使用
+3. **useEffect 依赖循环**：`works/page.tsx` 中 `loadWorks` 依赖 `categories` 可能导致无限循环
+
+**修复内容**：
+
+1. **禁用浏览器缓存**：
+   - 所有 `fetch` 请求添加 `{ cache: 'no-store' }` 选项
+   - API 响应添加缓存控制 headers
+   - 确保每次都从服务器获取最新数据
+
+2. **修复 Hydration 问题**：
+   - 添加 `currentYear` 状态
+   - 在 `useEffect` 中设置 `currentYear`
+   - Footer 中使用 `currentYear` 替代
+
+3. **修复 useEffect 依赖循环**：
+   - 添加 `categoriesLoaded` 状态
+   - `loadWorks` 只在 `categoriesLoaded` 为 true 时执行
+
+**修改文件**：
+- `src/app/page.tsx` - 添加 `{ cache: 'no-store' }`、添加 `currentYear` 状态
+- `src/app/works/page.tsx` - 添加 `{ cache: 'no-store' }`、添加 `categoriesLoaded` 状态
+- `src/app/api/module-orders/route.ts` - 添加缓存控制 headers
+- `src/app/api/works/route.ts` - 添加缓存控制 headers
+
+**移动端功能检查清单** ✅：
+- 模块排序：正常
+- 自我评价：正常（响应式布局）
+- 工作经历：正常（响应式布局）
+- 教育背景：正常（响应式布局）
+- 技能展示：正常（分类切换）
+- 作品集：正常（封面显示、文件预览）
+- 甘特图：正常（左右滑动）
+- 缓存更新：正常（禁用缓存）
+
+---
+
 ### 部署注意事项
 
 1. **数据库同步**：部署时勾选需要同步的数据库表

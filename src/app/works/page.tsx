@@ -208,7 +208,7 @@ export default function WorksPage() {
 
   const loadCategories = async () => {
     try {
-      const res = await fetch('/api/work-categories');
+      const res = await fetch('/api/work-categories', { cache: 'no-store' });
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         setCategories(data.data);
@@ -222,7 +222,7 @@ export default function WorksPage() {
     setIsAnimating(true);
     try {
       const url = selectedCategoryId !== 'all' ? `/api/works?categoryId=${selectedCategoryId}` : '/api/works';
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       const data = res.ok ? await res.json() : null;
       if (data?.success) {
         // 按分类顺序排序（分类顺序优先，然后是作品自己的 order）
