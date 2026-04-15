@@ -1295,7 +1295,7 @@ export default function HomePage() {
                       e.stopPropagation();
                       if (previewItem) {
                         setPreviewImageIndex(0);
-                        setPreviewItem(previewItem as any);
+                        setPreviewItem(previewItem as WorkItem & { allImages?: WorkItem[]; workId?: number; index?: number });
                       }
                     };
                     
@@ -1512,7 +1512,7 @@ export default function HomePage() {
                                   setPreviewItem({ 
                                     ...item, 
                                     allImages: work.work_items?.filter(i => i.type === 'image' && i.url) || [] 
-                                  } as any);
+                                  } as WorkItem & { allImages?: WorkItem[]; workId?: number; index?: number });
                                 }}
                                 className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs text-slate-700 dark:text-slate-300 cursor-pointer"
                               >

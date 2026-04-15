@@ -27,6 +27,7 @@ app.prepare().then(() => {
     }
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (server as any).maxHeadersSize = 16 * 1024 * 1024;
   server.timeout = 600 * 1000;
 

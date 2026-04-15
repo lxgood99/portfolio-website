@@ -287,6 +287,158 @@
 
 ---
 
+### 2026-04-15 - 视频封面与文字对齐优化 + 部署上线前自检
+
+**今日概述**：
+完成视频封面移动端兼容修复、文字两端对齐优化，修复 JSX 语法错误，并进行全面的代码自检确保部署上线。
+
+---
+
+### 功能修复与优化
+
+#### 1. 视频封面移动端兼容修复
+
+**问题描述**：
+1. 手机端作品集视频作品无默认首帧封面，显示空白
+2. 之前的修改导致电脑端视频封面也消失
+
+**根本原因**：
+1. 移动端浏览器出于性能考虑不会预加载视频元数据，无法自动获取视频首帧
+2. JSX 三元表达式括号不匹配导致编译错误
+
+**修复方案**：
+1. 电脑端：使用 `<video>` 标签 + `preload="metadata"`，自动显示视频第一帧
+2. 移动端：由于浏览器限制无法获取首帧，显示封面图片 + 播放图标遮罩
+3. 无封面图片时：电脑端正常显示首帧，移动端显示播放图标
+
+**文件类型检测逻辑**（根据扩展名）：
+- `.pdf` → `pdf`
+- `.ppt/.pptx` → `ppt`
+- `.mp4/.mov/.avi/.webm/.mkv` → `video`
+- `.jpg/.jpeg/.png/.gif/.webp/.svg` → `image`
+- 其他 → `other`
+
+**修改文件**：
+- `src/app/page.tsx` - 视频封面显示逻辑（有无封面图片两种情况）
+- `src/app/works/page.tsx` - 作品页面视频封面显示逻辑
+
+---
+
+#### 2. 文字两端对齐优化
+
+**功能改进**：
+将所有正文内容调整为两端对齐（text-justify），提升阅读体验和排版美观度。
+
+**修改范围**：
+| 模块 | 位置 | 改动 |
+|------|------|------|
+| 自我评价（整体） | page.tsx | text-justify |
+| 自我评价卡片 | page.tsx | textAlign="justify" |
+| 工作经历描述 | page.tsx | textAlign="justify" |
+| 教育背景描述 | page.tsx | text-justify |
+
+**修改文件**：
+- `src/app/page.tsx` - 添加 RichTextContent 的 textAlign="justify" 参数
+
+---
+
+#### 3. JSX 语法错误修复
+
+**问题描述**：
+部署后网站无法打开，显示 "overload-protect triggered" 错误。
+
+**根本原因**：
+三元表达式括号不匹配，导致 Next.js 编译失败。
+
+**修复方案**：
+1. 修复三元表达式的闭合括号
+2. 确保嵌套条件正确闭合
+
+**修改文件**：
+- `src/app/page.tsx` - 修复三元表达式括号匹配
+
+---
+
+#### 4. TypeScript 类型修复
+
+**问题描述**：
+ESLint 检测到 3 个 `@typescript-eslint/no-explicit-any` 错误。
+
+**修复方案**：
+1. `server.ts` - 添加 eslint-disable 注释
+2. `page.tsx` - 使用 `WorkItem & { ... }` 类型替代 `any`
+
+**修改文件**：
+- `src/server.ts` - 添加 eslint-disable 注释
+- `src/app/page.tsx` - 使用正确的类型断言
+
+---
+
+### 部署上线前自检报告
+
+#### 1. 代码静态检查 ✅
+- `pnpm ts-check` - 通过，0 错误
+- `pnpm lint` - 34 warnings (仅警告，无错误)
+
+#### 2. API 接口测试 ✅
+测试了 15 个核心 GET 接口，全部返回正常：
+| 接口 | 状态 |
+|------|------|
+| /api/profile | ✅ |
+| /api/self-introduction | ✅ |
+| /api/self-intro-cards | ✅ |
+| /api/work-experiences | ✅ |
+| /api/educations | ✅ |
+| /api/skills | ✅ |
+| /api/skill-categories | ✅ |
+| /api/works | ✅ |
+| /api/work-categories | ✅ |
+| /api/work-items | ✅ |
+| /api/module-orders | ✅ |
+| /api/contact-info | ✅ |
+| /api/visit-stats | ✅ |
+| /api/timeline-items | ✅ |
+| /api/dev-logs | ✅ |
+
+POST 接口测试：
+| 接口 | 状态 |
+|------|------|
+| /api/auth/login | ✅ |
+| /api/file-url | ✅ |
+
+#### 3. 服务存活探测 ✅
+- 5000 端口监听正常
+- 首页可正常访问
+
+#### 4. 日志健康检查 ✅
+- app.log - 无 ERROR/Exception
+- console.log - 无 ERROR/Warn/Traceback
+
+#### 5. 代码逻辑审查 ✅
+- 分类删除级联逻辑正确
+- 文字两端对齐已应用
+- 无 Hydration 错误风险
+
+---
+
+### 修改文件清单
+
+- `src/app/page.tsx` - 视频封面逻辑、两端对齐、类型修复
+- `src/app/works/page.tsx` - 视频封面显示逻辑
+- `src/server.ts` - ESLint 修复
+- `AGENTS.md` - 开发日志更新
+
+---
+
+### 部署注意事项
+
+1. **数据库同步**：部署时勾选需要同步的数据库表
+2. **存储桶隔离**：沙盒与生产环境使用不同的存储桶，需要重新上传文件
+3. **大文件上传**：生产环境无代理限制，可上传大于 15MB 的文件
+4. **视频封面**：建议上传视频作品时同时上传封面图片，以获得最佳显示效果
+
+---
+
 ### 2026-04-12 - 作品集功能完善
 
 **今日概述**：
