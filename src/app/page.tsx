@@ -1306,13 +1306,13 @@ export default function HomePage() {
                       key={work.id} 
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 group snap-start shrink-0 bg-white dark:bg-slate-800 cursor-pointer"
                       style={{ width: 'calc(33.333% - 12px)', minWidth: '280px', maxWidth: '360px' }}
-                      onClick={hasUploadedFiles ? undefined : handleTitleClick}
+                      onClick={handleTitleClick}
                     >
-                      {/* 封面图 - 根据是否有文件决定是否可点击 */}
+                      {/* 封面图 - 可点击打开预览 */}
                       {work.display_mode === 'carousel' && work.carouselItems && work.carouselItems.length > 0 ? (
                         <div 
-                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
-                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer`}
+                          onClick={handleTitleClick}
                         >
                           <img 
                             src={work.carouselItems[0].url} 
@@ -1336,8 +1336,8 @@ export default function HomePage() {
                         </div>
                       ) : work.coverImageUrl ? (
                         <div 
-                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
-                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer`}
+                          onClick={handleTitleClick}
                         >
                           {/* 视频作品：电脑端用video标签显示首帧，移动端用图片+播放图标 */}
                           {coverFileType === 'video' || work.work_items?.find(item => item.type === 'video' && item.url) ? (
@@ -1380,8 +1380,8 @@ export default function HomePage() {
                       ) : (
                         // 无封面图片时
                         <div 
-                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden ${hasUploadedFiles ? '' : 'cursor-pointer'}`}
-                          onClick={hasUploadedFiles ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+                          className={`relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden cursor-pointer`}
+                          onClick={handleTitleClick}
                         >
                           {/* 有视频文件时：电脑端用video标签，移动端尝试显示首帧 */}
                           {(() => {
