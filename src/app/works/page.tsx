@@ -86,7 +86,16 @@ function PreviewDialog({
             <PDFViewer url={currentItem.url} />
           </div>
         ) : currentItem.type === 'video' && currentItem.url ? (
-          <video src={currentItem.url} controls autoPlay className="max-w-full max-h-[90vh]" />
+          <video 
+            src={currentItem.url} 
+            controls 
+            autoPlay 
+            playsInline
+            webkit-playsinline="true"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            className="max-w-full max-h-[90vh]" 
+          />
         ) : (
           <div className="text-white">无法预览此文件</div>
         )}
@@ -142,6 +151,7 @@ function WorkCard({
               className="w-full h-full object-cover hidden md:block"
               muted
               playsInline
+              webkit-playsinline="true"
               preload="metadata"
             />
             <div className="w-full h-full md:hidden bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">

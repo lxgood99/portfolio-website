@@ -1347,7 +1347,8 @@ export default function HomePage() {
                                 src={work.coverImageUrl} 
                                 className="w-full h-full object-cover hidden md:block" 
                                 muted 
-                                playsInline 
+                                playsInline
+                                webkit-playsinline="true"
                                 preload="metadata"
                               />
                               {/* 移动端：显示封面图片 + 播放图标 */}
@@ -2056,7 +2057,12 @@ export default function HomePage() {
                 <video 
                   src={previewItem.url} 
                   controls 
-                  autoPlay 
+                  autoPlay
+                  playsInline
+                  webkit-playsinline="true"
+                  x5-video-player-type="h5"
+                  x5-video-player-fullscreen="true"
+                  x5-video-orientation="portrait"
                   className="max-w-full max-h-[85vh]" 
                   controlsList="nodownload"
                 />
