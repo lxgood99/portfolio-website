@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>下载静态网站</title>
+  <style>
+    body { font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+    h1 { margin-bottom: 24px; }
+    h2 { margin-bottom: 16px; font-size: 18px; }
+    pre { background: #f5f5f5; padding: 16px; border-radius: 4px; overflow-x: auto; font-size: 14px; }
+    .btn { display: inline-block; background: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 8px 8px 8px 0; }
+    .btn:hover { background: #1d4ed8; }
+    .note { color: #666; font-size: 14px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>静态网站文件下载</h1>
+  
+  <div class="card">
+    <h2>文件列表</h2>
+    <ul>
+      <li><a href="index.html" target="_blank">index.html</a> - 首页（完整作品集）</li>
+      <li><a href="works.html" target="_blank">works.html</a> - 作品集页面</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>手动下载（右键另存为）</h2>
+    <p>在浏览器中打开上方链接后，按 <strong>Ctrl+S</strong> 或 <strong>右键 → 另存为</strong> 保存HTML文件</p>
+  </div>
+
+  <div class="card">
+    <h2>部署到火山引擎</h2>
+    <pre>1. 登录火山引擎控制台 → 对象存储 TOS
+2. 进入 lxworks2026 存储桶
+3. 上传 index.html 和 works.html
+4. 开启静态网站托管
+5. 设置首页为 index.html</pre>
+  </div>
+
+  <p class="note">
+    <strong>提示：</strong>由于这是开发环境预览，正式部署时请将这两个HTML文件上传到您的火山引擎存储桶。
+  </p>
+</body>
+</html>
