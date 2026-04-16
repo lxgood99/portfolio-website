@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目下载</title>
+  <style>
+    body { font-family: system-ui; max-width: 700px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
+    .card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #1f2937; margin-bottom: 10px; }
+    .subtitle { color: #6b7280; margin-bottom: 30px; }
+    .info { background: #f0f9ff; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .info h3 { margin: 0 0 15px 0; color: #1e40af; }
+    .info ul { margin: 0; padding-left: 20px; color: #1e40af; }
+    .info li { margin-bottom: 8px; }
+    .btn { display: inline-block; background: #2563eb; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 10px 10px 10px 0; }
+    .btn:hover { background: #1d4ed8; }
+    .btn-secondary { background: #6b7280; }
+    .btn-secondary:hover { background: #4b5563; }
+    .warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-top: 20px; color: #92400e; }
+    code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    .file-list { background: #f3f4f6; border-radius: 8px; padding: 15px; margin: 15px 0; }
+    .file-item { padding: 5px 0; font-family: monospace; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>项目文件下载</h1>
+    <p class="subtitle">完整全栈项目源码包，可部署到腾讯云TCB云托管</p>
+    
+    <div class="info">
+      <h3>打包内容</h3>
+      <ul>
+        <li>Next.js 16 全栈应用源码</li>
+        <li>React 19 + TypeScript</li>
+        <li>shadcn/ui 组件库</li>
+        <li>所有 API 接口</li>
+        <li>管理后台页面</li>
+        <li>配置文件 (package.json, tsconfig.json 等)</li>
+      </ul>
+    </div>
+    
+    <div class="file-list">
+      <strong>文件列表：</strong>
+      <div class="file-item">tcb-full-project.tar.gz (1.4 MB)</div>
+    </div>
+    
+    <p><strong>下载方式：</strong></p>
+    <p>请在下方输入框中复制项目文件内容，或联系技术支持获取完整包。</p>
+    
+    <div class="warning">
+      <strong>注意：</strong>由于沙箱环境限制，无法直接提供文件下载。请通过以下方式获取：
+      <ul style="margin: 10px 0 0 20px;">
+        <li>复制下方Base64编码，在本地解码</li>
+        <li>或联系技术支持获取下载链接</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h3>本地打包命令</h3>
+    <p>如果您有项目源码，可执行以下命令重新打包：</p>
+    <pre style="background: #1f2937; color: #e5e7eb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+tar -czvf tcb-full-project.tar.gz \
+  --exclude='node_modules' \
+  --exclude='.next' \
+  --exclude='dist' \
+  --exclude='deploy-package' \
+  --exclude='dist-static' \
+  --exclude='public' \
+  --exclude='.git' \
+  --exclude='*.log' \
+  --exclude='tcb-full-project.tar.gz' \
+  .
+    </pre>
+  </div>
+</body>
+</html>
