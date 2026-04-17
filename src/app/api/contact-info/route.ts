@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
-import type { ContactInfo } from '@/storage/database/shared/schema';
+import { db } from '@/storage/database/db';
 
 // GET - 获取联系方式
 export async function GET() {
   try {
-    const client = getSupabaseClient();
-    const { data, error } = await client
-      .from('contact_info')
-      .select('*')
-      .single();
+    const result = await db.select('contact_info');
 
-    if (error && error.code !== 'PGRST116') {
-      throw new Error(`获取联系方式失败: ${error.message}`);
+    if (result.error) {
+      throw new Error(`获取联系方式失败: ${result.error.message}`);
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      data: data as ContactInfo | null 
-    });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error('获取联系方式错误:', error);
     return NextResponse.json(
@@ -28,62 +20,33 @@ export async function GET() {
   }
 }
 
-// PUT - 更新联系方式（需管理员权限）
-export async function PUT(request: NextRequest) {
+// POST - 创建或更新联系方式
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      email, 
-      phone, 
-      wechat_qr_key, 
-      wechat_id, 
-      is_visible,
-      show_email,
-      show_phone,
-      show_wechat
-    } = body;
-    const client = getSupabaseClient();
 
-    // 检查是否存在记录
-    const { data: existing } = await client
-      .from('contact_info')
-      .select('id')
-      .single();
+    // 先检查是否已存在
+    const existing = await db.select('contact_info', 'id');
 
-    const updateData = {
-      email,
-      phone,
-      wechat_qr_key,
-      wechat_id,
-      is_visible,
-      show_email,
-      show_phone,
-      show_wechat,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (existing) {
-      const { error } = await client
-        .from('contact_info')
-        .update(updateData)
-        .eq('id', existing.id);
-
-      if (error) {
-        throw new Error(`更新联系方式失败: ${error.message}`);
-      }
+    let result;
+    if (existing.data) {
+      // 更新
+      result = await db.update('contact_info', {
+        ...body,
+        updated_at: new Date().toISOString(),
+      }, { id: (existing.data as { id: number }).id });
     } else {
-      const { error } = await client
-        .from('contact_info')
-        .insert(updateData);
-
-      if (error) {
-        throw new Error(`创建联系方式失败: ${error.message}`);
-      }
+      // 创建
+      result = await db.insert('contact_info', body);
     }
 
-    return NextResponse.json({ success: true });
+    if (result.error) {
+      throw new Error(`保存联系方式失败: ${result.error.message}`);
+    }
+
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
-    console.error('更新联系方式错误:', error);
+    console.error('保存联系方式错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

@@ -1,31 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
+import { db } from '@/storage/database/db';
 
 // PUT - 更新开发日志
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest) {
   try {
-    const { id } = await params;
     const body = await request.json();
-    const client = getSupabaseClient();
-
-    const { data, error } = await client
-      .from('dev_logs')
-      .update({
-        ...body,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', parseInt(id))
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`更新开发日志失败: ${error.message}`);
+    const { id, ...data } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少ID参数' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true, data });
+    const result = await db.update('dev_logs', data, { id: parseInt(id) });
+
+    if (result.error) {
+      throw new Error(`更新开发日志失败: ${result.error.message}`);
+    }
+
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error('更新开发日志错误:', error);
     return NextResponse.json(
@@ -36,21 +31,22 @@ export async function PUT(
 }
 
 // DELETE - 删除开发日志
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await params;
-    const client = getSupabaseClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少ID参数' },
+        { status: 400 }
+      );
+    }
 
-    const { error } = await client
-      .from('dev_logs')
-      .delete()
-      .eq('id', parseInt(id));
+    const result = await db.delete('dev_logs', { id: parseInt(id) });
 
-    if (error) {
-      throw new Error(`删除开发日志失败: ${ error.message}`);
+    if (result.error) {
+      throw new Error(`删除开发日志失败: ${result.error.message}`);
     }
 
     return NextResponse.json({ success: true });

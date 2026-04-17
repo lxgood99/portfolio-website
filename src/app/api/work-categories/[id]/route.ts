@@ -1,74 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
+import { db } from '@/storage/database/db';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
+// PUT - 更新作品分类
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, ...data } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少ID参数' },
+        { status: 400 }
+      );
+    }
+
+    const result = await db.update('work_categories', {
+      ...data,
+      updated_at: new Date().toISOString(),
+    }, { id: parseInt(id) });
+
+    if (result.error) {
+      throw new Error(`更新作品分类失败: ${result.error.message}`);
+    }
+
+    return NextResponse.json({ success: true, data: result.data });
+  } catch (error) {
+    console.error('更新作品分类错误:', error);
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
 }
 
-// DELETE - 删除分类（同时删除该分类下的所有作品和关联文件）
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+// DELETE - 删除作品分类
+export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await params;
-    const client = getSupabaseClient();
-
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
     if (!id) {
-      return NextResponse.json({ success: false, error: '缺少分类ID' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: '缺少ID参数' },
+        { status: 400 }
+      );
     }
 
-    const categoryId = parseInt(id);
+    const result = await db.delete('work_categories', { id: parseInt(id) });
 
-    // 查询该分类下的所有作品
-    const { data: works, error: worksError } = await client
-      .from('works')
-      .select('id')
-      .eq('category_id', categoryId);
-
-    if (worksError) {
-      throw new Error(`查询作品失败: ${worksError.message}`);
+    if (result.error) {
+      throw new Error(`删除作品分类失败: ${result.error.message}`);
     }
 
-    // 如果有作品，先删除关联数据
-    if (works && works.length > 0) {
-      const workIds = works.map(w => w.id);
-
-      // 1. 删除作品关联的文件记录 (work_items)
-      const { error: itemsError } = await client
-        .from('work_items')
-        .delete()
-        .in('work_id', workIds);
-
-      if (itemsError) {
-        console.error('删除作品文件记录失败:', itemsError);
-        // 继续执行，不阻断流程
-      }
-
-      // 2. 删除作品记录
-      const { error: deleteWorksError } = await client
-        .from('works')
-        .delete()
-        .eq('category_id', categoryId);
-
-      if (deleteWorksError) {
-        throw new Error(`删除作品失败: ${deleteWorksError.message}`);
-      }
-    }
-
-    // 3. 删除分类
-    const { error } = await client
-      .from('work_categories')
-      .delete()
-      .eq('id', categoryId);
-
-    if (error) {
-      throw new Error(`删除分类失败: ${error.message}`);
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      message: `已删除分类及关联的 ${works?.length || 0} 个作品` 
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('删除分类错误:', error);
+    console.error('删除作品分类错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

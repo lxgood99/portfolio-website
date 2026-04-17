@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
-import type { Profile } from '@/storage/database/shared/schema';
+import { db } from '@/storage/database/db';
 
 // GET - 获取个人信息
 export async function GET() {
   try {
-    const client = getSupabaseClient();
-    const { data, error } = await client
-      .from('profiles')
-      .select('*')
-      .maybeSingle();
+    const result = await db.select('profiles');
 
-    if (error) {
-      throw new Error(`获取个人信息失败: ${error.message}`);
+    if (result.error) {
+      throw new Error(`获取个人信息失败: ${result.error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: data as Profile | null });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error('获取个人信息错误:', error);
     return NextResponse.json(
@@ -29,46 +24,27 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const client = getSupabaseClient();
 
     // 先检查是否已存在
-    const { data: existing } = await client
-      .from('profiles')
-      .select('id')
-      .maybeSingle();
+    const existing = await db.select('profiles', 'id');
 
     let result;
-    if (existing) {
+    if (existing.data) {
       // 更新
-      const { data, error } = await client
-        .from('profiles')
-        .update({
-          ...body,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`更新个人信息失败: ${error.message}`);
-      }
-      result = data;
+      result = await db.update('profiles', {
+        ...body,
+        updated_at: new Date().toISOString(),
+      }, { id: (existing.data as { id: number }).id });
     } else {
       // 创建
-      const { data, error } = await client
-        .from('profiles')
-        .insert(body)
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`创建个人信息失败: ${error.message}`);
-      }
-      result = data;
+      result = await db.insert('profiles', body);
     }
 
-    return NextResponse.json({ success: true, data: result as Profile });
+    if (result.error) {
+      throw new Error(`保存个人信息失败: ${result.error.message}`);
+    }
+
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error('保存个人信息错误:', error);
     return NextResponse.json(
