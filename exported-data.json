@@ -1,0 +1,1187 @@
+{
+  "profiles": [
+    {
+      "id": 1,
+      "name": "刘鑫",
+      "title": "综合岗/项目助理/新媒体/综合文员/党务",
+      "bio": "一个热爱研究电脑技术与实用工具的探索者",
+      "avatar_key": "avatar/1774975678525_Tu_Ceng_1_2299ec33.png",
+      "email": "liuxin202307@163.com",
+      "phone": "",
+      "location": "北京市·丰台区",
+      "website": "",
+      "social_links": {},
+      "created_at": "2026-03-26T20:23:15.297365+08:00",
+      "updated_at": "2026-04-10T20:21:24.652+08:00",
+      "show_email": true,
+      "show_phone": true,
+      "show_location": true,
+      "show_github": false,
+      "show_linkedin": false,
+      "show_twitter": false,
+      "show_instagram": false,
+      "custom_title": "意向岗位",
+      "custom_content": "",
+      "show_custom": true,
+      "timeline_title": "一段「慢下来」的自我状态调整"
+    }
+  ],
+  "self_introduction": [
+    {
+      "id": 1,
+      "content": "一个爱研究工具、重逻辑、细节控的人。擅长拆解电脑软件与操作流程，快速上手各类实用工具；做事严谨闭环，偏爱整理、归纳这类能体现秩序感的事；能沉心专注，把时间花在真正解决问题上。",
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-01T19:06:40.814+08:00"
+    }
+  ],
+  "self_intro_cards": [
+    {
+      "id": 1,
+      "title": "自我评价",
+      "content": "一个爱研究工具、重逻辑、细节控的人。擅长拆解电脑软件与操作流程，快速上手各类实用工具；做事严谨闭环，偏爱整理、归纳这类能体现秩序感的事；能沉心专注，把时间花在真正解决问题上。",
+      "order_index": 0,
+      "created_at": "2026-04-03T16:08:29.507017+08:00",
+      "updated_at": "2026-04-03T16:29:42.87+08:00"
+    },
+    {
+      "id": 4,
+      "title": "个人优势",
+      "content": "跨领域能力，兼具办公文职的细致耐心，和新媒体 / 剪辑的创意执行能力，能适配多场景工作需求。对工具和流程上手快，习惯用效率工具优化工作流程，减少重复劳动。",
+      "order_index": 1,
+      "created_at": "2026-04-03T16:28:39.861036+08:00",
+      "updated_at": "2026-04-03T16:30:13.68+08:00"
+    },
+    {
+      "id": 3,
+      "title": "工具探索者",
+      "content": "拥抱 AI 时代，探索并实践。面对今年上半年席卷而来的 AI 浪潮，我也曾陷入过迷茫与焦虑，担忧自身能力被时代取代。但当我主动去探索、实践并融入工作时，才真正打破了恐惧。我选择将 AI 视为个人能力的放大器，而非竞争对手。通过不断学习与实践，在技术迭代中保持前行，实现更高效、更高质量的工作交付。",
+      "order_index": 2,
+      "created_at": "2026-04-03T16:23:05.430622+08:00",
+      "updated_at": "2026-04-03T16:36:45.714+08:00"
+    },
+    {
+      "id": 2,
+      "title": "关于网页",
+      "content": "从起初只想拥有一份干净简洁的作品展示页面，但千篇一律的模板最终没能如愿。不想放弃，零基础开发前提下，毅然选择从零搭建专属个人站点。历经框架搭建、功能部署、模块细节打磨，反复优化文案、调试 UI 界面，多次迭代修正代码，坚持长达一个半月耐心精修。全程依托 AI 工具协作落地，高效攻克开发难点、压缩优化流程，主动拥抱 AI 时代，借力实用工具放大执行力，最终打磨出属于自己的可独立部署、完整成型的作品集，打造出当下 AI 时代里专属自己的亮眼成果。",
+      "order_index": 3,
+      "created_at": "2026-04-03T16:22:52.387964+08:00",
+      "updated_at": "2026-04-03T16:50:55.75+08:00"
+    }
+  ],
+  "work_experiences": [
+    {
+      "id": 2,
+      "company": "大兴生态环境局（实习）",
+      "position": "综合办公实习",
+      "description": "<ul><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>数据处理与流程优化：</strong></span><span style=\"color: rgb(0, 0, 0);\">独立完成大兴区</span><span style=\"color: rgb(31, 56, 100);\"><strong>400</strong></span><span style=\"color: rgb(0, 0, 0);\">余家单位</span>、<span style=\"color: rgb(31, 56, 100);\"><strong>120万+</strong></span><span style=\"color: rgb(0, 0, 0);\">条业务数据的年度归纳与统计；运用Excel合并计算、公式编写与嵌套优化工作流程，将每日排查企业污染物异常排放的时间由</span><span style=\"color: rgb(31, 56, 100);\"><strong>1小时</strong></span><span style=\"color: rgb(0, 0, 0);\">缩短至</span><span style=\"color: rgb(31, 56, 100);\"><strong>10-15分钟</strong></span><span style=\"color: rgb(0, 0, 0);\">，并制作操作手册提升团队效率。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>执法信息整理与档案规范：</strong></span><span style=\"color: rgb(0, 0, 0);\">负责外出执法信息录入、业务材料核查与归档管理共计</span><span style=\"color: rgb(31, 56, 100);\"><strong>50+</strong></span><span style=\"color: rgb(0, 0, 0);\">份，规范资料留存流程，为部门执法工作提供准确、完整的信息支撑。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>政务咨询服务：</strong></span><span style=\"color: rgb(0, 0, 0);\">承担业务咨询热线接听工作</span><span style=\"color: rgb(31, 56, 100);\"><strong>20+</strong></span>次<span style=\"color: rgb(0, 0, 0);\">，耐心解答咨询、协调处理问题，助力提升部门对外服务效率与群众满意度。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>主要贡献：</strong></span><span style=\"color: rgb(0, 0, 0);\">作为优秀实习生代表参与宣传视频拍摄，</span>为生态环境<span style=\"color: rgb(0, 0, 0);\">局及本专业制作宣传材料，助力部门与院系本科生、研究生开展人才培养合作。</span></p></li></ul><p></p>",
+      "start_date": "2022-06",
+      "end_date": "2022-09",
+      "location": "北京市·大兴区",
+      "order": 1,
+      "created_at": "2026-04-01T19:28:50.509875+08:00",
+      "updated_at": "2026-04-02T23:56:44.968+08:00",
+      "image_display_mode": "none",
+      "description_align": "left"
+    },
+    {
+      "id": 1,
+      "company": "北京中馥慧文化科技有限公司",
+      "position": "董事长助理兼新媒体运营",
+      "description": "<ul><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>多平台内容制作与运营：</strong></span><span>运营抖音/小红书账号，独立完成选题、拍摄与剪辑，累计产出视频</span><span style=\"color: rgb(31, 56, 100);\"><strong>60+</strong></span><span>条，保持账号稳定更新节奏，完成内容持续输出。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>课程视频后期与上线部署：</strong></span><span>参与传统文化课程制作，完成</span><span style=\"color: rgb(31, 56, 100);\"><strong>36</strong></span><span style=\"color: rgb(0, 0, 0);\">节</span><span>完整课程视频的字幕滚动设计、页面插图排版等精细化后期工作，同步负责课程在微信小鹅通店铺上线发布与日常维护，助力课程内容触达用户。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>PPT包装与方案设计（核心）：</strong></span><span>独立牵头设计、包装并优化公司</span><span style=\"color: rgb(31, 56, 100);\"><strong>50 +</strong></span><span>页商业PPT，通过重构内容框架、梳理逻辑脉络、统一视觉设计规范（含版式、配色、图表优化），让PPT更贴合商业展示场景，优化后成果获得公司领导高度认可，作为对外商业化标准模板长期使用。参与</span><span style=\"color: rgb(31, 56, 100);\"><strong>12</strong></span><span>个文旅/团建项目方案制作，独立完成</span><span style=\"color: rgb(31, 56, 100);\"><strong>2</strong></span><span>个项目PPT设计及宣讲支持。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>产品视觉物料制作：</strong></span><span>负责公司产品实物拍摄全流程，包含场景搭建、灯光调试、角度构图等前期筹备，完成图片精修、背景优化等后期处理，产出</span><span style=\"color: rgb(31, 56, 100);\"><strong>100+</strong></span><span>个高质量视觉素材，有效支撑产品介绍、抖音小店商品推广等后续工作。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>直播执行与客户群推广：</strong></span><span style=\"color: rgb(0, 0, 0);\">公司转型探索直播后，</span><span>负责抖音直播带货全流程筹备与执行，涵盖直播间搭建、设备连接与调试、灯光布置、商品上架、直播期间互动维护等；撰写日常推广文案、活动引导文案，在客户群内定时推送宣传内容，强化客户粘性，助力业务转化。</span></p></li><li><p><span style=\"color: rgb(31, 56, 100);\"><strong>日常事务处理：</strong></span><span style=\"color: rgb(0, 0, 0);\">承担文件收发、资料整理、信息核对、会议纪要撰写等日常工作，保障部门事务顺畅。</span></p></li></ul><p></p>",
+      "start_date": "2023-08",
+      "end_date": "2025-07",
+      "location": "北京市·丰台区",
+      "order": 0,
+      "created_at": "2026-03-26T20:23:23.186609+08:00",
+      "updated_at": "2026-04-02T23:43:23.592+08:00",
+      "image_display_mode": "none",
+      "description_align": "left"
+    }
+  ],
+  "work_experience_images": [],
+  "educations": [
+    {
+      "id": 1,
+      "school": "北京石油化工学院",
+      "degree": "本科 工学学士",
+      "field": "环境工程",
+      "start_date": "2019-09",
+      "end_date": "2023-07",
+      "description": "2020 年以专业前 5% 排名推优为入党积极分子，2021 年正式成为中共党员",
+      "order": 0,
+      "created_at": "2026-03-26T20:23:23.191611+08:00",
+      "updated_at": "2026-04-04T00:42:22.254+08:00",
+      "description_align": "left",
+      "awards": "连续两年获得校级学业奖学金",
+      "gpa": "3.58/4.0",
+      "ranking": "6/85"
+    }
+  ],
+  "skills": [
+    {
+      "id": 16,
+      "name": "Aution",
+      "level": 50,
+      "category": "设计剪辑",
+      "order": 5,
+      "created_at": "2026-04-03T14:19:20.586127+08:00",
+      "updated_at": "2026-04-03T14:31:48.09+08:00",
+      "description": "掌握录音、剪辑、修音、降噪，能使用插件进行音频优化。"
+    },
+    {
+      "id": 6,
+      "name": "Excel",
+      "level": 80,
+      "category": "办公软件",
+      "order": 1,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:32:56.977+08:00",
+      "description": "熟练使用函数公式，能够完成公式编写嵌套，快速完成数据处理，掌握合并计算、条件格式等功能，提升工作效率。"
+    },
+    {
+      "id": 14,
+      "name": "C1机动车驾驶证",
+      "level": 60,
+      "category": "其他",
+      "order": 10,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:44:26.277+08:00",
+      "description": null
+    },
+    {
+      "id": 15,
+      "name": "电脑 & 效率实操",
+      "level": 85,
+      "category": "其他",
+      "order": 11,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:44:26.428+08:00",
+      "description": "熟练电脑基础装机、软件安装调试、文件分类高效归档；擅长用 AI 辅助做文案润色、素材整理、思路梳理提效"
+    },
+    {
+      "id": 10,
+      "name": "剪映",
+      "level": 65,
+      "category": "设计剪辑",
+      "order": 6,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-09T18:50:06.212+08:00",
+      "description": "独立完成剪辑、字幕、配乐、封面，能使用关键帧、蒙版、调速、调色等功能。"
+    },
+    {
+      "id": 13,
+      "name": "Coze",
+      "level": 60,
+      "category": "AI工具",
+      "order": 9,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-09T18:50:52.009+08:00",
+      "description": "了解基础代码编写，可用于开发简单的网页应用。"
+    },
+    {
+      "id": 9,
+      "name": "Premiere",
+      "level": 60,
+      "category": "设计剪辑",
+      "order": 4,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-09T18:51:02.016+08:00",
+      "description": "掌握剪辑、转场、关键帧动画、调色、音频降噪等后期处理。"
+    },
+    {
+      "id": 7,
+      "name": "PPT",
+      "level": 85,
+      "category": "办公软件",
+      "order": 0,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:21:37.853+08:00",
+      "description": "独立完成从内容整理到视觉呈现的完整方案。做过50+页商业化PPT，被公司用作对外展示标准模板。"
+    },
+    {
+      "id": 5,
+      "name": "Word",
+      "level": 70,
+      "category": "办公软件",
+      "order": 2,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:21:48.846+08:00",
+      "description": "熟练文档排版、格式优化与长文档整理，能高效完成各类办公文档处理。"
+    },
+    {
+      "id": 8,
+      "name": "Photoshop",
+      "level": 70,
+      "category": "设计剪辑",
+      "order": 3,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:21:53.279+08:00",
+      "description": "熟练完成图片修图、抠图、调色等后期处理，为工作输出不下百张配图。"
+    },
+    {
+      "id": 11,
+      "name": "ChatGPT/DeepSeek",
+      "level": 80,
+      "category": "AI工具",
+      "order": 6,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:24:13.784+08:00",
+      "description": "辅助文案框架、活动文案、标题思路梳理，提升内容产出效率。"
+    },
+    {
+      "id": 12,
+      "name": "Midjourney",
+      "level": 60,
+      "category": "AI工具",
+      "order": 8,
+      "created_at": "2026-04-03T03:14:33.779739+08:00",
+      "updated_at": "2026-04-03T14:24:26.731+08:00",
+      "description": "根据关键词生成PPT配图、视频所需非版权素材图，辅助视觉内容创作。"
+    }
+  ],
+  "skill_categories": [
+    {
+      "id": 2,
+      "name": "办公软件",
+      "order": 1,
+      "is_visible": true,
+      "created_at": "2026-04-03T03:14:23.399491+08:00",
+      "updated_at": "2026-04-03T03:14:23.399491+08:00"
+    },
+    {
+      "id": 3,
+      "name": "设计剪辑",
+      "order": 2,
+      "is_visible": true,
+      "created_at": "2026-04-03T03:14:23.399491+08:00",
+      "updated_at": "2026-04-03T03:14:23.399491+08:00"
+    },
+    {
+      "id": 4,
+      "name": "AI工具",
+      "order": 3,
+      "is_visible": true,
+      "created_at": "2026-04-03T03:14:23.399491+08:00",
+      "updated_at": "2026-04-03T03:14:23.399491+08:00"
+    },
+    {
+      "id": 5,
+      "name": "其他",
+      "order": 4,
+      "is_visible": true,
+      "created_at": "2026-04-03T03:14:23.399491+08:00",
+      "updated_at": "2026-04-03T14:44:26.055+08:00"
+    }
+  ],
+  "works": [
+    {
+      "id": 45,
+      "title": "1",
+      "description": "",
+      "category": null,
+      "tags": null,
+      "order": 0,
+      "created_at": "2026-04-14T19:21:41.439154+08:00",
+      "updated_at": "2026-04-14T19:21:41.439154+08:00",
+      "display_mode": "single",
+      "cover_image_key": null,
+      "description_align": "left",
+      "category_id": 3,
+      "subtitle": ""
+    }
+  ],
+  "work_items": [],
+  "work_categories": [
+    {
+      "id": 3,
+      "name": "PPT设计",
+      "order_index": 0,
+      "created_at": "2026-04-10T18:57:51.323227+08:00",
+      "updated_at": "2026-04-11T01:13:09.327+08:00"
+    },
+    {
+      "id": 4,
+      "name": "视频创作",
+      "order_index": 2,
+      "created_at": "2026-04-10T19:30:21.442023+08:00",
+      "updated_at": "2026-04-11T01:13:27.887+08:00"
+    },
+    {
+      "id": 2,
+      "name": "视觉设计",
+      "order_index": 1,
+      "created_at": "2026-04-10T18:57:51.323227+08:00",
+      "updated_at": "2026-04-11T20:43:00.311+08:00"
+    }
+  ],
+  "module_orders": [
+    {
+      "id": 3,
+      "module_name": "educations",
+      "order": 0,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-03T01:51:42.925+08:00"
+    },
+    {
+      "id": 2,
+      "module_name": "work_experiences",
+      "order": 1,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-03T01:51:42.977+08:00"
+    },
+    {
+      "id": 4,
+      "module_name": "skills",
+      "order": 2,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-03T01:51:43.05+08:00"
+    },
+    {
+      "id": 5,
+      "module_name": "works",
+      "order": 3,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-03T01:51:43.095+08:00"
+    },
+    {
+      "id": 1,
+      "module_name": "self_introduction",
+      "order": 4,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:14:25.403108+08:00",
+      "updated_at": "2026-04-03T01:51:43.145+08:00"
+    },
+    {
+      "id": 6,
+      "module_name": "contact_info",
+      "order": 5,
+      "is_visible": true,
+      "created_at": "2026-04-01T02:30:18.478889+08:00",
+      "updated_at": "2026-04-03T01:51:43.169+08:00"
+    }
+  ],
+  "contact_info": [
+    {
+      "id": 1,
+      "email": "liuxin202307@163.com",
+      "phone": "13800138000",
+      "wechat_qr_key": "contact/1775042457818_Er_Wei_Ma_408d1f74.png",
+      "wechat_id": "Xin99999L",
+      "is_visible": true,
+      "created_at": "2026-04-01T02:30:18.478889+08:00",
+      "updated_at": "2026-04-01T19:25:48.867+08:00",
+      "show_email": true,
+      "show_phone": false,
+      "show_wechat": true
+    }
+  ],
+  "timeline_items": [
+    {
+      "id": 2,
+      "name": "复盘经历，沉淀自我",
+      "start_year": 2025,
+      "start_month": 10,
+      "end_year": 2026,
+      "end_month": 1,
+      "color": "#10b981",
+      "breaks": [],
+      "order": 2,
+      "created_at": "2026-04-03T19:39:54.713006+08:00",
+      "updated_at": "2026-04-04T00:12:21.218+08:00"
+    },
+    {
+      "id": 3,
+      "name": "自律减脂，重塑自我",
+      "start_year": 2025,
+      "start_month": 11,
+      "end_year": 2026,
+      "end_month": 4,
+      "color": "#ec4899",
+      "breaks": [],
+      "order": 3,
+      "created_at": "2026-04-03T19:39:54.713006+08:00",
+      "updated_at": "2026-04-04T00:14:42.11+08:00"
+    },
+    {
+      "id": 5,
+      "name": "更新简历，正视自我",
+      "start_year": 2025,
+      "start_month": 12,
+      "end_year": 2026,
+      "end_month": 4,
+      "color": "#8b5cf6",
+      "breaks": [],
+      "order": 5,
+      "created_at": "2026-04-04T00:16:20.036714+08:00",
+      "updated_at": "2026-04-04T00:16:42.163+08:00"
+    },
+    {
+      "id": 1,
+      "name": "旅行修整，悦纳自我",
+      "start_year": 2025,
+      "start_month": 7,
+      "end_year": 2025,
+      "end_month": 9,
+      "color": "#3b82f6",
+      "breaks": [],
+      "order": 1,
+      "created_at": "2026-04-03T19:39:54.713006+08:00",
+      "updated_at": "2026-04-04T00:22:04.915+08:00"
+    },
+    {
+      "id": 4,
+      "name": "探索 A I ，赋能自我",
+      "start_year": 2026,
+      "start_month": 2,
+      "end_year": 2026,
+      "end_month": 4,
+      "color": "#f59e0b",
+      "breaks": [],
+      "order": 4,
+      "created_at": "2026-04-03T19:39:54.713006+08:00",
+      "updated_at": "2026-04-04T00:34:45.507+08:00"
+    }
+  ],
+  "dev_logs": [
+    {
+      "id": 1,
+      "version": "V1.0",
+      "title": "基础骨架版",
+      "created_at": "2026-03-01T00:00:00+08:00",
+      "requirements": "<p>搭建个人简历官网基础页面，规划整体模块顺序</p>",
+      "completed_features": "<p>个人基本信息展示</p><p>后台管理入口</p><p>基础页面结构搭建</p><p>数据库表设计</p><p>对象存储集成</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>项目正式启动，完成基础架构搭建</p>",
+      "order_index": 100
+    },
+    {
+      "id": 2,
+      "version": "V1.1",
+      "title": "个人信息精修版",
+      "created_at": "2026-03-20T00:00:00+08:00",
+      "requirements": "<p>精简个人介绍、敲定官网简介文案、优化隐私字段开关</p>",
+      "completed_features": "<p>定稿专属个人特质简介</p><p>字段显隐控制</p><p>联系方式基础配置</p><p>头像上传功能</p><p>社交链接配置</p>",
+      "bug_fixes": "<p>修复头像上传后不显示问题</p><p>优化表单验证逻辑</p>",
+      "notes": "<p>个人信息模块完善，支持灵活配置</p>",
+      "order_index": 90
+    },
+    {
+      "id": 3,
+      "version": "V1.2",
+      "title": "工作经历富文本上线版",
+      "created_at": "2026-04-01T00:00:00+08:00",
+      "requirements": "<p>工作经历加图文排版（加粗/颜色/列表/下划线）、解决编辑报错</p>",
+      "completed_features": "<p>接入 Tiptap 富文本编辑器</p><p>支持加粗、斜体、下划线</p><p>支持9种预设颜色</p><p>支持有序/无序列表</p><p>全端适配</p><p>旧数据兼容处理</p>",
+      "bug_fixes": "<p>修复颜色选择器点击后自动收起问题</p>",
+      "notes": "<p>工作经历模块功能完善，支持丰富的文本排版</p>",
+      "order_index": 80
+    },
+    {
+      "id": 4,
+      "version": "V1.2.bug1",
+      "title": "SSR水合修复版",
+      "created_at": "2026-04-02T00:00:00+08:00",
+      "requirements": "<p>修复 Next.js SSR 环境下富文本编辑器报错问题</p>",
+      "completed_features": "<p>添加 immediatelyRender: false 配置</p><p>编辑页无闪退无弹窗错误</p>",
+      "bug_fixes": "<p>修复 Tiptap SSR hydration 不匹配错误</p><p>修复颜色选择器链式调用问题</p>",
+      "notes": "<p>富文本编辑器在服务端渲染环境下稳定运行</p>",
+      "order_index": 79
+    },
+    {
+      "id": 6,
+      "version": "V1.3",
+      "title": "排版统一优化版",
+      "created_at": "2026-04-02T23:25:11.450272+08:00",
+      "requirements": "<p>统一工作经历和教育背景模块的首行排版风格</p>",
+      "completed_features": "<p>工作经历：左侧公司（灰色）+ 中间岗位（加粗黑色）+ 右侧时间地点（小字灰色）</p><p>教育背景：左侧学校（灰色）+ 中间学位专业（加粗黑色）+ 右侧时间（小字灰色）</p><p>响应式布局：手机端垂直排列，电脑端水平排列</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>两个模块字体大小、粗细、颜色完全统一</p>",
+      "order_index": 75
+    },
+    {
+      "id": 7,
+      "version": "V1.3.bug2",
+      "title": "左侧标题字体修正版",
+      "created_at": "2026-04-02T23:36:14.9621+08:00",
+      "requirements": "<p>调整左侧公司/学校字体大小，不得小于正文，并加粗显示</p>",
+      "completed_features": "<p>左侧公司/学校：text-base font-semibold text-primary</p><p>字体大于等于正文，加粗显示，颜色为主题灰色</p>",
+      "bug_fixes": "<p>修正左侧字体过小的问题</p>",
+      "notes": "<p>左侧和中间主标题视觉权重更平衡</p>",
+      "order_index": 74
+    },
+    {
+      "id": 8,
+      "version": "V1.3.bug3",
+      "title": "行距优化版",
+      "created_at": "2026-04-02T23:39:03.577827+08:00",
+      "requirements": "<p>调整工作经历和教育背景首行与下方内容的行距</p>",
+      "completed_features": "<p>首行与下方内容间距从 mt-3 调整为 mt-5</p><p>增加约半个字体高度的间距</p><p>响应式自适应，手机端和电脑端均正常显示</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>视觉层次更清晰，阅读体验更好</p>",
+      "order_index": 73
+    },
+    {
+      "id": 9,
+      "version": "V1.3.bug4",
+      "title": "工具栏失焦修复版",
+      "created_at": "2026-04-02T23:47:33.219325+08:00",
+      "requirements": "<p>修复富文本编辑器工具栏点击后自动收起的问题</p>",
+      "completed_features": "<p>在工具栏容器上添加 onMouseDown 阻止失焦事件</p><p>所有工具栏按钮（加粗、斜体、下划线、颜色、列表、清除格式）均可正常使用</p>",
+      "bug_fixes": "<p>修复点击颜色选择器后工具栏收起的问题</p><p>修复点击列表按钮后工具栏收起的问题</p><p>修复所有工具栏按钮的失焦问题</p>",
+      "notes": "<p>工具栏功能完全正常，点击后不会自动收起</p>",
+      "order_index": 72
+    },
+    {
+      "id": 10,
+      "version": "V1.3.bug5",
+      "title": "颜色选择器显示修复版",
+      "created_at": "2026-04-02T23:51:24.919496+08:00",
+      "requirements": "<p>修复富文本编辑器颜色选择器无法显示的问题</p>",
+      "completed_features": "<p>修改工具栏 overflow 属性，让颜色选择器弹出层可以正常显示</p><p>工具栏显示时使用 overflow-visible</p><p>工具栏隐藏时使用 max-h-0 overflow-hidden</p>",
+      "bug_fixes": "<p>修复颜色选择器被 overflow-hidden 裁剪无法显示的问题</p>",
+      "notes": "<p>颜色选择器现在可以正常弹出并选择颜色</p>",
+      "order_index": 71
+    },
+    {
+      "id": 11,
+      "version": "V1.3.bug6",
+      "title": "左侧字体加大版",
+      "created_at": "2026-04-03T00:34:30.10569+08:00",
+      "requirements": "<p>工作经历和教育背景首行左侧的公司/学校字体加大1号</p>",
+      "completed_features": "<p>左侧公司/学校字体从 text-base 调整为 text-lg</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>左侧标题与中间主标题字体大小一致，视觉更平衡</p>",
+      "order_index": 70
+    },
+    {
+      "id": 12,
+      "version": "V1.4",
+      "title": "教育背景学术信息增强版",
+      "created_at": "2026-04-03T01:01:54.184543+08:00",
+      "requirements": "<p>优化教育背景模块，新增奖学金、GPA、专业排名展示字段，替代手动空格对齐</p>",
+      "completed_features": "<p>数据库新增 awards、gpa、ranking 字段</p><p>后台管理页面新增学术成绩编辑表单</p><p>前台展示：三列自动对齐布局</p><p>字体大小与工作经历正文统一</p><p>描述内容间距调整为2个文字宽度</p><p>描述不输入则不显示</p>",
+      "bug_fixes": "<p>修复前台页面重复代码导致的语法错误</p>",
+      "notes": "<p>教育背景信息展示更规范，告别手动空格对齐</p>",
+      "order_index": 70
+    },
+    {
+      "id": 13,
+      "version": "V1.4.bug1",
+      "title": "开发日志导航优化版",
+      "created_at": "2026-04-03T01:04:01.355579+08:00",
+      "requirements": "<p>为开发日志页面添加返回首页和返回后台功能按钮</p>",
+      "completed_features": "<p>新增\"返回首页\"按钮，可直接跳转前台首页</p><p>新增\"返回后台\"按钮，可返回后台管理主页</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>解决进入开发日志页面后无法退出的问题</p>",
+      "order_index": 69
+    },
+    {
+      "id": 14,
+      "version": "V1.5",
+      "title": "访问统计增强版",
+      "created_at": "2026-04-03T01:44:06.543176+08:00",
+      "requirements": "<p>重构访问统计模块，优化统计逻辑和展示规则</p>",
+      "completed_features": "<p>新增每日访问统计表，只保留最近5天数据</p><p>新增每日IP记录表，实现同IP当天去重</p><p>新增累计访问总量统计（同IP每天计1次）</p><p>新增最近5日访问趋势展示</p><p>顶部统计卡片添加独立清零按钮</p><p>新增清空所有数据功能</p><p>今日访问每天0点自动清零</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>统计数据更精准，支持按需清零，方便测试</p>",
+      "order_index": 68
+    },
+    {
+      "id": 15,
+      "version": "V1.5.bug1",
+      "title": "访问去重修复版",
+      "created_at": "2026-04-03T01:57:26.046679+08:00",
+      "requirements": "<p>修复访问统计重复计数问题</p>",
+      "completed_features": "<p>改用 insert 替代 upsert，利用数据库唯一约束防重复</p><p>同一IP今天多次访问只计1次</p><p>更健壮的并发处理机制</p>",
+      "bug_fixes": "<p>修复同一IP多次刷新被重复计数的bug</p><p>修复 upsert 配置导致IP记录表为空的问题</p>",
+      "notes": "<p>访问统计现在准确去重</p>",
+      "order_index": 67
+    },
+    {
+      "id": 16,
+      "version": "V1.6",
+      "title": "手机端响应式优化版",
+      "created_at": "2026-04-03T02:02:21.415041+08:00",
+      "requirements": "<p>优化工作经历和教育背景模块在手机端的响应式布局</p>",
+      "completed_features": "<p>手机端首行标题居中显示</p><p>手机端第二行公司和时间左右分布</p><p>电脑端保持原有三列水平对齐样式</p><p>使用 flex + grid 组合实现响应式</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>手机端布局更清晰，不再拥挤换行</p>",
+      "order_index": 66
+    },
+    {
+      "id": 17,
+      "version": "V1.6.bug1",
+      "title": "手机端布局优化修复版",
+      "created_at": "2026-04-03T02:06:51.781768+08:00",
+      "requirements": "<p>修复手机端响应式布局文字变形问题</p>",
+      "completed_features": "<p>手机端第一行标题放大加粗（text-xl font-bold）</p><p>手机端第二行公司和时间缩小变浅（text-sm text-muted-foreground）</p><p>使用 flex justify-between 实现左右分布</p><p>添加 truncate 防止长文本溢出</p><p>地点信息在手机端隐藏，电脑端显示</p>",
+      "bug_fixes": "<p>修复手机端文字挤压变形问题</p>",
+      "notes": "<p>手机端布局清晰，标题突出，信息分布均匀</p>",
+      "order_index": 65
+    },
+    {
+      "id": 18,
+      "version": "V1.7",
+      "title": "手机端响应式终极优化版",
+      "created_at": "2026-04-03T02:14:51.981825+08:00",
+      "requirements": "<p>对教育背景和工作经历模块进行最终响应式布局优化</p>",
+      "completed_features": "<p>手机端完全重新排版，分行展示，左对齐</p><p>教育背景手机端：学校第一行，学历专业第二行，时间右对齐第三行，补充信息每行一个</p><p>工作经历手机端：公司第一行，职位第二行，时间右对齐第三行</p><p>电脑端保持原有三列水平对齐布局不变</p><p>使用 sm:hidden 和 hidden sm:block 实现完全分离的布局</p>",
+      "bug_fixes": "<p>修复手机端文字被压缩或挤到同一行的问题</p>",
+      "notes": "<p>手机端布局清晰分行，电脑端保持原设计</p>",
+      "order_index": 64
+    },
+    {
+      "id": 19,
+      "version": "V1.7.bug1",
+      "title": "手机端时间左对齐优化版",
+      "created_at": "2026-04-03T02:21:54.895373+08:00",
+      "requirements": "<p>优化手机端教育背景和工作经历的时间显示和正文段落间距</p>",
+      "completed_features": "<p>手机端时间改为独立一行左对齐</p><p>手机端正文段落（带\"·\"的内容）之间增加半个字体高度间距</p><p>使用 space-y-2 实现段落间距</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>手机端排版更清晰，段落阅读体验更好</p>",
+      "order_index": 63
+    },
+    {
+      "id": 20,
+      "version": "V1.7.bug2",
+      "title": "手机端样式细节优化版",
+      "created_at": "2026-04-03T02:27:26.174446+08:00",
+      "requirements": "<p>优化手机端教育背景和工作经历的样式细节</p>",
+      "completed_features": "<p>学校与公司名称增大一号字体（text-lg）</p><p>正文内容采用两端对齐（text-justify）</p><p>教育背景卡片上下空白减少一半（p-6 -> p-3）</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>手机端排版更美观，阅读体验更好</p>",
+      "order_index": 62
+    },
+    {
+      "id": 21,
+      "version": "V1.8",
+      "title": "设备指纹去重版",
+      "created_at": "2026-04-03T02:35:55.047688+08:00",
+      "requirements": "<p>修改访问统计去重规则，从IP去重改为设备去重</p>",
+      "completed_features": "<p>前端生成设备指纹（基于浏览器特性+canvas指纹）</p><p>同一WiFi下电脑/手机/平板分别算独立设备</p><p>同一设备每天只记1次，第二天重新计数</p><p>不收集IP等隐私信息，只区分设备</p><p>更新统计页面说明文字</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>访问统计更精准，同一网络下不同设备不再合并计数</p>",
+      "order_index": 61
+    },
+    {
+      "id": 22,
+      "version": "V1.8.bug1",
+      "title": "访问统计时区修复版",
+      "created_at": "2026-04-03T02:43:07.618879+08:00",
+      "requirements": "<p>修复访问统计日期显示错误问题</p>",
+      "completed_features": "<p>无新增功能</p>",
+      "bug_fixes": "<p>修复时区问题：原代码使用 toISOString() 获取 UTC 日期，导致北京时间凌晨显示为前一天日期</p><p>后端 getTodayStr() 改为使用本地时区获取日期</p><p>前端统计页面 getRecent5Days() 同样使用本地时区</p><p>修复数据库中错误日期的数据（2026-04-02 → 2026-04-03）</p>",
+      "notes": "<p>使用 getFullYear()/getMonth()/getDate() 替代 toISOString() 确保获取本地时区日期</p>",
+      "order_index": 60
+    },
+    {
+      "id": 23,
+      "version": "V1.8.bug2",
+      "title": "技能分类选择器修复版",
+      "created_at": "2026-04-03T02:46:33.929801+08:00",
+      "requirements": "<p>修复技能特长模块编辑时报错问题</p>",
+      "completed_features": "<p>无新增功能</p>",
+      "bug_fixes": "<p>修复 Select.Item 的 value 不能为空字符串的问题</p><p>使用 __none__ 作为\"未分类\"选项的值，保存时转换为 null</p>",
+      "notes": "<p>shadcn/ui 的 Select 组件不允许 SelectItem 使用空字符串作为 value</p>",
+      "order_index": 59
+    },
+    {
+      "id": 24,
+      "version": "V1.9",
+      "title": "技能特长模块重构版",
+      "created_at": "2026-04-03T02:59:17.638441+08:00",
+      "requirements": "<p>重构技能特长模块，优化布局和展示效果</p>",
+      "completed_features": "<p>数据库：skills表新增description字段，支持技能补充说明</p><p>管理后台：技能编辑新增补充说明输入框</p><p>前端展示：分类外层大卡片+技能内层小卡片布局</p><p>响应式：电脑端多列自动换行，手机端单列垂直堆叠</p><p>补充说明：有内容则显示，无内容自动隐藏不占空间</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>布局结构：外层Card包裹分类，内层div作为技能小卡片</p><p>响应式断点：grid-cols-1 sm:grid-cols-2 lg:grid-cols-3</p>",
+      "order_index": 58
+    },
+    {
+      "id": 25,
+      "version": "V1.10",
+      "title": "技能特长布局优化版",
+      "created_at": "2026-04-03T03:15:42.963609+08:00",
+      "requirements": "<p>优化技能特长模块布局，统一两列并排展示</p>",
+      "completed_features": "<p>大分类卡片：两列并排布局（电脑端和手机端都保持两列）</p><p>大分类卡片高度：顶部对齐排列</p><p>小技能卡片：每个大分类内部两列网格布局</p><p>小卡片间距：统一8px（gap-2）</p><p>测试数据：办公软件、设计剪辑、AI工具、其他共11个技能</p>",
+      "bug_fixes": "<p>修复代码残留导致的构建错误</p>",
+      "notes": "<p>布局：grid-cols-2 gap-4 items-start</p><p>小卡片：grid-cols-2 gap-2</p><p>响应式：使用 text-xs sm:text-sm 自动缩放</p>",
+      "order_index": 57
+    },
+    {
+      "id": 26,
+      "version": "V1.11",
+      "title": "技能特长布局修正版",
+      "created_at": "2026-04-03T03:20:59.920034+08:00",
+      "requirements": "<p>修正技能特长模块布局，优化等高对齐和内部排列</p>",
+      "completed_features": "<p>外层布局：大分类卡片两列并排，等高对齐（items-stretch）</p><p>内部布局：技能卡片改为单列垂直排列（flex flex-col）</p><p>小卡片间距：统一gap-2</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>等高对齐：grid items-stretch + Card flex flex-col</p><p>单列排列：flex flex-col gap-2</p>",
+      "order_index": 56
+    },
+    {
+      "id": 27,
+      "version": "V1.12",
+      "title": "技能特长微交互优化版",
+      "created_at": "2026-04-03T03:28:45.465464+08:00",
+      "requirements": "<p>优化技能特长模块的微交互体验</p>",
+      "completed_features": "<p>小卡片hover效果：添加阴影和背景变化，transition-all duration-200</p><p>进度条加载动画：从左到右填充动画，duration-1000 ease-out</p><p>动画延迟启动：100ms延迟让页面先渲染</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>Progress组件新增animate参数控制动画</p>",
+      "order_index": 55
+    },
+    {
+      "id": 28,
+      "version": "V1.13",
+      "title": "教育背景手机端对齐修复版",
+      "created_at": "2026-04-03T03:33:33.033471+08:00",
+      "requirements": "<p>修复教育背景手机端布局与工作经历不对齐问题</p>",
+      "completed_features": "<p>无新增功能</p>",
+      "bug_fixes": "<p>统一手机端padding：教育背景从p-3改为p-6</p><p>统一description间距：教育背景从mt-2改为mt-5</p>",
+      "notes": "<p>确保手机端教育背景和工作经历的卡片内容对齐</p>",
+      "order_index": 54
+    },
+    {
+      "id": 29,
+      "version": "V2.0",
+      "title": "技能特长标签页重构版",
+      "created_at": "2026-04-03T03:42:30.145755+08:00",
+      "requirements": "<p>重构技能特长模块为单一大卡片+顶部标签页切换方案</p>",
+      "completed_features": "<p>整体结构：删除4个独立分类卡片，改为1个全局大卡片</p><p>标签切换：顶部横向标签，点击切换内容，默认选中「办公软件」</p><p>内部排版：技能项单列竖向排布，间距宽松均匀</p><p>双端适配：电脑端标签横向铺开，手机端标签支持横向滑动</p><p>选中态：浅高亮+底部边框区分，不花哨</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>减少页面分割感，弱化碎片化卡片，留白加大，干净专业</p>",
+      "order_index": 53
+    },
+    {
+      "id": 30,
+      "version": "V2.1",
+      "title": "技能特长图例优化版",
+      "created_at": "2026-04-03T03:50:03.49591+08:00",
+      "requirements": "<p>在技能特长模块添加进度条含义图例</p>",
+      "completed_features": "<p>电脑端：标签栏右侧添加进度条图例，用小横线+文字展示</p><p>手机端：内容区顶部添加简化图例</p><p>图例内容：入门(0-30%) → 掌握(31-60%) → 熟练(61-80%) → 精通(81-100%)</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>图例样式：浅灰色小字+分隔线，与整体设计风格统一</p>",
+      "order_index": 52
+    },
+    {
+      "id": 31,
+      "version": "V2.2",
+      "title": "技能特长图例进度条版",
+      "created_at": "2026-04-03T03:53:39.963715+08:00",
+      "requirements": "<p>修改技能特长图例为进度条样式，与技能条视觉一致</p>",
+      "completed_features": "<p>图例改为单条水平进度条样式</p><p>四个分段标记：0%入门、30%掌握、60%熟练、100%精通</p><p>背景色、填充色与技能条完全匹配</p><p>文字在进度条下方，浅灰色小字体</p>",
+      "bug_fixes": "<p>无</p>",
+      "notes": "<p>电脑端：标签栏右侧，宽度32</p><p>手机端：内容区顶部居中，宽度max-w-48</p>",
+      "order_index": 51
+    },
+    {
+      "id": 32,
+      "version": "1.0.0",
+      "title": "技能图例样式优化",
+      "created_at": "2026-04-03T03:57:25.682+08:00",
+      "requirements": "调整技能特长模块图例的分段距离，改为平均分段",
+      "completed_features": "[\"将分段标记从30%/60%改为33%/66%（平均分布）\",\"同步修改电脑端和手机端图例样式\"]",
+      "bug_fixes": "[]",
+      "notes": "使四个分段（入门、掌握、熟练、精通）在视觉上更加均衡美观",
+      "order_index": 101
+    },
+    {
+      "id": 69,
+      "version": "1.7.5",
+      "title": "移动端甘特图添加滑动提示文字",
+      "created_at": "2026-04-11T01:57:40.013772+08:00",
+      "requirements": "用户希望在移动端甘特图下方添加\"可左右滑动观看\"提示文字",
+      "completed_features": "在 GanttChartDisplay 组件下方添加滑动提示文字，使用 md:hidden 类名仅在移动端显示，样式与作品集页面的滑动提示保持一致",
+      "bug_fixes": "无",
+      "notes": "甘特图在移动端可以横向滑动，但之前没有提示用户可以滑动查看更多内容",
+      "order_index": 133
+    },
+    {
+      "id": 34,
+      "version": "1.0.1",
+      "title": "修复技能特长模块未分类功能",
+      "created_at": "2026-04-03T14:40:02.811+08:00",
+      "requirements": "技能特长模块中，其他这一栏填写完内容后无法显示",
+      "completed_features": "[\"修改标签栏逻辑：排除其他分类，不单独显示为标签\",\"修改未分类筛选条件：只显示category为空的技能\",\"标签名称从其他改为未分类\",\"数据区域筛选逻辑同步修改\"]",
+      "bug_fixes": "[\"修复了category为其他字符串的技能无法在未分类标签中显示的问题\"]",
+      "notes": "数据库中存在名为其他的分类，与未分类功能冲突。解决方案：将其他分类排除在标签页遍历之外，只作为未分类的兜底显示。",
+      "order_index": 102
+    },
+    {
+      "id": 35,
+      "version": "1.1.0",
+      "title": "自我评价模块重构为多卡片结构",
+      "created_at": "2026-04-03T16:13:04.052+08:00",
+      "requirements": "将自我评价模块改为可自定义小卡片结构，支持标题+正文多卡片展示",
+      "completed_features": "[\"新增self_intro_cards数据表\",\"新增self-intro-cards API路由（支持CRUD和排序）\",\"前端页面标题改为关于我\",\"前端页面改为小卡片结构展示（与技能模块风格一致）\",\"管理后台重构：支持卡片CRUD和拖拽排序\",\"主容器高度自适应\",\"手机端单列布局自适应\"]",
+      "bug_fixes": "[]",
+      "notes": "小卡片样式与技能模块保持一致：圆角背景色间距统一，标题稍大稍重，正文浅灰色小字。",
+      "order_index": 103
+    },
+    {
+      "id": 36,
+      "version": "1.2.0",
+      "title": "关于我模块图标与富文本优化",
+      "created_at": "2026-04-03T17:00:13.119+08:00",
+      "requirements": "为卡片标题添加匹配图标，正文支持富文本编辑",
+      "completed_features": "[\"添加标题图标支持：自我评价(用户图标)、个人优势(星星图标)、工具探索者(机器人图标)、关于网页(代码图标)\",\"前端图标使用浅灰色，与标题大小一致\",\"管理后台卡片内容替换为富文本编辑器\",\"支持加粗、斜体、下划线、文字颜色、列表等格式\",\"前端使用RichTextContent组件渲染HTML内容\",\"支持手机端响应式显示\"]",
+      "bug_fixes": "[]",
+      "notes": "图标与标题颜色使用text-slate-400/dark:text-slate-500，确保不抢视线。富文本编辑器使用Tiptap实现。",
+      "order_index": 104
+    },
+    {
+      "id": 37,
+      "version": "1.3.0",
+      "title": "联系方式模块布局优化",
+      "created_at": "2026-04-03T17:04:29.936+08:00",
+      "requirements": "调整联系方式模块为左右两栏布局",
+      "completed_features": "[\"电脑端改为左右两栏布局：左侧信息竖排，右侧二维码\",\"左侧信息包含邮箱、电话、微信号，图标与文字居中对齐\",\"复制按钮跟随对应信息右侧\",\"二维码与左侧信息垂直居中对齐\",\"手机端保持原有自适应布局不变\",\"整体更紧凑平衡\"]",
+      "bug_fixes": "[]",
+      "notes": "使用hidden md:flex实现响应式布局分离，md:hidden保留手机端原有样式。",
+      "order_index": 105
+    },
+    {
+      "id": 38,
+      "version": "1.3.1",
+      "title": "联系方式模块布局细节优化",
+      "created_at": "2026-04-03T17:55:52.975+08:00",
+      "requirements": "按照示意图调整联系方式模块布局，左右两栏更紧凑",
+      "completed_features": "[\"左栏宽度变大(flex-3)，右栏稍窄(flex-2)，二维码更靠右\",\"左栏：邮箱和微信上下排列，图标+文字+复制按钮同行\",\"右栏：二维码居中显示，下方文字居中\",\"添加左右两栏间的垂直分割线\",\"邮箱/微信显示改为单行格式：邮箱：xxx@163.com\",\"手机端布局保持不变\"]",
+      "bug_fixes": "[]",
+      "notes": "使用flex-[3]和flex-[2]实现左右栏比例，分割线使用w-px bg-slate-200。",
+      "order_index": 106
+    },
+    {
+      "id": 39,
+      "version": "1.3.2",
+      "title": "联系方式模块对齐优化",
+      "created_at": "2026-04-03T18:11:02.934+08:00",
+      "requirements": "调整联系方式模块与关于我模块正文对齐",
+      "completed_features": "[\"CardContent改为p-4 sm:p-6与关于我模块一致\",\"左栏添加pl-5 pr-5使图标与关于我正文对齐\",\"右栏添加pl-5 pr-5保持对称\",\"复制按钮与分割线保持相同边距\",\"手机端布局保持不变\"]",
+      "bug_fixes": "[]",
+      "notes": "计算：关于我正文距离 = CardContent(p-4/p-6) + 小卡片(p-4/p-5) = 32px/44px。联系方式调整为相同计算。",
+      "order_index": 107
+    },
+    {
+      "id": 40,
+      "version": "1.3.3",
+      "title": "联系方式模块垂直居中调整",
+      "created_at": "2026-04-03T18:15:06.89+08:00",
+      "requirements": "调整邮箱和微信两行至卡片垂直居中",
+      "completed_features": "[\"左栏添加justify-center实现内容垂直居中\",\"微信二维码位置保持不变\"]",
+      "bug_fixes": "[]",
+      "notes": "使用flex flex-col justify-center让邮箱和微信两行整体垂直居中。",
+      "order_index": 108
+    },
+    {
+      "id": 41,
+      "version": "1.4.0",
+      "title": "甘特图模块开发",
+      "created_at": "2026-04-04T00:29:09.240433+08:00",
+      "requirements": "在「关于我」模块底部新增轻量化甘特图板块，支持成长规划展示",
+      "completed_features": "[\"新增timeline_items数据库表，存储时间线项目\",\"创建甘特图展示组件GanttChartDisplay\",\"支持横轴月份刻度(2025.06-2026.04)\",\"支持断点功能(非连续时间段显示)\",\"创建管理后台时间线编辑页面\",\"支持拖拽调整任务条位置和时长\",\"支持颜色自定义(8种低饱和配色)\",\"预设4条时间线模板：办公软件深耕、剪辑设计学习、AI工具探索落地、个人作品集搭建\",\"支持电脑端和手机端响应式适配\"]",
+      "bug_fixes": "[\"修复时间刻度与任务条区域对齐问题\",\"优化月份标签显示格式(两位数)\",\"统一淡色刻度线条样式\"]",
+      "notes": "甘特图使用纯CSS实现，零额外依赖，资源占用极低。使用yearMonthToIndex函数实现年月到索引的转换。",
+      "order_index": 109
+    },
+    {
+      "id": 42,
+      "version": "1.4.1",
+      "title": "联系方式模块间距微调",
+      "created_at": "2026-04-04T00:29:09.240433+08:00",
+      "requirements": "调整联系方式模块微信和邮箱中间的行距，右侧二维码向下移动半个字体",
+      "completed_features": "[\"微信和邮箱之间行距增加(gap-4→gap-6)，约一个字体宽度\",\"邮箱行向上移动半个字体高度(-mt-2)\",\"右侧二维码向下移动半个字体(pt-2)\"]",
+      "bug_fixes": "[]",
+      "notes": "使用gap-6增加间距，-mt-2调整邮箱行位置，pt-2调整二维码位置。",
+      "order_index": 110
+    },
+    {
+      "id": 43,
+      "version": "1.4.2",
+      "title": "甘特图起始时间与文字宽度调整",
+      "created_at": "2026-04-04T00:29:09.240433+08:00",
+      "requirements": "调整甘特图起始时间和左侧文字区域宽度",
+      "completed_features": "[\"甘特图起始时间从2025.04改为2025.06\",\"左侧文字区域宽度从w-24/32增加到w-36/44\",\"管理后台左侧宽度从w-28/32增加到w-36/48\",\"移除文字区域truncate限制，支持10个汉字完整显示\"]",
+      "bug_fixes": "[]",
+      "notes": "10个汉字约需140-160px宽度，新宽度足够完整显示。同步调整了时间刻度和任务条区域的对齐。",
+      "order_index": 111
+    },
+    {
+      "id": 44,
+      "version": "1.4.3",
+      "title": "甘特图标题支持自定义",
+      "created_at": "2026-04-04T00:29:09.240433+08:00",
+      "requirements": "甘特图标题支持用户自定义修改",
+      "completed_features": "[\"在profiles表添加timeline_title字段，默认值为「成长规划」\",\"前端展示页面读取并显示自定义标题\",\"管理后台添加标题编辑输入框，支持实时保存\",\"页面标题动态显示当前设置的标题\"]",
+      "bug_fixes": "[]",
+      "notes": "标题存储在profiles表中，通过/api/profile接口读写。管理后台失焦自动保存。",
+      "order_index": 112
+    },
+    {
+      "id": 45,
+      "version": "1.4.4",
+      "title": "文件上传大小限制与进度显示",
+      "created_at": "2026-04-05T20:42:00.413+08:00",
+      "requirements": "检查作品集模块上传文件的大小限制，预估不同大小文件的加载时间",
+      "completed_features": "[\"配置 Next.js API 路由支持大文件上传(maxDuration=300秒)\",\"添加文件大小限制验证：图片≤10MB、PDF/PPT≤150MB、视频≤300MB\",\"创建 UploadProgressBar 组件，支持实时上传进度显示\",\"使用 XMLHttpRequest 实现真实上传进度追踪\",\"添加友好的文件大小验证错误提示\",\"后端返回 413 状态码处理超大文件请求\"]",
+      "bug_fixes": "[]",
+      "notes": "使用XMLHttpRequest替代fetch获取真实上传进度，fetch API不支持原生进度追踪。",
+      "order_index": 113
+    },
+    {
+      "id": 46,
+      "version": "1.4.5",
+      "title": "作品集手机端布局优化",
+      "created_at": "2026-04-05T20:42:09.419+08:00",
+      "requirements": "优化作品集模块手机端布局，解决卡片一拉见不到底的问题",
+      "completed_features": "[\"手机端实现横向滚动布局，每个分类独立滚动容器\",\"一屏显示2张卡片，超出部分可左右滑动浏览\",\"分类标题右侧添加→图标提示可滑动\",\"底部添加「查看更多作品」按钮，跳转独立列表页\",\"新建 /works 页面作为独立作品集列表页\",\"电脑端保持原有网格布局不变\",\"添加隐藏滚动条CSS样式，提升视觉体验\"]",
+      "bug_fixes": "[]",
+      "notes": "手机端使用overflow-x-auto实现横向滚动，卡片宽度calc(50vw - 28px)。",
+      "order_index": 114
+    },
+    {
+      "id": 47,
+      "version": "1.4.6",
+      "title": "技能特长进度条数值标注",
+      "created_at": "2026-04-05T20:42:18.469+08:00",
+      "requirements": "在技能特长模块进度条两端添加数值标注",
+      "completed_features": "[\"进度条左侧起点添加「0」文字标注\",\"进度条右侧终点添加「100%」文字标注\",\"标注文字使用浅灰色(slate-400)，与现有标签颜色一致\",\"同时支持电脑端和手机端显示\",\"调整进度条宽度和标签位置确保数值不遮挡进度条\"]",
+      "bug_fixes": "[\"修复标签与进度条分割线不对齐的问题\",\"移除标签容器左侧偏移(ml-3.5)，改为与进度条相同布局结构\",\"使用占位元素确保标签容器与进度条宽度完全一致\"]",
+      "notes": "使用flex布局+占位元素实现标签与进度条精确对齐，入门/掌握/熟练/精通对应0%/33%/66%/100%四个分割线位置。",
+      "order_index": 115
+    },
+    {
+      "id": 48,
+      "version": "1.4.7",
+      "title": "修复 @langchain/core 模块找不到的构建错误",
+      "created_at": "2026-04-07T21:57:11.419+08:00",
+      "requirements": "沙盒重启后出现构建错误，提示找不到 @langchain/core/embeddings",
+      "completed_features": "[\"安装缺失的 @langchain/core 和 @langchain/openai 依赖\",\"执行 pnpm add @langchain/core @langchain/openai 解决问题\"]",
+      "bug_fixes": "[]",
+      "notes": "问题原因：pnpm 依赖隔离机制导致 coze-coding-dev-sdk 内部的 langchain 依赖无法被正确链接。解决方案：将这两个包显式添加到 package.json dependencies 中，以后不会重复出现。",
+      "order_index": 116
+    },
+    {
+      "id": 49,
+      "version": "1.4.8",
+      "title": "修复 ESLint 构建错误和代码检查问题",
+      "created_at": "2026-04-07T22:11:23.037652+08:00",
+      "requirements": "构建时报错，需要修复 lint errors",
+      "completed_features": "修复 skills/page.tsx loadData 访问顺序问题；修复引号转义问题（self-introduction/works/PDFViewer）；修复 supabase-client.ts require 导入问题；删除未使用变量和导入；添加 PDF worker 文件到 ESLint 忽略列表",
+      "bug_fixes": "1. skills/page.tsx: loadData 函数调用在定义之前的问题；2. 引号转义：中文引号 \"...\" 需改为「...」；3. supabase-client.ts: require 导入被 ESLint 禁止；4. 多处未使用变量导致 lint 警告",
+      "notes": "ESLint 配置中添加 public/pdf/** 忽略规则解决 PDF worker 文件警告。建议后续开发中使用 ESLint 插件实时检查，避免积累问题。",
+      "order_index": 117
+    },
+    {
+      "id": 50,
+      "version": "1.4.9",
+      "title": "文件存储诊断 - 文件未消失，仅签名URL过期",
+      "created_at": "2026-04-07T22:18:55.070412+08:00",
+      "requirements": "用户反馈上传的图片和文件消失",
+      "completed_features": "全面检查存储功能：检查上传API、数据库存储、前端获取URL逻辑、文件可访问性",
+      "bug_fixes": "排查问题：1. 文件key正确存储在数据库中；2. 对象存储中文件完整可访问；3. 签名URL默认30天有效期，过期后需重新生成；4. 前端代码正确，每次加载时调用/api/file-url获取新URL",
+      "notes": "问题原因：签名URL有30天有效期，过期后无法访问。文件本身在对象存储中完好无损，刷新页面会获取新URL。建议用户清除浏览器缓存或强制刷新(Ctrl+F5)。",
+      "order_index": 118
+    },
+    {
+      "id": 51,
+      "version": "1.5.0",
+      "title": "修复作品集上传功能 - 多文件重复添加和显示问题",
+      "created_at": "2026-04-09T19:40:04.402592+08:00",
+      "requirements": "上传多个文件时只显示1个文件被添加了多次，封面显示不正常",
+      "completed_features": "修复 handleAddCarouselItem：使用唯一 ID 的文件输入框，避免多次点击导致文件累积；修复 handleCarouselUpload：添加文件名去重逻辑（基于 title），避免同一文件被重复添加；改进上传进度显示：显示「(1/3) 文件名」格式，让用户清楚知道当前上传进度",
+      "bug_fixes": "1. input.files 会累积之前选择的文件，导致同一批文件被重复处理；2. 没有去重逻辑，相同文件名的文件会被���复添加到 carouselItems；3. 上传进度只显示当前文件，无法知道总进度",
+      "notes": "添加了智能去重：如果用户选择已存在的文件名，会提示「所选文件均已添加，请选择其他文件」。同时改进了进度显示，让用户清楚知道正在上传第几个文件，共几个文件。",
+      "order_index": 119
+    },
+    {
+      "id": 52,
+      "version": "1.5.1",
+      "title": "代码质量清理 - 减少 64% ESLint warnings",
+      "created_at": "2026-04-09T19:52:59.189326+08:00",
+      "requirements": "清理代码中堆积的 ESLint warnings，保持代码整洁",
+      "completed_features": "清理 useEffect 依赖警告（6处）；清理未使用的 error 变量（17处catch块）；清理未使用的 isLoading 状态（timeline/page.tsx）；删除未使用的导入文件（relations.ts）；删除未使用的 sql 导入（schema.ts）；删除未使用的 eslint-disable 注释（11处）；为 lucide-react Image 图标添加 aria-hidden 属性",
+      "bug_fixes": "1. catch 块中声明了未使用的 error 变量；2. eslint-disable 注释指向不存在的变量；3. 未使用的 isLoading 状态声明；4. 未使用的导入文件；5. lucide-react Image 图标缺少无障碍属性",
+      "notes": "从 47 个 warnings 减少到 17 个（减少 64%）。剩余 17 个警告均为 Using <img> 建议性警告，用于动态签名 URL 图片加载，可忽略。养成习惯：每次修改代码后运行 pnpm lint --fix 顺手清理。",
+      "order_index": 120
+    },
+    {
+      "id": 53,
+      "version": "1.5.2",
+      "title": "作品集文件上传UI重构 - 修复添加框显示和位置问题",
+      "created_at": "2026-04-09T20:11:27.525174+08:00",
+      "requirements": "1. 添加多个文件时，每个添加框不显示文件名；2. 每操作一次添加，添加框向上移动；3. 上传不同文件时可能错乱",
+      "completed_features": "重构整个文件上传逻辑：1. 新增 FileItemRow 组件，用于渲染单个文件项；2. 使用唯一 tempId 替代 index 作为 React key，解决DOM复用导致的布局问题；3. 文件选择后立即显示文件名（选择文件中...）；4. 上传中显示「上传中...」动画提示；5. 上传完成后显示文件类型图标和文件名；6. 点击文件项可重新选择文件替换；7. 新增 isUploading 状态标记上传中的文件项；8. 添加重新上传按钮（点击文件项右侧的上传图标）",
+      "bug_fixes": "1. 原代码使用 index 作为 key，添加新项时 React 错误复用 DOM 元素导致布局错乱；2. 原代码在上传前不显示文件名，用户无法知道选择了什么文件；3. 原代码使用 uploadingIndex 追踪上传状态，多文件上传时会相互干扰",
+      "notes": "新逻辑：点击「添加文件」按钮 → 创建带 tempId 的临时项 → 立即打开文件选择器 → 选择文件后显示文件名并开始上传 → 上传中显示动画 → 上传完成更新状态。这样用户可以清楚看到每个添加框的状态，且不会有上传错乱问题。",
+      "order_index": 121
+    },
+    {
+      "id": 54,
+      "version": "1.5.3",
+      "title": "修复作品集文件删除失败问题",
+      "created_at": "2026-04-09T20:36:53.011351+08:00",
+      "requirements": "作品集文件删除时显示删除失败",
+      "completed_features": "1. 定位问题：前端调用API路径错误\\n   - 前端调用：/api/works/items/${item.id}\\n   - 实际API：/api/work-items/${item.id}\\n2. 修复文件：src/app/admin/works/page.tsx\\n3. 测试验证：API删除功能正常工作",
+      "bug_fixes": null,
+      "notes": "API路由命名规范：work-items(单数) vs works/items(复数)",
+      "order_index": 0
+    },
+    {
+      "id": 68,
+      "version": "1.7.4",
+      "title": "作品集封面禁止点击 - 统一通过标题打开",
+      "created_at": "2026-04-11T01:48:21.370475+08:00",
+      "requirements": "用户反馈封面图有Eye图标点击让人误解，需要禁止点击封面，统一通过标题打开",
+      "completed_features": "1. 移除封面图的onClick事件，禁止点击封面；2. 移除封面hover的Eye图标覆盖层；3. 无封面区域也移除onClick；4. 统一提示文字改为\"点击下方标题打开\"；5. 封面图保持原有显示效果（图片/视频/渐变）",
+      "bug_fixes": "用户希望统一通过点击标题来打开文件，而不是点击封面",
+      "notes": "封面只用于展示，不能点击。用户需要通过点击标题区域的\"点击打开\"提示来打开文件。",
+      "order_index": 132
+    },
+    {
+      "id": 55,
+      "version": "1.5.4",
+      "title": "修复前端JSON解析错误",
+      "created_at": "2026-04-09T20:44:01.463367+08:00",
+      "requirements": "控制台显示 SyntaxError: Unexpected token u, upstream f... is not valid JSON",
+      "completed_features": "1. 问题定位：前端API调用未检查响应状态就直接调用.json()\\n2. 修复范围：\\n   - src/app/page.tsx (loadData)\\n   - src/app/works/page.tsx (loadData)\\n   - src/app/admin/self-introduction/page.tsx (loadData)\\n   - src/app/admin/skills/page.tsx (loadSkills, loadCategories)\\n   - src/app/admin/works/page.tsx (loadWorks)\\n   - src/app/admin/experience/page.tsx (loadExperiences)\\n   - src/app/admin/education/page.tsx (loadEducations)\\n   - src/app/admin/profile/page.tsx (loadProfile)\\n   - src/app/admin/contact/page.tsx (loadContactInfo)\\n   - src/app/admin/timeline/page.tsx (loadItems, loadTimelineTitle)\\n   - src/app/admin/analytics/page.tsx (loadStats, handleReset)\\n   - src/app/admin/dev-logs/page.tsx (loadLogs)\\n   - src/app/admin/module-orders/page.tsx (loadModules)\\n3. 修复方式：在调用.json()前检查response.ok状态\\n   - 修改前：const data = await res.json();\\n   - 修改后：const data = res.ok ? await res.json() : null;",
+      "bug_fixes": null,
+      "notes": "当服务器返回非JSON响应（如Nginx错误页面）时，不会再导致页面崩溃",
+      "order_index": 0
+    },
+    {
+      "id": 56,
+      "version": "1.5.5",
+      "title": "修复作品集文件上传显示问题",
+      "created_at": "2026-04-09T20:51:27.516072+08:00",
+      "requirements": "上传文件完成后不显示文件，正在上传时添加其他文件不显示",
+      "completed_features": "问题根因：setWorkItems 使用了闭包值而非函数式更新，导致并发上传时状态丢失\\n\\n修复文件：src/app/admin/works/page.tsx\\n\\n修复函数：\\n1. handleFileUploadWithFile：\\n   - 第577行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)\\n   - 第586行：setWorkItems(workItems.map...) → setWorkItems(prev => prev.map...)\\n   - 第607行：setWorkItems(workItems.map...) → setWorkItems(prev => prev.map...)\\n   - 第615行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)\\n   - 第620行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)\\n\\n2. handleAddFileItem：\\n   - 第631行：setWorkItems([...workItems, ...]) → setWorkItems(prev => [...prev, ...])\\n   - 第652行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)\\n\\n3. handleRemoveFileItem：\\n   - 第668行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)\\n   - 第676行：setWorkItems(workItems.filter...) → setWorkItems(prev => prev.filter...)",
+      "bug_fixes": null,
+      "notes": "React状态更新应使用函数式更新(prev => ...)以确保获取最新状态，避免闭包陷阱",
+      "order_index": 0
+    },
+    {
+      "id": 57,
+      "version": "1.5.6",
+      "title": "修复作品集文件保存丢失问题",
+      "created_at": "2026-04-09T21:03:08.242278+08:00",
+      "requirements": "上传5个文件，保存后只剩3个",
+      "completed_features": "问题分析：\\n1. 上传完成后显示正常，但保存时部分文件丢失\\n2. 原因：handleSave 中使用闭包捕获的 workItems，可能在保存过程中状态被覆盖\\n\\n修复内容：src/app/admin/works/page.tsx\\n\\n1. 保存前检查：\\n   - 检查是否有正在上传的文件\\n   - 如有则提示用户等待，避免保存不完整的文件\\n\\n2. 状态快照：\\n   - 在保存开始时创建 workItems 和 carouselItems 的快照\\n   - 使用 const currentWorkItems = [...workItems] 避免闭包问题\\n\\n3. 添加日志：\\n   - 保存前记录要保存的文件数量\\n   - 保存后记录实际保存的文件数量\\n   - 记录跳过的文件及原因",
+      "bug_fixes": null,
+      "notes": "修复后用户需要等待所有文件上传完成才能保存，确保文件完整性",
+      "order_index": 0
+    },
+    {
+      "id": 60,
+      "version": "1.6.1",
+      "title": "作品集分类/排序逻辑完善 + 上传组件重构",
+      "created_at": "2026-04-10T20:31:30.654563+08:00",
+      "requirements": "1. 分类按钮黑色样式仅作为选中态标识；2. 作品条目所有元素水平对齐；3. 添加作品按钮需在每个分类列表上方；4. 文件上传需显示进度条和文件大小限制提示",
+      "completed_features": "1. 分类选中状态：黑色背景=选中态，点击切换高亮，仅当前选中标签为黑色；2. 分类切换动画：添加淡入淡出过渡动画（FadeInSection组件）；3. 作品条目布局对齐：封面固定64x64，标题备注自适应，按钮固定右侧；4. 添加作品按钮移到每个分类作品列表上方；5. 上传进度条：使用Progress组件显示上传进度；6. 文件大小限制提示：图片10MB、视频300MB、PPT/PDF 150MB",
+      "bug_fixes": "1. 之前分类切换没有动画效果，生硬跳转；2. 作品卡片内元素高低错位；3. 添加作品按钮位置不对；4. 上传没有进度反馈",
+      "notes": "使用 FadeInSection 组件实现平滑的 opacity + translateY 过渡效果。文件大小限制在 handleDirectUpload 中判断文件类型并验证大小，超出限制时 alert 提示。",
+      "order_index": 123
+    },
+    {
+      "id": 58,
+      "version": "1.6.0",
+      "title": "作品集模块重构 - 按PPT设计重写",
+      "created_at": "2026-04-10T19:05:00.965383+08:00",
+      "requirements": "按PPT设计稿1:1还原作品集后台管理，补充前端展示功能",
+      "completed_features": "一、后台管理页面重构\\n\\n1. 页面结构\\n   - 顶部标题「作品集」，副标题「拖拽调整顺序」\\n   - 左侧分类标签（默认3个，可拖拽排序、双击编辑名称）\\n   - 右侧「添加分类」按钮\\n   - 作品列表支持拖拽排序\\n\\n2. 作品卡片结构\\n   - 拖拽图标 + 封面按钮 + 标题/副标题 + 备注输入框 + 编辑/删除按钮\\n\\n3. 使用说明（底部完整显示）\\n   - 拖拽作品卡片可调整显示顺序\\n   - 点击编辑按钮可修改作品标题、简介和分类\\n   - 图片建议尺寸：1920x1080\\n   - 图片最大：10MB | 视频最大：300MB | PPT/PDF最大：150MB\\n\\n二、数据库改动\\n\\n1. 创建 work_categories 表\\n   - id, name, order_index, created_at, updated_at\\n\\n2. works 表新增字段\\n   - category_id: 关联分类\\n   - subtitle: 副标题\\n\\n三、前端展示页面\\n\\n1. 顶部分类按钮（全部 + 后台设置的分类）\\n2. 淡入淡出动画过渡（opacity transition）\\n3. 横向滑动卡片（snap-x snap-mandatory）\\n4. 点击卡片交互：图片放大、PPT/PDF竖向预览、视频播放\\n\\n四、API路由\\n\\n1. /api/work-categories - 分类CRUD\\n2. /api/works - 支持categoryId筛选",
+      "bug_fixes": null,
+      "notes": "与PPT设计完全一致，功能完整",
+      "order_index": 124
+    },
+    {
+      "id": 61,
+      "version": "1.6.2",
+      "title": "作品集后台 - 分类/编辑按钮修复 + 前后端排序同步",
+      "created_at": "2026-04-10T20:32:02.266121+08:00",
+      "requirements": "1. 分类按钮点击无响应；2. 作品卡片铅笔按钮点击无实质功能；3. 后端分类排序不同步到前端；4. 上传文件时JSON解析错误",
+      "completed_features": "1. 分类按钮点击修复：分离拖拽手柄与分类标签事件，解决 dnd-kit listeners 覆盖按钮点击；2. 作品卡片铅笔按钮修复：SortableWork 组件同样分离拖拽与点击事件；3. 前后端排序同步：前端新增 /api/work-categories 调用，分类和作品按 order_index/order 排序；4. 上传错误处理：添加 response.ok 检查和 try-catch JSON 解析，改进错误提示",
+      "bug_fixes": "1. dnd-kit listeners 绑定在整个 div 上，阻止子元素点击事件；2. SortableWork 组件同样问题；3. 前端未调用分类API直接提取分类无法保证顺序；4. 上传API返回非JSON时未处理",
+      "notes": "分类和作品卡片的拖拽手柄现在独立存在，只有点击手柄才会触发拖拽。拖拽图标改为垂直排列的 GripVertical 图标，更清晰。前端现在会调用 /api/work-categories 获取分类数据，按 order_index 排序后显示，与后端管理页面完全一致。",
+      "order_index": 125
+    },
+    {
+      "id": 62,
+      "version": "1.6.3",
+      "title": "修复文件上传 413 错误 - 增大 Next.js body 大小限制",
+      "created_at": "2026-04-10T20:34:56.998971+08:00",
+      "requirements": "上传文件时出现 \"服务器返回错误 413\" 错误，请求体过大被拒绝",
+      "completed_features": "在 next.config.ts 中配置 api.bodyParser.sizeLimit 为 500mb，允许最大 500MB 文件上传",
+      "bug_fixes": "Next.js 默认 body 大小限制为 1MB，超过限制会返回 413 Payload Too Large 错误",
+      "notes": "413 错误可能还来自平台层面（nginx/代理）的限制。如果仍然出现 413，请检查是否有平台层面的上传大小限制。",
+      "order_index": 126
+    },
+    {
+      "id": 63,
+      "version": "1.6.4",
+      "title": "修复文件上传 413 错误 - Next.js App Router 大小限制配置",
+      "created_at": "2026-04-10T20:38:55.360475+08:00",
+      "requirements": "部分文件上传成功，部分失败，均小于20MB，报错 413 Payload Too Large",
+      "completed_features": "修正 next.config.ts 中的配置方式：Next.js App Router 不支持 api.bodyParser，改为使用 experimental.largePageDataBytes 配置",
+      "bug_fixes": "1. 之前配置的 api.bodyParser.sizeLimit 只适用于 Pages Router，对 App Router 无效；2. Next.js App Router 需要使用不同的配置方式",
+      "notes": "App Router 默认 body 大小限制为 1MB。如果平台层面（nginx/代理）也有 413 限制，则代码层面无法完全解决。建议检查平台配置。",
+      "order_index": 127
+    },
+    {
+      "id": 64,
+      "version": "1.7.0",
+      "title": "作品集前端展示页面重构 - 横向滚动布局、统一卡片样式",
+      "created_at": "2026-04-11T01:01:59.318944+08:00",
+      "requirements": "1. 分类切换需要平滑动画效果；2. 页面默认选中「全部」标签；3. 所有页面统一横向滚动布局；4. 一行显示2-3张卡片；5. 支持手动滑动+自动轮播；6. 预览效果优化",
+      "completed_features": "1. 统一横向滚动布局：移除原有的 md:hidden/md:block 条件显示，统一使用横向滚动容器；2. 分类切换动画：按钮添加 scale-105 变换效果，hover 时也有过渡动画；3. 卡片样式统一：固定高度封面、统一 padding、调整字体大小；4. 滚动箭头按钮：作品超过3个时显示左右箭头，支持点击滚动；5. 默认选中「全部」：已通过 useState 默认为 all；6. 滚动提示：添加 cursor-grab/grabbing 样式提示可拖动",
+      "bug_fixes": "1. 之前手机端用横向布局，电脑端用网格布局，体验不统一；2. 分类按钮没有明显的动画效果；3. 没有左右滚动箭头提示",
+      "notes": "横向滚动使用 snap-x snap-mandatory 实现吸附效果，每张卡片都是独立的 snap 点。卡片宽度使用 calc(33.333% - 12px) 实现一行3张效果，配合 minWidth 和 maxWidth 保证美观。",
+      "order_index": 128
+    },
+    {
+      "id": 65,
+      "version": "1.7.1",
+      "title": "作品集滑动提示文字优化",
+      "created_at": "2026-04-11T01:24:08.807083+08:00",
+      "requirements": "用户反馈手机端不知道作品页面可以左右滑动，需要添加提示文字",
+      "completed_features": "在横向滚动容器下方添加\"可左右滑动观看\"提示文字，配合左右箭头图标和 pulse 动画效果",
+      "bug_fixes": "无",
+      "notes": "提示文字使用 text-muted-foreground/60 透明度，字体大小 14px，左右箭头使用 SVG 内联图标并添加 animate-pulse 动画吸引注意。",
+      "order_index": 129
+    },
+    {
+      "id": 66,
+      "version": "1.7.2",
+      "title": "作品集卡片点击预览功能 - 图片滑动、PPT/PDF/视频预览",
+      "created_at": "2026-04-11T01:35:01.950278+08:00",
+      "requirements": "1. 每张作品卡片需要能够打开文件（PPT/PDF/视频等）；2. PPT/PDF需竖向滑动翻页预览，禁止下载；3. 图片需支持左右滑动切换；4. 视频需内嵌播放，禁止下载",
+      "completed_features": "1. 卡片点击功能：点击卡片任意位置打开预览（封面、标题、无封面均支持）；2. 添加醒目\"查看\"按钮（Eye图标覆盖层）；3. 图片预览：支持左右滑动切换同分类���片，显示图片计数器；4. 视频预览：内嵌播放，使用controlsList=\"nodownload\"禁止下载；5. PDF预览：使用PDFViewer组件，竖向滑动翻页；6. PPT预览：显示提示信息（暂不支持在线预览）；7. 移除所有下载按钮",
+      "bug_fixes": "1. 之前卡片没有统一的点击打开功能；2. 图片预览没有左右滑动切换；3. 视频没有禁止下载；4. PPT没有预览界面",
+      "notes": "图片左右滑动使用onTouchStart/onTouchEnd事件监听手势，滑动超过50px触发切换。预览时传递allImages数组用于图片导航。previewImageIndex状态跟踪当前查看的图片索引。",
+      "order_index": 130
+    },
+    {
+      "id": 67,
+      "version": "1.7.3",
+      "title": "作品集卡片点击打开功能优化 - 标题可点击、文件类型图标、视觉提示",
+      "created_at": "2026-04-11T01:43:34.543692+08:00",
+      "requirements": "用户反馈PDF/视频无法打开，封面位置无封面则打开一片空白，需要明确的打开方式",
+      "completed_features": "1. 标题改为可点击按钮：hover显示\"点击打开\"提示和Eye图标；2. 文件类型图标：标题旁显示对应文件类型图标（视频红色/蓝色PDF/橙色PPT/灰色文件夹）；3. 无封面卡片：根据文件类型显示不同图标和提示文字；4. 封面图添加onClick触发打开；5. 标题文字完整呈现，过长自动换行（break-words）",
+      "bug_fixes": "1. 之前卡片标题不可点击；2. 无封面的卡片没有打开方式；3. 文件类型标识不醒目",
+      "notes": "卡片上方为封面，下方标题区域是可点击的按钮。标题hover时显示\"点击打开\"和Eye图标，提示用户可以点击。文件类型用不同颜色图标标识（视频红色、PDF蓝色、PPT橙色）。无封面时根据文件类型显示对应图标和提示（\"点击播放视频\"、\"点击查看PDF\"、\"点击查看PPT\"）。",
+      "order_index": 131
+    }
+  ],
+  "admin_users": [
+    {
+      "id": 2,
+      "username": "Lxgood",
+      "password_hash": "6753a428036bba8d2a03354843fdda17df9d6920d617cc6021aa70c6b9945b0e",
+      "created_at": "2026-03-26T20:38:02.968245+08:00",
+      "updated_at": "2026-03-26T20:38:02.968245+08:00"
+    }
+  ]
+}
