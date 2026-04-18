@@ -255,7 +255,7 @@ export default function WorksPage() {
             try {
               const r = await fetch('/api/file-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: w.cover_image_key }) });
               const d = await r.json();
-              coverUrl = d.success ? d.data.url : '';
+              coverUrl = d?.success ? d.data.url : '';
             } catch {}
           }
           // 加载文件URL
@@ -264,7 +264,7 @@ export default function WorksPage() {
               try {
                 const r = await fetch('/api/file-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: item.file_key }) });
                 const d = await r.json();
-                return { ...item, url: d.success ? d.data.url : '' };
+                return { ...item, url: d?.success ? d.data.url : '' };
               } catch { return item; }
             }
             return item;

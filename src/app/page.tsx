@@ -504,7 +504,7 @@ export default function HomePage() {
       const worksData = worksRes.ok ? await worksRes.json() : null;
       const moduleOrdersData = moduleOrdersRes.ok ? await moduleOrdersRes.json() : null;
 
-      if (profileData.success && profileData.data) {
+      if (profileData?.success && profileData?.data) {
         // 确保显示开关字段有默认值
         const profileWithDefaults = {
           ...profileData.data,
@@ -525,18 +525,18 @@ export default function HomePage() {
         }
       }
 
-      if (selfIntroData.success && selfIntroData.data) {
+      if (selfIntroData?.success && selfIntroData?.data) {
         setSelfIntroduction(selfIntroData.data);
       }
 
       if (selfIntroCardsRes.ok) {
         const cardsData = await selfIntroCardsRes.json();
-        if (cardsData.success) {
+        if (cardsData?.success) {
           setSelfIntroCards(cardsData.data);
         }
       }
 
-      if (expData.success) {
+      if (expData?.success) {
         // 加载工作经历图片URL
         const expWithUrls = await Promise.all(
           expData.data.map(async (exp: WorkExperience) => {
@@ -564,9 +564,9 @@ export default function HomePage() {
         setWorkExperiences(expWithUrls);
       }
 
-      if (eduData.success) setEducations(eduData.data);
-      if (skillsData.success) setSkills(skillsData.data);
-      if (skillCategoriesData.success) {
+      if (eduData?.success) setEducations(eduData.data);
+      if (skillsData?.success) setSkills(skillsData.data);
+      if (skillCategoriesData?.success) {
         const visibleCategories = skillCategoriesData.data.filter((c: { is_visible: boolean }) => c.is_visible);
         setSkillCategories(visibleCategories);
         // 自动选中第一个有技能的分类（排除"其他"）
@@ -576,12 +576,12 @@ export default function HomePage() {
         }
       }
       
-      if (worksData.success && worksData.data) {
+      if (worksData?.success && worksData?.data) {
         const worksWithUrls = await loadWorkItemsUrls(worksData.data);
         
         // 按分类顺序 + 作品 order 排序
         let sortedWorks = worksWithUrls;
-        if (workCategoriesData?.success && workCategoriesData.data) {
+        if (workCategoriesData?.success && workCategoriesData?.data) {
           const categoryOrder = new Map((workCategoriesData.data as WorkCategory[]).map((c, i) => [c.id, i]));
           sortedWorks = worksWithUrls.sort((a, b) => {
             const orderA = categoryOrder.get(a.category_id ?? 0) ?? 999;
@@ -595,7 +595,7 @@ export default function HomePage() {
         setWorks(sortedWorks);
         
         // 使用分类 API 的数据来设置分类列表（保证顺序）
-        if (workCategoriesData?.success && workCategoriesData.data) {
+        if (workCategoriesData?.success && workCategoriesData?.data) {
           // 按 order_index 排序分类
           const sortedCategories = (workCategoriesData.data as WorkCategory[]).sort((a, b) => a.order_index - b.order_index);
           setCategories(['all', ...sortedCategories.map(c => c.name)]);
@@ -610,12 +610,12 @@ export default function HomePage() {
         }
       }
 
-      if (moduleOrdersData.success) {
+      if (moduleOrdersData?.success) {
         setModuleOrders(moduleOrdersData.data);
       }
 
       const contactData = await contactRes.json();
-      if (contactData.success && contactData.data) {
+      if (contactData?.success && contactData?.data) {
         // 加载微信二维码URL
         if (contactData.data.wechat_qr_key) {
           try {
@@ -625,7 +625,7 @@ export default function HomePage() {
               body: JSON.stringify({ key: contactData.data.wechat_qr_key }),
             });
             const qrData = await qrRes.json();
-            if (qrData.success) {
+            if (qrData?.success) {
               contactData.data.wechatQrUrl = qrData.data.url;
             }
           } catch {}
@@ -635,7 +635,7 @@ export default function HomePage() {
 
       // 加载时间线数据
       const timelineData = await timelineRes.json();
-      if (timelineData.success && timelineData.data) {
+      if (timelineData?.success && timelineData?.data) {
         setTimelineItems(timelineData.data);
       }
     } catch (error) {
