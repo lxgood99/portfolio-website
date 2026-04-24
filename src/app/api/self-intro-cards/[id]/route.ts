@@ -1,31 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
+import type { SelfIntroCard } from '@/storage/database/shared/schema';
 
-// PUT - 更新自我评价卡片
-export async function PUT(request: NextRequest) {
+// GET - 获取单个卡片（可选）
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const body = await request.json();
-    const { id, ...data } = body;
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const { id } = await params;
+    const client = getSupabaseClient();
+    const { data, error } = await client
+      .from('self_intro_cards')
+      .select('*')
+      .eq('id', parseInt(id))
+      .single();
+
+    if (error) {
+      throw new Error(`获取卡片失败: ${error.message}`);
     }
 
-    const result = await db.update('self_intro_cards', {
-      ...data,
-      updated_at: new Date().toISOString(),
-    }, { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`更新自我评价卡片失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: data as SelfIntroCard });
   } catch (error) {
-    console.error('更新自我评价卡片错误:', error);
+    console.error('获取卡片错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
@@ -33,28 +30,62 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - 删除自我评价卡片
-export async function DELETE(request: NextRequest) {
+// PUT - 更新卡片
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const { id } = await params;
+    const body = await request.json();
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('self_intro_cards')
+      .update({
+        title: body.title,
+        content: body.content,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`更新卡片失败: ${error.message}`);
     }
 
-    const result = await db.delete('self_intro_cards', { id: parseInt(id) });
+    return NextResponse.json({ success: true, data: data as SelfIntroCard });
+  } catch (error) {
+    console.error('更新卡片错误:', error);
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
 
-    if (result.error) {
-      throw new Error(`删除自我评价卡片失败: ${result.error.message}`);
+// DELETE - 删除卡片
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const client = getSupabaseClient();
+
+    const { error } = await client
+      .from('self_intro_cards')
+      .delete()
+      .eq('id', parseInt(id));
+
+    if (error) {
+      throw new Error(`删除卡片失败: ${error.message}`);
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('删除自我评价卡片错误:', error);
+    console.error('删除卡片错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
 import crypto from 'crypto';
 
 // POST - 初始化管理员账户
@@ -22,10 +22,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查是否已存在管理员
-    const existingAdmin = await db.select('admin_users', 'id');
+    const client = getSupabaseClient();
 
-    if (existingAdmin.data) {
+    // 检查是否已存在管理员
+    const { data: existingAdmin } = await client
+      .from('admin_users')
+      .select('id')
+      .maybeSingle();
+
+    if (existingAdmin) {
       return NextResponse.json(
         { success: false, error: '管理员账户已存在，无法重复初始化' },
         { status: 400 }
@@ -38,13 +43,13 @@ export async function POST(request: NextRequest) {
       .update(password)
       .digest('hex');
 
-    const result = await db.insert('admin_users', {
+    const { error } = await client.from('admin_users').insert({
       username,
       password_hash: passwordHash,
     });
 
-    if (result.error) {
-      throw new Error(`创建管理员失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`创建管理员失败: ${error.message}`);
     }
 
     return NextResponse.json({

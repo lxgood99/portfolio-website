@@ -1,29 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
+import type { Skill } from '@/storage/database/shared/schema';
 
 // PUT - 更新技能
-export async function PUT(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id, ...data } = body;
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('skills')
+      .update({
+        ...body,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`更新技能失败: ${error.message}`);
     }
 
-    const result = await db.update('skills', {
-      ...data,
-      updated_at: new Date().toISOString(),
-    }, { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`更新技能失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: data as Skill });
   } catch (error) {
     console.error('更新技能错误:', error);
     return NextResponse.json(
@@ -34,22 +37,21 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE - 删除技能
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
-    }
+    const { id } = await params;
+    const client = getSupabaseClient();
 
-    const result = await db.delete('skills', { id: parseInt(id) });
+    const { error } = await client
+      .from('skills')
+      .delete()
+      .eq('id', parseInt(id));
 
-    if (result.error) {
-      throw new Error(`删除技能失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`删除技能失败: ${error.message}`);
     }
 
     return NextResponse.json({ success: true });

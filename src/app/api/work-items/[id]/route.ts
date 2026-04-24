@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
+import type { WorkItem } from '@/storage/database/shared/schema';
 
-// PUT - 更新作品文件
-export async function PUT(request: NextRequest) {
+// PUT - 更新作品项目
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id, ...data } = body;
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('work_items')
+      .update({
+        ...body,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`更新作品项目失败: ${error.message}`);
     }
 
-    const result = await db.update('work_items', {
-      ...data,
-      updated_at: new Date().toISOString(),
-    }, { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`更新作品文件失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: data as WorkItem });
   } catch (error) {
-    console.error('更新作品文件错误:', error);
+    console.error('更新作品项目错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
@@ -33,28 +36,27 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - 删除作品文件
-export async function DELETE(request: NextRequest) {
+// DELETE - 删除作品项目
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
-    }
+    const { id } = await params;
+    const client = getSupabaseClient();
 
-    const result = await db.delete('work_items', { id: parseInt(id) });
+    const { error } = await client
+      .from('work_items')
+      .delete()
+      .eq('id', parseInt(id));
 
-    if (result.error) {
-      throw new Error(`删除作品文件失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`删除作品项目失败: ${error.message}`);
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('删除作品文件错误:', error);
+    console.error('删除作品项目错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

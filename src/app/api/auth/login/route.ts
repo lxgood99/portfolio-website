@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
-// Create PostgreSQL connection pool
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'portfolio',
-  user: process.env.DB_USER || 'portfolio',
-  password: process.env.DB_PASSWORD || 'portfolio123',
-});
-
 // POST - 登录
 export async function POST(request: NextRequest) {
-  const client = await pool.connect();
-  
   try {
     const body = await request.json();
     const { username, password } = body;
@@ -27,20 +16,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 查询管理员
-    const result = await client.query(
-      'SELECT * FROM admin_users WHERE username = $1',
-      [username]
-    );
+    const client = getSupabaseClient();
 
-    if (result.rows.length === 0) {
+    // 查询管理员
+    const { data: admin, error } = await client
+      .from('admin_users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error || !admin) {
       return NextResponse.json(
         { success: false, error: '用户名或密码错误' },
         { status: 401 }
       );
     }
-
-    const admin = result.rows[0];
 
     // 验证密码（简单哈希验证）
     const passwordHash = crypto
@@ -82,7 +72,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: { 
         username: admin.username,
-        sessionToken: sessionToken,
+        sessionToken: sessionToken, // 返回给客户端
       },
     });
   } catch (error) {
@@ -91,7 +81,5 @@ export async function POST(request: NextRequest) {
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
     );
-  } finally {
-    client.release();
   }
 }

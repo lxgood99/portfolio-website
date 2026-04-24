@@ -1,60 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
 
-// PUT - 更新技能分类
-export async function PUT(request: NextRequest) {
+// PUT - 更新分类名称
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id, ...data } = body;
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const { name } = body;
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('skill_categories')
+      .update({
+        name,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`更新分类失败: ${error.message}`);
     }
 
-    const result = await db.update('skill_categories', {
-      ...data,
-      updated_at: new Date().toISOString(),
-    }, { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`更新技能分类失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('更新技能分类错误:', error);
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : '未知错误' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE - 删除技能分类
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
-    }
-
-    const result = await db.delete('skill_categories', { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`删除技能分类失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('删除技能分类错误:', error);
+    console.error('更新分类错误:', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

@@ -1,29 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
+import type { Work } from '@/storage/database/shared/schema';
+
+// GET - 获取单个作品
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('works')
+      .select('*, work_items(*)')
+      .eq('id', parseInt(id))
+      .single();
+
+    if (error) {
+      throw new Error(`获取作品失败: ${error.message}`);
+    }
+
+    return NextResponse.json({ success: true, data: data as Work });
+  } catch (error) {
+    console.error('获取作品错误:', error);
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
 
 // PUT - 更新作品
-export async function PUT(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const { id, ...data } = body;
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
+    const client = getSupabaseClient();
+
+    const { data, error } = await client
+      .from('works')
+      .update({
+        ...body,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`更新作品失败: ${error.message}`);
     }
 
-    const result = await db.update('works', {
-      ...data,
-      updated_at: new Date().toISOString(),
-    }, { id: parseInt(id) });
-
-    if (result.error) {
-      throw new Error(`更新作品失败: ${result.error.message}`);
-    }
-
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: data as Work });
   } catch (error) {
     console.error('更新作品错误:', error);
     return NextResponse.json(
@@ -34,22 +66,21 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE - 删除作品
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: '缺少ID参数' },
-        { status: 400 }
-      );
-    }
+    const { id } = await params;
+    const client = getSupabaseClient();
 
-    const result = await db.delete('works', { id: parseInt(id) });
+    const { error } = await client
+      .from('works')
+      .delete()
+      .eq('id', parseInt(id));
 
-    if (result.error) {
-      throw new Error(`删除作品失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`删除作品失败: ${error.message}`);
     }
 
     return NextResponse.json({ success: true });

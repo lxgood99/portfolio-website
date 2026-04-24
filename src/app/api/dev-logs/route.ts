@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
 
-// GET - 获取开发日志
+// GET - 获取所有开发日志
 export async function GET() {
   try {
-    const result = await db.selectAll('dev_logs', '*', {}, { orderBy: 'created_at DESC, order_index DESC, id DESC' });
+    const client = getSupabaseClient();
+    const { data, error } = await client
+      .from('dev_logs')
+      .select('*')
+      .order('order_index', { ascending: false });
 
-    if (result.error) {
-      throw new Error(`获取开发日志失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`获取开发日志失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('获取开发日志错误:', error);
     return NextResponse.json(
@@ -24,13 +28,32 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const result = await db.insert('dev_logs', body);
+    const client = getSupabaseClient();
 
-    if (result.error) {
-      throw new Error(`创建开发日志失败: ${result.error.message}`);
+    // 获取当前最大order_index
+    const { data: maxOrder } = await client
+      .from('dev_logs')
+      .select('order_index')
+      .order('order_index', { ascending: false })
+      .limit(1);
+
+    const nextOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].order_index + 1 : 100;
+
+    const { data, error } = await client
+      .from('dev_logs')
+      .insert({
+        ...body,
+        order_index: nextOrder,
+        created_at: body.created_at || new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`创建开发日志失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('创建开发日志错误:', error);
     return NextResponse.json(

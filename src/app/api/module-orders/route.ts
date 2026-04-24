@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/db';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
+import type { ModuleOrder } from '@/storage/database/shared/schema';
 
-// GET - 获取模块排序
+// GET - 获取所有模块排序
 export async function GET() {
   try {
-    const result = await db.selectAll('module_orders', '*', {}, { orderBy: 'order_index, id' });
+    const client = getSupabaseClient();
+    const { data, error } = await client
+      .from('module_orders')
+      .select('*')
+      .order('order', { ascending: true });
 
-    if (result.error) {
-      throw new Error(`获取模块排序失败: ${result.error.message}`);
+    if (error) {
+      throw new Error(`获取模块排序失败: ${error.message}`);
     }
 
-    return NextResponse.json({ success: true, data: result.data });
+    const response = NextResponse.json({ success: true, data: data as ModuleOrder[] });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   } catch (error) {
     console.error('获取模块排序错误:', error);
     return NextResponse.json(
@@ -20,27 +29,26 @@ export async function GET() {
   }
 }
 
-// POST - 更新模块排序
-export async function POST(request: NextRequest) {
+// PUT - 批量更新模块排序
+export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { modules } = body;
+    const { items } = body as { items: Array<{ id: number; order: number; is_visible: boolean }> };
+    const client = getSupabaseClient();
 
-    if (!Array.isArray(modules)) {
-      return NextResponse.json(
-        { success: false, error: 'modules必须是数组' },
-        { status: 400 }
-      );
-    }
+    for (const item of items) {
+      const { error } = await client
+        .from('module_orders')
+        .update({
+          order: item.order,
+          is_visible: item.is_visible,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', item.id);
 
-    // 逐个更新
-    for (const module of modules) {
-      const { module_name, order_index, is_visible } = module;
-      await db.update('module_orders', {
-        order_index,
-        is_visible,
-        updated_at: new Date().toISOString(),
-      }, { module_name });
+      if (error) {
+        throw new Error(`更新模块排序失败: ${error.message}`);
+      }
     }
 
     return NextResponse.json({ success: true });
